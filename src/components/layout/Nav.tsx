@@ -30,7 +30,7 @@ export default function Nav() {
     <header
       className={clsx(
         "fixed inset-x-0 top-0 z-40 transition-colors duration-300",
-        scrolled && "border-b border-ink/5 bg-steel-50/80 backdrop-blur-md",
+        scrolled && "border-b border-ink/5 bg-[#f6f4f1]/80 backdrop-blur-md",
       )}
     >
       <nav className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-6 md:px-12">

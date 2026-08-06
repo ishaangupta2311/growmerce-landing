@@ -29,7 +29,7 @@ export default function Outro() {
         >
           <span className="pill border-digital/40 text-digital">Your cart</span>
 
-          <h2 className="mt-5 font-display text-[2.4rem] font-bold leading-[1.1] tracking-[-0.015em] text-ink sm:text-[3.1rem]">
+          <h2 className="mt-5 text-[2.4rem] font-bold leading-[1.06] tracking-[-0.025em] text-ink sm:text-[3.1rem]">
             One trolley.
             <span className="block text-digital">Four fewer problems.</span>
           </h2>

@@ -13,9 +13,9 @@
   --color-brand: #f26522;
   --color-brand-soft: #f89b6c;
   --color-brand-tint: #fdf0e9;
-  --color-ink: #2c2c2e;
-  --color-ink-soft: #58585a;
-  --color-ink-mute: #8a8a8e;
+  --color-ink: #17181a;
+  --color-ink-soft: #4b4c4f;
+  --color-ink-mute: #85868a;
 
   /* Physical end of the transition */
   --color-steel-50: #f6f7f9;
@@ -30,15 +30,16 @@
   --color-digital-bright: #7fe6ff;
   --color-digital-deep: #101f52;
 
-  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-playfair), ui-serif, Georgia, serif;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :root {
-  --background: #f4f5f7;
-  --foreground: #2c2c2e;
+  /* Warm paper white, not cool grey — the reference is a photographed desk. */
+  --background: #f6f4f1;
+  --foreground: #17181a;
   /* Written every frame by ScrollDriver so CSS can react to the 3D timeline. */
   --digitize: 0;
 }

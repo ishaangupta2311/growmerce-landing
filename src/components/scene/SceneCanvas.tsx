@@ -48,10 +48,11 @@ export default function SceneCanvas() {
       <directionalLight position={[-6, 2, -4]} intensity={0.6} color="#cfe0ff" />
 
       <Environment resolution={512} frames={1}>
-        {/* Light shell — the studio's ambient value. */}
+        {/* Light shell — the studio's ambient value. Warm neutral, to match
+            the paper-white page rather than a cool grey lab. */}
         <mesh scale={60}>
           <sphereGeometry args={[1, 32, 32]} />
-          <meshBasicMaterial color="#c3cbd8" side={THREE.BackSide} />
+          <meshBasicMaterial color="#c9c6c0" side={THREE.BackSide} />
         </mesh>
 
         {/* Dark panels. Chrome only reads as metal when it has something dark
@@ -62,7 +63,7 @@ export default function SceneCanvas() {
         </mesh>
         <mesh position={[0, -9, 0]} rotation={[Math.PI / 2, 0, 0]}>
           <planeGeometry args={[40, 40]} />
-          <meshBasicMaterial color="#4a5262" side={THREE.DoubleSide} />
+          <meshBasicMaterial color="#575149" side={THREE.DoubleSide} />
         </mesh>
 
         {/* Broad soft key overhead — the studio softbox. */}

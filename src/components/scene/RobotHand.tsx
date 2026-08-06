@@ -124,7 +124,14 @@ function Finger({
   );
 }
 
-export default function RobotHand({ curl = 1 }: { curl?: number }) {
+export default function RobotHand({
+  curl = 1,
+  bare = false,
+}: {
+  curl?: number;
+  /** Hides the forearm and cuff — for mounting on the full robot's own arm. */
+  bare?: boolean;
+}) {
   const materials = useMemo(() => {
     const shell = new THREE.MeshStandardMaterial({
       color: "#f7f8fa",
@@ -156,16 +163,20 @@ export default function RobotHand({ curl = 1 }: { curl?: number }) {
 
   return (
     <group>
-      {/* Forearm, cropped by the top of the frame like the reference. */}
-      <mesh material={shell} position={[0, 1.15, 0]}>
-        <cylinderGeometry args={[0.23, 0.27, 1.5, 24, 1, true]} />
-      </mesh>
-      <mesh material={cuff} position={[0, 0.45, 0]}>
-        <cylinderGeometry args={[0.275, 0.26, 0.16, 24]} />
-      </mesh>
-      <mesh material={joint} position={[0, 0.3, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.19, 0.19, 0.46, 20]} />
-      </mesh>
+      {!bare && (
+        <>
+          {/* Forearm, cropped by the top of the frame like the reference. */}
+          <mesh material={shell} position={[0, 1.15, 0]}>
+            <cylinderGeometry args={[0.23, 0.27, 1.5, 24, 1, true]} />
+          </mesh>
+          <mesh material={cuff} position={[0, 0.45, 0]}>
+            <cylinderGeometry args={[0.275, 0.26, 0.16, 24]} />
+          </mesh>
+          <mesh material={joint} position={[0, 0.3, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.19, 0.19, 0.46, 20]} />
+          </mesh>
+        </>
+      )}
 
       {/* Palm. */}
       <RoundedBox

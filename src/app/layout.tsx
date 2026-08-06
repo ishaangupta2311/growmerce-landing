@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Poppins } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
-const poppins = Poppins({
-  variable: "--font-poppins",
+// A neutral grotesque with real weight, per the reference — the airy geometric
+// sans was a big part of why the page read as template-ish.
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -41,7 +42,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${poppins.variable} ${playfair.variable} antialiased`}>
+    <html lang="en" className={`${inter.variable} ${playfair.variable} antialiased`}>
       <body>{children}</body>
     </html>
   );
