@@ -23,10 +23,12 @@
   --color-steel-200: #dcdfe6;
   --color-steel-400: #a9aeb8;
 
-  /* Digital end of the transition */
-  --color-digital: #1657ff;
-  --color-digital-bright: #4cd8ff;
-  --color-digital-deep: #0a1f5c;
+  /* Digital end of the transition. Deliberately a deep ink blue rather than a
+     saturated primary — neon blue on a light page reads as a default, not as a
+     brand decision. */
+  --color-digital: #2544c7;
+  --color-digital-bright: #7fe6ff;
+  --color-digital-deep: #101f52;
 
   --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-playfair), ui-serif, Georgia, serif;

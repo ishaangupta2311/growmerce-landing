@@ -16,7 +16,7 @@ export default function Home() {
           writes every frame, so the background transitions with the trolley. */}
       <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(125%_85%_at_50%_0%,#fcfcfd_0%,#eef0f3_58%,#e1e4ea_100%)]" />
       <div
-        className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(58%_48%_at_50%_46%,rgba(76,216,255,0.32),transparent_72%)]"
+        className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(62%_52%_at_50%_42%,rgba(96,150,255,0.20),transparent_74%)]"
         style={{ opacity: "var(--digitize)" }}
       />
 

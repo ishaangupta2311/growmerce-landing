@@ -45,10 +45,15 @@ function Parcel({ index }: { index: number }) {
 
   const material = useMemo(
     () =>
-      new THREE.MeshStandardMaterial({
+      // Soft matte card stock with a light sheen, so parcels read as objects
+      // next to the chrome rather than as flat blocks of colour.
+      new THREE.MeshPhysicalMaterial({
         color: new THREE.Color(product.accent),
-        roughness: 0.42,
-        metalness: 0.15,
+        roughness: 0.62,
+        metalness: 0.02,
+        clearcoat: 0.35,
+        clearcoatRoughness: 0.45,
+        envMapIntensity: 0.9,
       }),
     [product.accent],
   );
@@ -67,7 +72,7 @@ function Parcel({ index }: { index: number }) {
   }, [index, product.side]);
 
   const base = new THREE.Color(product.accent);
-  const digital = new THREE.Color("#2f7bff");
+  const digital = new THREE.Color("#2440b8");
 
   useFrame((state, dt) => {
     const collected = useScene.getState().collected.includes(product.id);

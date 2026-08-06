@@ -10,8 +10,20 @@ import { useScene } from "@/lib/scroll";
  * The fixed WebGL layer. Sits behind the copy for the whole page — the cart is
  * one continuous object across every section, so it must never unmount.
  *
- * The environment is built from Lightformers rather than an HDR preset so the
- * steel gets believable reflections with no network fetch.
+ * The environment does most of the work here. Polished metal is essentially a
+ * mirror, so what the trolley looks like is decided almost entirely by what
+ * surrounds it. Two failure modes to stay between: a uniformly white studio
+ * gives a flat white blob with no form, and a dark studio turns the whole
+ * object muddy. The rig below is a bright studio with *banded* contrast — light
+ * shell, bright strip lights, and a few dark panels whose reflections draw the
+ * dark lines that make chrome read as chrome.
+ *
+ * Deliberately no bloom. The reference art is a clean product render with no
+ * glow; on a light page, bloom smears the specular highlights into a haze and
+ * costs the image all of its crispness.
+ *
+ * Built from Lightformers rather than an HDR preset so there is no network
+ * fetch at runtime.
  */
 export default function SceneCanvas() {
   const setSceneReady = useScene((s) => s.setSceneReady);
@@ -25,44 +37,69 @@ export default function SceneCanvas() {
         alpha: true,
         powerPreference: "high-performance",
         toneMapping: THREE.ACESFilmicToneMapping,
+        toneMappingExposure: 1,
       }}
       camera={{ position: [0, 0.25, 9], fov: 30, near: 0.1, far: 60 }}
       onCreated={() => setSceneReady(true)}
     >
-      <ambientLight intensity={0.55} />
-      <directionalLight position={[4, 6, 5]} intensity={2.1} />
-      <directionalLight position={[-6, 2, -4]} intensity={0.7} color="#cfe0ff" />
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[4, 6, 5]} intensity={1.9} />
+      <directionalLight position={[-6, 2, -4]} intensity={0.6} color="#cfe0ff" />
 
-      <Environment resolution={256} frames={1}>
-        {/* Big soft key from above — the studio look in the reference. */}
+      <Environment resolution={512} frames={1}>
+        {/* Light shell — the studio's ambient value. */}
+        <mesh scale={60}>
+          <sphereGeometry args={[1, 32, 32]} />
+          <meshBasicMaterial color="#c3cbd8" side={THREE.BackSide} />
+        </mesh>
+
+        {/* Dark panels. Chrome only reads as metal when it has something dark
+            to reflect between the highlights — these draw those bands. */}
+        <mesh position={[0, -3, -14]} rotation={[0, 0, 0]}>
+          <planeGeometry args={[40, 14]} />
+          <meshBasicMaterial color="#39414f" side={THREE.DoubleSide} />
+        </mesh>
+        <mesh position={[0, -9, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[40, 40]} />
+          <meshBasicMaterial color="#4a5262" side={THREE.DoubleSide} />
+        </mesh>
+
+        {/* Broad soft key overhead — the studio softbox. */}
         <Lightformer
-          intensity={3.2}
-          position={[0, 6, 2]}
+          form="rect"
+          intensity={5}
+          position={[0, 9, 1]}
           rotation={[Math.PI / 2, 0, 0]}
           scale={[14, 14, 1]}
           color="#ffffff"
         />
-        {/* Rim strips that pick out the wire frame against the light page. */}
+
+        {/* Long strip lights either side, which draw the bright highlight
+            running down the length of each wire. */}
         <Lightformer
-          form="ring"
-          intensity={2.4}
-          position={[-6, 2, 3]}
-          scale={[6, 6, 1]}
-          color="#dfe7f5"
+          form="rect"
+          intensity={5}
+          position={[-8, 2, 2]}
+          rotation={[0, Math.PI / 2, 0]}
+          scale={[12, 3, 1]}
+          color="#ffffff"
         />
         <Lightformer
-          intensity={1.6}
-          position={[6, 0, -4]}
-          rotation={[0, -Math.PI / 3, 0]}
-          scale={[8, 5, 1]}
-          color="#ffe6d6"
+          form="rect"
+          intensity={3.5}
+          position={[8, 1.5, -2]}
+          rotation={[0, -Math.PI / 2, 0]}
+          scale={[12, 2.2, 1]}
+          color="#eef4ff"
         />
+
+        {/* Front fill so the face of the basket isn't in shadow. */}
         <Lightformer
-          intensity={1.1}
-          position={[0, -4, 2]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          scale={[10, 10, 1]}
-          color="#f2f4f8"
+          form="rect"
+          intensity={2.2}
+          position={[0, 1, 9]}
+          scale={[9, 7, 1]}
+          color="#ffffff"
         />
       </Environment>
 

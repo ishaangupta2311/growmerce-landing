@@ -36,21 +36,25 @@ export const CART_CONTACT = new THREE.Vector3(
 /** Distance to the far corner of the cart — normalises the digitisation front. */
 export const CART_SPAN = 3.1;
 
-const WIRE = 0.015;
-const RING_POINTS = 56;
-const VERTICAL_EVERY = 3;
+// Thin and finely tessellated on purpose. The reference render is a delicate
+// wire basket; chunky low-segment tubes are what make a procedural model read
+// as a game asset rather than a product shot.
+const WIRE = 0.0135;
+const RADIAL = 12;
+const RING_POINTS = 72;
+const VERTICAL_EVERY = 4;
 
 /* ------------------------------------------------------------------ */
 /* primitives                                                          */
 /* ------------------------------------------------------------------ */
 
 /** A cylinder stretched between two points. */
-function bar(a: THREE.Vector3, b: THREE.Vector3, radius = WIRE, radial = 5) {
+function bar(a: THREE.Vector3, b: THREE.Vector3, radius = WIRE, radial = RADIAL) {
   const dir = new THREE.Vector3().subVectors(b, a);
   const length = dir.length();
   if (length < 1e-5) return null;
 
-  const geo = new THREE.CylinderGeometry(radius, radius, length, radial, 1, true);
+  const geo = new THREE.CylinderGeometry(radius, radius, length, radial, 1, false);
   const quat = new THREE.Quaternion().setFromUnitVectors(UP, dir.normalize());
   geo.applyMatrix4(
     new THREE.Matrix4().compose(
@@ -216,7 +220,7 @@ function handle() {
     0.4,
   );
 
-  return [new THREE.TubeGeometry(curve, 80, WIRE * 2.2, 8, false)];
+  return [new THREE.TubeGeometry(curve, 128, WIRE * 2.3, 16, false)];
 }
 
 function undercarriage() {
@@ -310,12 +314,12 @@ export function buildCart(): CartGeometry {
   for (const [x, hz] of axles) {
     for (const side of [-1, 1]) {
       const z = side * hz;
-      const tyre = new THREE.TorusGeometry(0.062, 0.03, 8, 16);
+      const tyre = new THREE.TorusGeometry(0.062, 0.03, 16, 32);
       tyre.rotateY(Math.PI / 2);
       tyre.translate(x, AXLE_Y, z);
       wheelParts.push(tyre);
 
-      const hub = new THREE.CylinderGeometry(0.034, 0.034, 0.05, 10);
+      const hub = new THREE.CylinderGeometry(0.034, 0.034, 0.05, 20);
       hub.rotateZ(Math.PI / 2);
       hub.translate(x, AXLE_Y, z);
       wheelParts.push(hub);

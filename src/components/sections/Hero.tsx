@@ -6,36 +6,40 @@ export default function Hero() {
   const ref = useSection<HTMLElement>("hero");
 
   return (
-    <section
-      ref={ref}
-      className="relative flex min-h-[160vh] flex-col items-center px-6"
-    >
-      {/* Upper two thirds are left clear — this is where the hand descends onto
-          the trolley in the WebGL layer behind. */}
-      <div className="h-[72vh] shrink-0" aria-hidden />
+    <section ref={ref} className="relative min-h-[185vh]">
+      {/*
+        The copy is pinned to the viewport for the whole section rather than
+        scrolling through it. The trolley lives in a fixed WebGL layer, so any
+        copy that scrolls will eventually cross it — pinning gives the two a
+        permanent lane each: cart above, copy below.
+      */}
+      <div className="sticky top-0 flex h-screen flex-col items-center justify-end px-6 pb-[7vh]">
+        {/* Reserved for the trolley and the descending hand behind this layer. */}
+        <div className="grow" aria-hidden />
 
-      <div className="relative z-20 mx-auto max-w-2xl text-center">
-        <h1 className="text-balance-tight text-[1.6rem] font-medium leading-[1.5] text-ink sm:text-[1.8rem]">
-          Every part of your store, thinking for itself.
-        </h1>
+        <div className="relative z-20 mx-auto max-w-2xl text-center">
+          <h1 className="text-balance-tight text-[1.55rem] font-medium leading-[1.5] tracking-[-0.01em] text-ink sm:text-[1.75rem]">
+            Every part of your store, thinking for itself.
+          </h1>
 
-        <p className="mt-5 text-balance-tight text-base leading-[1.75] text-ink-soft sm:text-[1.05rem]">
-          Growmerce builds AI products that run the unglamorous half of ecommerce
-          — search, merchandising, restocking, conversion — so your catalogue
-          keeps working long after you have closed the laptop.
-        </p>
+          <p className="mx-auto mt-5 max-w-xl text-balance-tight text-[0.98rem] leading-[1.75] text-ink-soft sm:text-base">
+            Growmerce builds AI products that run the unglamorous half of
+            ecommerce — search, merchandising, restocking, conversion — so your
+            catalogue keeps working long after you have closed the laptop.
+          </p>
 
-        <a
-          href="#voiceshop"
-          className="mt-9 inline-flex h-14 items-center justify-center rounded-xl bg-brand px-14 text-base font-semibold text-white shadow-[0_10px_30px_-12px_rgba(239,108,37,0.8)] transition-transform duration-300 ease-out-expo hover:-translate-y-0.5 hover:bg-[#e0601c]"
-        >
-          Book a demo
-        </a>
-      </div>
+          <a
+            href="#voiceshop"
+            className="mt-8 inline-flex h-[52px] items-center justify-center rounded-[10px] bg-brand px-12 text-[0.95rem] font-semibold tracking-[0.01em] text-white shadow-[0_12px_28px_-14px_rgba(239,108,37,0.85)] transition-all duration-300 ease-out-expo hover:-translate-y-0.5 hover:bg-[#e0601c] hover:shadow-[0_16px_34px_-14px_rgba(239,108,37,0.9)]"
+          >
+            Book a demo
+          </a>
 
-      <div className="relative z-20 mt-auto flex flex-col items-center gap-3 pb-16 text-xs uppercase tracking-[0.22em] text-ink-mute">
-        <span>Scroll to fill the cart</span>
-        <span className="h-10 w-px bg-gradient-to-b from-ink-mute/60 to-transparent" />
+          <div className="mt-10 flex flex-col items-center gap-2.5 text-[0.65rem] uppercase tracking-[0.24em] text-ink-mute/80">
+            <span>Scroll to fill the cart</span>
+            <span className="h-8 w-px bg-gradient-to-b from-ink-mute/50 to-transparent" />
+          </div>
+        </div>
       </div>
     </section>
   );

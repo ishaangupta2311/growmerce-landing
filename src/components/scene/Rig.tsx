@@ -6,6 +6,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import Cart from "./Cart";
 import Parcels from "./Parcels";
 import RobotHand from "./RobotHand";
+import VoxelSwarm from "./VoxelSwarm";
 import { CART_CONTACT } from "./geometry/cart";
 import { PRODUCTS } from "@/lib/products";
 import { clamp01, damp, scroll, sectionProgress, smoothstep } from "@/lib/scroll";
@@ -136,6 +137,7 @@ export default function Rig() {
   return (
     <group ref={cart}>
       <Cart />
+      <VoxelSwarm />
       <Parcels />
 
       <group ref={hand}>

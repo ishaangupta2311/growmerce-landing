@@ -5,11 +5,18 @@ import * as THREE from "three";
  *
  * A standard PBR material with a digitisation front injected into it. The front
  * is a sphere that expands from `uOrigin` — the point where the robot hand
- * touches the cart — and everything it has swallowed gets:
+ * touches the cart — and everything it has swallowed reads as a lit holographic
+ * version of itself rather than a flat recolour:
  *
- *   1. its vertices snapped to a voxel grid (the "pixelated" read),
- *   2. its albedo pushed to the digital blue,
- *   3. its metalness dropped and an emissive scanline added.
+ *   - albedo shifts to a deep indigo with a soft vertical gradient
+ *   - a fresnel term lights the grazing angles, which is what sells it as glass
+ *     rather than as an untextured mesh
+ *   - a thin, bright crest rides the advancing front
+ *
+ * Vertex quantisation is deliberately gentle. Snapping hard enough to actually
+ * read as "voxels" destroys the silhouette of a thin wire mesh and looks broken;
+ * the visible pixelation comes from `VoxelSwarm`, which adds cubes rather than
+ * mangling the model. Here we only step the surface enough to feel quantised.
  *
  * Keeping this as an injection rather than a from-scratch ShaderMaterial means
  * the steel half still gets real lighting, shadows and environment reflections
@@ -27,14 +34,16 @@ export type DigitizeUniforms = {
   uColorEdge: { value: THREE.Color };
 };
 
-export type DigitizeMaterial = THREE.MeshStandardMaterial & {
+export type DigitizeMaterial = THREE.MeshPhysicalMaterial & {
   userData: { uniforms: DigitizeUniforms };
 };
 
-const FRONT_WIDTH = 0.34;
+const FRONT_WIDTH = 0.3;
+/** How far toward the voxel lattice the surface actually moves. */
+const SNAP = 0.3;
 
 export function createDigitizeMaterial(
-  params: THREE.MeshStandardMaterialParameters & {
+  params: THREE.MeshPhysicalMaterialParameters & {
     origin?: THREE.Vector3;
     maxDist?: number;
     voxel?: number;
@@ -45,13 +54,13 @@ export function createDigitizeMaterial(
   const {
     origin = new THREE.Vector3(0, 0, 0),
     maxDist = 3.4,
-    voxel = 0.09,
-    core = "#1657ff",
-    edge = "#4cd8ff",
+    voxel = 0.05,
+    core = "#2440b8",
+    edge = "#7fe6ff",
     ...standard
   } = params;
 
-  const material = new THREE.MeshStandardMaterial(standard) as DigitizeMaterial;
+  const material = new THREE.MeshPhysicalMaterial(standard) as DigitizeMaterial;
 
   const uniforms: DigitizeUniforms = {
     uDigitize: { value: 0 },
@@ -96,15 +105,14 @@ export function createDigitizeMaterial(
         float t = 1.0 - smoothstep(front - ${FRONT_WIDTH.toFixed(2)}, front, d);
         vDigit = t;
 
-        // Snap to a voxel lattice — this is the "pixelated" silhouette.
         vec3 voxel = floor(position / uVoxel + 0.5) * uVoxel;
 
-        // Vertices right on the advancing front shiver before they settle.
+        // Only vertices right on the advancing front shiver, and only barely.
         float crest = t * (1.0 - t) * 4.0;
-        float noise = sin(uTime * 7.0 + position.y * 31.0 + position.x * 19.0 + position.z * 27.0);
-        vec3 shiver = normal * noise * 0.022 * crest;
+        float noise = sin(uTime * 5.0 + position.y * 24.0 + position.x * 17.0 + position.z * 21.0);
+        vec3 shiver = normal * noise * 0.008 * crest;
 
-        transformed = mix(position, voxel, t * 0.88) + shiver;
+        transformed = mix(position, voxel, t * ${SNAP.toFixed(2)}) + shiver;
       `,
       );
 
@@ -114,7 +122,6 @@ export function createDigitizeMaterial(
         /* glsl */ `
         #include <common>
         uniform float uTime;
-        uniform float uVoxel;
         uniform vec3  uColorCore;
         uniform vec3  uColorEdge;
         varying float vDigit;
@@ -126,9 +133,9 @@ export function createDigitizeMaterial(
         /* glsl */ `
         #include <map_fragment>
 
-        // Alternating lattice bands give the digital half a data-like texture.
-        float band = step(0.5, fract(vLocalPos.y / (uVoxel * 2.0)));
-        vec3 digital = mix(uColorCore, uColorCore * 2.1, band);
+        // Soft vertical gradient — a hard band pattern reads as a texture bug.
+        float grad = clamp(vLocalPos.y * 0.3 + 0.55, 0.0, 1.0);
+        vec3 digital = mix(uColorCore * 0.72, uColorCore * 1.35, grad);
         diffuseColor.rgb = mix(diffuseColor.rgb, digital, vDigit);
       `,
       )
@@ -136,14 +143,14 @@ export function createDigitizeMaterial(
         "#include <roughnessmap_fragment>",
         /* glsl */ `
         #include <roughnessmap_fragment>
-        roughnessFactor = mix(roughnessFactor, 0.4, vDigit);
+        roughnessFactor = mix(roughnessFactor, 0.22, vDigit);
       `,
       )
       .replace(
         "#include <metalnessmap_fragment>",
         /* glsl */ `
         #include <metalnessmap_fragment>
-        metalnessFactor = mix(metalnessFactor, 0.0, vDigit);
+        metalnessFactor = mix(metalnessFactor, 0.35, vDigit);
       `,
       )
       .replace(
@@ -151,11 +158,19 @@ export function createDigitizeMaterial(
         /* glsl */ `
         #include <emissivemap_fragment>
 
-        // Bright rim exactly on the front, fading out behind it.
-        float crest = vDigit * (1.0 - vDigit) * 4.0;
-        float scan = 0.5 + 0.5 * sin(vLocalPos.y * 46.0 - uTime * 3.2);
-        totalEmissiveRadiance += uColorEdge * crest * 2.4;
-        totalEmissiveRadiance += uColorCore * vDigit * (0.22 + scan * 0.3);
+        vec3 vDir = normalize(vViewPosition);
+        float fres = pow(1.0 - clamp(dot(normal, vDir), 0.0, 1.0), 2.2);
+
+        // Thin bright crest exactly on the front, not a wide smear.
+        float crest = vDigit * (1.0 - vDigit);
+        crest = crest * crest * 14.0;
+
+        // A slow scan plane travelling up the model, kept subtle.
+        float scan = 0.5 + 0.5 * sin(vLocalPos.y * 5.0 - uTime * 0.9);
+
+        totalEmissiveRadiance += uColorEdge * crest * 1.5;
+        totalEmissiveRadiance += uColorEdge * fres * vDigit * 0.85;
+        totalEmissiveRadiance += uColorCore * vDigit * (0.06 + scan * 0.06);
       `,
       );
   };

@@ -16,19 +16,24 @@ export default function Cart() {
   const materials = useMemo(() => {
     const shared = { origin: CART_CONTACT, maxDist: CART_SPAN };
     return {
+      // Near-mirror chrome. Polished metal is almost entirely reflection, so
+      // the look here is carried by the environment in SceneCanvas, not by the
+      // base colour — a grey albedo with mid roughness is what reads as plastic.
       steel: createDigitizeMaterial({
         ...shared,
-        color: "#cfd4dc",
-        metalness: 0.92,
-        roughness: 0.26,
-        envMapIntensity: 1.35,
+        color: "#c8cdd6",
+        metalness: 1,
+        roughness: 0.2,
+        envMapIntensity: 1.5,
       }),
       rubber: createDigitizeMaterial({
         ...shared,
-        color: "#c8371f",
-        metalness: 0.25,
-        roughness: 0.5,
-        voxel: 0.07,
+        color: "#bf3a24",
+        metalness: 0.05,
+        roughness: 0.48,
+        clearcoat: 0.5,
+        clearcoatRoughness: 0.3,
+        envMapIntensity: 1.1,
       }),
     };
   }, []);
