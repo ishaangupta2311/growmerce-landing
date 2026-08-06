@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Logo from "@/components/brand/Logo";
+import { clsx } from "@/lib/clsx";
 import { PRODUCTS } from "@/lib/products";
 import { useScene } from "@/lib/scroll";
 
@@ -14,8 +16,23 @@ const LINKS = [
 export default function Nav() {
   const collected = useScene((s) => s.collected);
 
+  // Section copy scrolls up past the nav, so once we leave the hero the bar
+  // needs its own surface to stay legible over it.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 80);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="fixed inset-x-0 top-0 z-40">
+    <header
+      className={clsx(
+        "fixed inset-x-0 top-0 z-40 transition-colors duration-300",
+        scrolled && "border-b border-ink/5 bg-steel-50/80 backdrop-blur-md",
+      )}
+    >
       <nav className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-6 md:px-12">
         <ul className="hidden items-center gap-8 text-[0.95rem] font-medium text-ink-soft md:flex">
           {LINKS.map((link) => (

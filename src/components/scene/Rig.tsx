@@ -31,7 +31,7 @@ export default function Rig() {
   const cart = useRef<THREE.Group>(null!);
   const hand = useRef<THREE.Group>(null!);
   const spark = useRef<THREE.PointLight>(null!);
-  const { viewport, size, camera } = useThree();
+  const { viewport, size } = useThree();
 
   const compact = size.width < 900;
 
@@ -60,8 +60,11 @@ export default function Rig() {
   // Smoothed rig values, so a flick of the wheel never snaps the cart.
   const state = useRef({ x: 0, y: 0, z: 0, rotY: 0, scale: 1, contact: 0, t: 0 });
 
-  useFrame(({ clock }, dt) => {
-    const time = clock.elapsedTime;
+  useFrame((frame, dt) => {
+    const time = frame.clock.elapsedTime;
+    // Read off the frame state rather than closing over useThree's camera —
+    // the rig writes to it every tick, and that binding is meant to be read-only.
+    const camera = frame.camera;
 
     // Continuous stop index: each section contributes 0→1 as it centres.
     let t = 0;
