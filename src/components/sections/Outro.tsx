@@ -19,7 +19,10 @@ export default function Outro() {
 
   return (
     <section ref={sectionRef} id="outro" className="relative min-h-[165vh]">
-      <div className="sticky top-0 flex h-screen flex-col items-center justify-end px-6 pb-[7vh]">
+      {/* pb-[30vh] is not whitespace for its own sake: it reserves the bottom
+          third of the viewport as the finale lane, where the trolley grounds
+          itself and the robot walks in. Shrink it and the two collide. */}
+      <div className="sticky top-0 flex h-screen flex-col items-center justify-end px-6 pb-[30vh]">
         <div className="grow" aria-hidden />
 
         <div

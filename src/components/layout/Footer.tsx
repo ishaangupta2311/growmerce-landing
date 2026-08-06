@@ -13,12 +13,21 @@ export default function Footer() {
   // Registered with the scroll engine: the outro finale is staged against this
   // element's top border — the trolley grounds itself on it and rolls out
   // along it as the footer scrolls into view.
+  //
+  // Which is why the top padding is deep. The finale gets exactly as many
+  // pixels of scroll as this element is tall, because the border stops moving
+  // once the page bottoms out. At the natural py-16 the trolley had to start
+  // leaving the moment the border appeared; the deeper padding buys it a beat
+  // to stand there first, and keeps the rolling trolley clear of the columns.
   const ref = useSection<HTMLElement>("footer");
 
   return (
+    // Opaque, not translucent. The trolley rolls out *on* the top border, so
+    // everything below that line has to be occluded — through a blurred white
+    // it showed as a ghost under the footer instead.
     <footer
       ref={ref}
-      className="relative z-20 border-t border-ink/10 bg-white/60 px-6 py-16 backdrop-blur-sm md:px-12"
+      className="relative z-20 border-t border-ink/10 bg-white px-6 pb-16 pt-[16vh] md:px-12"
     >
       <div className="mx-auto grid max-w-[1400px] gap-12 md:grid-cols-[1.4fr_repeat(3,1fr)]">
         <div>

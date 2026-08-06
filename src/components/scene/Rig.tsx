@@ -6,7 +6,11 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { ContactShadows } from "@react-three/drei";
 import Cart from "./Cart";
 import Parcels from "./Parcels";
-import Robot from "./Robot";
+import Robot, {
+  ROBOT_BODY_HALF_DEPTH,
+  ROBOT_GRIP_FRAC,
+  ROBOT_HEIGHT,
+} from "./Robot";
 import RobotHand from "./RobotHand";
 import { CART_CONTACT } from "./model";
 import { PRODUCTS } from "@/lib/products";
@@ -27,13 +31,18 @@ type Stop = {
   scale: number;
 };
 
-// Scratch vectors for the ground unprojection — allocated once, mutated per
-// frame, never shared outside this module.
+// Scratch vectors — allocated once, mutated per frame, never shared outside
+// this module.
 const _ndc = new THREE.Vector3();
 const _dir = new THREE.Vector3();
+const _handle = new THREE.Vector3();
+const _up = new THREE.Vector3(0, 1, 0);
 
 /** How far the final push travels, in world units — enough to exit the frame. */
 const PUSH_DIST = 11;
+
+/** Handle height above the trolley's own ground plane, in trolley-local units. */
+const HANDLE_RISE = CART_CONTACT.y + 1.25;
 
 /**
  * Where the hero trolley's wheels sit, as a fraction of viewport height. The
@@ -73,9 +82,6 @@ export default function Rig() {
 
   const compact = size.width < 900;
 
-  /** Where the robot stands, in cart-group space: just behind the handle. */
-  const ROBOT_STAND_X = 1.28;
-
   const stops = useMemo<Stop[]>(() => {
     // Park the trolley roughly a quarter of the way in from the edge, opposite
     // the copy. On narrow screens the copy stacks underneath, so stay centred.
@@ -92,10 +98,19 @@ export default function Rig() {
         rotY: p.side === "right" ? -0.3 : -0.62,
         scale: compact ? 0.44 : 0.62,
       })),
-      // Outro: small, lower right, clear of the centred copy. Its Y is mostly
-      // notional — once the outro takes over, the trolley grounds itself
-      // against the viewport bottom / footer border instead.
-      { x: compact ? 1.0 : 2.25, y: 0.5, z: 0.35, rotY: -0.5, scale: compact ? 0.34 : 0.42 },
+      // Outro: small, lower right, clear of the centred copy — and far enough
+      // right that the robot, which parks outboard of the handle, still lands
+      // inside the frame. Near profile (rotY ≈ 0 puts the handle at +X), because
+      // the trolley is about to roll left and a 3/4 view reads as drifting
+      // sideways rather than being pushed. Its Y is notional: once the outro
+      // takes over, the trolley grounds itself on the footer border instead.
+      {
+        x: compact ? 0.7 : 1.9,
+        y: 0.5,
+        z: 0.35,
+        rotY: -0.16,
+        scale: compact ? 0.28 : 0.34,
+      },
     ];
   }, [compact, viewport.width]);
 
@@ -155,11 +170,18 @@ export default function Rig() {
     const c = s.contact;
     // 2. Withdrawal, straight after the tap lands.
     const withdraw = smoothstep(0.5, 0.68, heroP);
-    // 3. The robot walks in late in the outro, once the copy has landed...
-    const enter = smoothstep(0.45, 0.85, outroP);
+    // 3. The robot walks in late in the outro, once the copy has landed. It has
+    //    to be *in position* before the footer border arrives and the push
+    //    starts, so this closes at 0.60 — at 0.85 the walk-in ran past the
+    //    bottom of the document and the robot never actually reached the
+    //    handle.
+    const enter = smoothstep(0.30, 0.6, outroP);
     // 4. ...and the push is keyed to the FOOTER: it only happens once the
-    //    footer's top border is on screen, and completes while it is.
-    const push = smoothstep(0.02, 0.32, footerP);
+    //    footer's top border is on screen, and completes while it is. The
+    //    0.09 lead-in is the beat where the trolley just stands on the border
+    //    with the robot behind it; 0.28 leaves scroll to spare, because the
+    //    border stops moving when the document bottoms out.
+    const push = smoothstep(0.09, 0.28, footerP);
 
     /* ---- ground line ---------------------------------------------------
        The trolley's finale plays out on the footer's top border. Until the
@@ -182,7 +204,10 @@ export default function Rig() {
       const footerTopPx = footer.top - scroll.y;
       groundPx = Math.min(groundPx, footerTopPx - 4);
     }
-    groundPx = Math.max(groundPx, size.height * 0.5);
+    // Floor the ground line well below the outro copy: the border keeps rising
+    // after the trolley has left, and there is no reason to follow it up into
+    // the type.
+    groundPx = Math.max(groundPx, size.height * 0.62);
     const groundWorldY = worldYAtPx(groundPx);
 
     // The hero's own ground line, fixed above the copy lane.
@@ -232,13 +257,40 @@ export default function Rig() {
     hand.current.visible = withdraw < 0.995;
 
     /* ---- outro robot ----------------------------------------------------
-       A static mesh can't swing its legs, so the walk is a gait illusion:
-       footstep bob and lateral sway phased by DISTANCE TRAVELLED, so the
-       steps stay in lockstep with the motion and scrub in reverse too. */
+       The robot is a sibling of the trolley, not a child of it. As a child it
+       inherited the trolley's scale and heading, so it shrank with the trolley
+       and got swung off its line every time the trolley turned — which is why
+       it never appeared to touch anything. Here it is placed in world space,
+       against the trolley's actual handle. */
 
-    const robotX = THREE.MathUtils.lerp(9.5, ROBOT_STAND_X, smoothstep(0, 1, enter));
-    const travel = 9.5 - robotX + push * PUSH_DIST;
-    const phase = travel * 2.6;
+    // Where the handle is, in the world: the contact point carried through the
+    // trolley's own scale and heading.
+    _handle
+      .copy(CART_CONTACT)
+      .multiplyScalar(s.scale)
+      .applyAxisAngle(_up, cart.current.rotation.y)
+      .add(cart.current.position);
+
+    // Size the robot so its palms land on the handle. See Robot.tsx: the arms
+    // hang at the sides, so the grip height is a fixed fraction of the body.
+    const robotScale =
+      (HANDLE_RISE * s.scale) / (ROBOT_HEIGHT * ROBOT_GRIP_FRAC);
+    const bodyHeight = ROBOT_HEIGHT * robotScale;
+
+    // Stand it back by half a torso, so the palms — which hang flush with the
+    // chest — meet the handle rather than reaching through it.
+    const standX = _handle.x + ROBOT_BODY_HALF_DEPTH * bodyHeight;
+    // Walks in from just outside the right edge, whatever the viewport is.
+    const offscreenX = viewport.width * 0.5 + bodyHeight;
+    const robotX = THREE.MathUtils.lerp(offscreenX, standX, smoothstep(0, 1, enter));
+
+    // A static mesh can't swing its legs, so the walk is a gait illusion:
+    // footstep bob and lateral sway phased by DISTANCE TRAVELLED. Because
+    // `standX` tracks the handle, the push distance is already folded in — the
+    // robot stays glued to the trolley and the steps stay in lockstep.
+    const travel = offscreenX - robotX;
+    const stride = 0.55 * bodyHeight;
+    const phase = (travel * Math.PI) / Math.max(stride, 1e-3);
 
     // Gait amplitude follows actual movement, so the robot stands still
     // cleanly between the walk-in and the push.
@@ -247,10 +299,13 @@ export default function Rig() {
     s.walk = damp(s.walk, clamp01(speed / 1.2), 6, dt);
     const gait = s.walk * float;
 
+    robot.current.scale.setScalar(robotScale);
     robot.current.position.set(
       robotX,
-      -1.25 + Math.abs(Math.sin(phase)) * 0.055 * gait + Math.sin(time * 1.3) * 0.015 * float * enter * (1 - gait),
-      0.12,
+      groundWorldY +
+        Math.abs(Math.sin(phase)) * 0.03 * bodyHeight * gait +
+        Math.sin(time * 1.3) * 0.008 * bodyHeight * float * enter * (1 - gait),
+      _handle.z,
     );
     robot.current.rotation.set(
       // Lateral rock, one cycle per two footfalls — walking mechanics.
@@ -267,38 +322,43 @@ export default function Rig() {
   });
 
   return (
-    <group ref={cart}>
-      <Cart />
-      <Parcels />
+    <group>
+      <group ref={cart}>
+        <Cart />
+        <Parcels />
 
-      {/* Soft ground shadow, at the model's ground plane so it rides with the
-          trolley — and, in the finale, along the footer border. */}
-      <ContactShadows
-        position={[0, -1.245, 0]}
-        scale={9}
-        far={3.4}
-        blur={2.6}
-        opacity={0.42}
-        resolution={512}
-        color="#37322c"
-      />
+        {/* Soft ground shadow, at the model's ground plane so it rides with the
+            trolley — and, in the finale, along the footer border. It renders
+            the whole scene, so the robot's feet land in it too. */}
+        <ContactShadows
+          position={[0, -1.245, 0]}
+          scale={11}
+          far={3.4}
+          blur={2.6}
+          opacity={0.42}
+          resolution={512}
+          color="#37322c"
+        />
 
-      <group ref={hand}>
-        <RobotHand curl={1} />
+        <group ref={hand}>
+          <RobotHand curl={1} />
+        </group>
+
+        <pointLight
+          ref={spark}
+          position={CART_CONTACT}
+          color="#63e0ff"
+          distance={2.6}
+          decay={2}
+          intensity={0}
+        />
       </group>
 
+      {/* Deliberately NOT a child of the trolley: the robot has to keep its own
+          scale and its own heading while the trolley turns and shrinks. */}
       <group ref={robot} visible={false}>
         <Robot />
       </group>
-
-      <pointLight
-        ref={spark}
-        position={CART_CONTACT}
-        color="#63e0ff"
-        distance={2.6}
-        decay={2}
-        intensity={0}
-      />
     </group>
   );
 }
