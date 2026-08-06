@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Growmerce brand tokens
+   The page runs a single narrative: a steel shopping cart is touched by a robot
+   hand and progressively digitises into a blue/pixel form. The palette below is
+   split into the "physical" (steel + orange) and "digital" (blue + cyan) ends of
+   that transition so both 2D and 3D layers can read from the same source.
+--------------------------------------------------------------------------- */
+
+@theme {
+  /* Brand */
+  --color-brand: #ef6c25;
+  --color-brand-soft: #f89b6c;
+  --color-brand-tint: #fdf0e9;
+  --color-ink: #2c2c2e;
+  --color-ink-soft: #58585a;
+  --color-ink-mute: #8a8a8e;
+
+  /* Physical end of the transition */
+  --color-steel-50: #f6f7f9;
+  --color-steel-100: #eceef2;
+  --color-steel-200: #dcdfe6;
+  --color-steel-400: #a9aeb8;
+
+  /* Digital end of the transition */
+  --color-digital: #1657ff;
+  --color-digital-bright: #4cd8ff;
+  --color-digital-deep: #0a1f5c;
+
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-playfair), ui-serif, Georgia, serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  --background: #f4f5f7;
+  --foreground: #2c2c2e;
+  /* Written every frame by ScrollDriver so CSS can react to the 3D timeline. */
+  --digitize: 0;
+}
+
+html {
+  /* Lenis drives scrolling; native smooth scroll would fight it. */
+  scroll-behavior: auto;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+@layer utilities {
+  /* Section eyebrow pill — "Product 1" in the reference. */
+  .pill {
+    @apply inline-flex items-center rounded-full border border-brand/60 px-5 py-1.5 font-display text-lg font-bold text-brand;
+  }
+
+  .text-balance-tight {
+    text-wrap: balance;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
