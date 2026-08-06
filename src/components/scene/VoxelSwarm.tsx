@@ -3,55 +3,41 @@
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { buildCart, CART_CONTACT, CART_SPAN } from "./geometry/cart";
+import { MODEL_ORIGIN, MODEL_SPAN, VOXEL_SIZE, samplePoints } from "./model";
 import { damp, scroll } from "@/lib/scroll";
 
 /**
  * The pixelation layer.
  *
- * Cubes sampled along the trolley's own wires, which bloom into existence as the
- * digitisation front sweeps past them. This is where the "pixelated" read comes
- * from — doing it by snapping the model's vertices to a lattice instead just
- * shreds the silhouette of a thin wire mesh and looks like a broken asset.
+ * Cubes sampled across the trolley's own surface, which bloom into existence as
+ * the digitisation front sweeps past them. This is where the "pixelated" read
+ * comes from — doing it by snapping the model's vertices to a lattice instead
+ * just shreds the silhouette and looks like a broken asset.
  *
- * Every per-frame value is a single uniform: the front position. Instance
- * transforms and per-cube distances are baked once at build time, so this costs
- * nothing on the CPU no matter how many cubes there are.
+ * Rendered as a child of the cart's model-space group, so positions here are
+ * raw model coordinates. Every per-frame value is a single uniform: instance
+ * transforms and per-cube distances are baked once, so this costs nothing on
+ * the CPU no matter how many cubes there are.
  */
 
-const COUNT = 640;
-const SIZE = 0.036;
+const COUNT = 900;
 const FRONT_WIDTH = 0.3;
 
-function samplePoints(geometry: THREE.BufferGeometry, count: number) {
-  const pos = geometry.getAttribute("position");
-  const stride = Math.max(1, Math.floor(pos.count / count));
-  const points: THREE.Vector3[] = [];
-  for (let i = 0; i < pos.count && points.length < count; i += stride) {
-    points.push(new THREE.Vector3(pos.getX(i), pos.getY(i), pos.getZ(i)));
-  }
-  return points;
-}
-
-export default function VoxelSwarm() {
+export default function VoxelSwarm({ geometry }: { geometry: THREE.BufferGeometry }) {
   const mesh = useRef<THREE.InstancedMesh>(null!);
 
-  const { geometry, material, points } = useMemo(() => {
-    const { frame } = buildCart();
-    const points = samplePoints(frame, COUNT);
+  const { boxes, material, points } = useMemo(() => {
+    const points = samplePoints(geometry, COUNT);
+    const boxes = new THREE.BoxGeometry(VOXEL_SIZE, VOXEL_SIZE, VOXEL_SIZE);
 
-    const geometry = new THREE.BoxGeometry(SIZE, SIZE, SIZE);
-
-    // Distance from the contact point, baked per cube so the shader only needs
-    // to compare it against the front.
     const dist = new Float32Array(points.length);
     const seed = new Float32Array(points.length);
     points.forEach((p, i) => {
-      dist[i] = p.distanceTo(CART_CONTACT) / CART_SPAN;
-      seed[i] = (Math.sin(i * 127.1) * 43758.5453) % 1;
+      dist[i] = p.distanceTo(MODEL_ORIGIN) / MODEL_SPAN;
+      seed[i] = Math.abs(Math.sin(i * 127.1) * 43758.5453) % 1;
     });
-    geometry.setAttribute("aDist", new THREE.InstancedBufferAttribute(dist, 1));
-    geometry.setAttribute("aSeed", new THREE.InstancedBufferAttribute(seed, 1));
+    boxes.setAttribute("aDist", new THREE.InstancedBufferAttribute(dist, 1));
+    boxes.setAttribute("aSeed", new THREE.InstancedBufferAttribute(seed, 1));
 
     const uniforms = {
       uDigitize: { value: 0 },
@@ -101,9 +87,9 @@ export default function VoxelSwarm() {
             sin(aSeed * 91.7),
             cos(aSeed * 47.3),
             sin(aSeed * 133.1)
-          ) * 0.05 * appear;
+          ) * 0.022 * appear;
 
-          float wobble = sin(uTime * 1.4 + aSeed * 6.2831) * 0.01 * appear;
+          float wobble = sin(uTime * 1.4 + aSeed * 6.2831) * 0.004 * appear;
 
           transformed = position * s + drift + wobble;
         `,
@@ -132,15 +118,15 @@ export default function VoxelSwarm() {
     };
     material.customProgramCacheKey = () => "growmerce-voxel";
 
-    return { geometry, material, points };
-  }, []);
+    return { boxes, material, points };
+  }, [geometry]);
 
   // Instance transforms are static — written once, never touched again.
   useEffect(() => {
     const dummy = new THREE.Object3D();
     points.forEach((p, i) => {
       dummy.position.copy(p);
-      dummy.rotation.set(p.x * 3.1, p.y * 2.7, p.z * 4.3);
+      dummy.rotation.set(p.x * 31, p.y * 27, p.z * 43);
       dummy.updateMatrix();
       mesh.current.setMatrixAt(i, dummy.matrix);
     });
@@ -149,19 +135,16 @@ export default function VoxelSwarm() {
 
   useEffect(
     () => () => {
-      geometry.dispose();
+      boxes.dispose();
       material.dispose();
     },
-    [geometry, material],
+    [boxes, material],
   );
 
   useFrame((frame, dt) => {
     const node = mesh.current;
     if (!node) return;
 
-    // Reached through the mesh ref rather than the memoised material: three's
-    // uniforms are mutated every tick by design, and the ref is the handle the
-    // compiler treats as writable.
     const progress = damp(node.userData.digitize ?? 0, scroll.digitize, 5.5, dt);
     node.userData.digitize = progress;
 
@@ -173,7 +156,7 @@ export default function VoxelSwarm() {
   return (
     <instancedMesh
       ref={mesh}
-      args={[geometry, material, points.length]}
+      args={[boxes, material, points.length]}
       frustumCulled={false}
     />
   );

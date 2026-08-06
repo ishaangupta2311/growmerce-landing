@@ -6,8 +6,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import Cart from "./Cart";
 import Parcels from "./Parcels";
 import RobotHand from "./RobotHand";
-import VoxelSwarm from "./VoxelSwarm";
-import { CART_CONTACT } from "./geometry/cart";
+import { CART_CONTACT } from "./model";
 import { PRODUCTS } from "@/lib/products";
 import { clamp01, damp, scroll, sectionProgress, smoothstep } from "@/lib/scroll";
 
@@ -22,11 +21,19 @@ type Stop = {
 /**
  * Drives the whole scene off the scroll timeline.
  *
- * The cart moves between "stops" — one per section — and the position between
- * stops is a continuous number derived from how far each section has travelled
- * through the viewport. That means stop transitions stay correct no matter how
- * tall a section ends up being, which matters because the copy blocks reflow at
- * every breakpoint.
+ * The trolley moves between "stops" — one per section — and the position
+ * between stops is a continuous number derived from how far each section has
+ * travelled through the viewport. That keeps stop transitions correct no matter
+ * how tall a section ends up being, which matters because the copy blocks
+ * reflow at every breakpoint.
+ *
+ * The robot's timeline is separate and has three beats:
+ *
+ *   1. it descends through the hero and taps the handle once, which seeds the
+ *      digitisation,
+ *   2. it withdraws and is absent for the whole product run — the trolley
+ *      converts on its own,
+ *   3. it returns at the CTA and shoves the finished trolley out of frame.
  */
 export default function Rig() {
   const cart = useRef<THREE.Group>(null!);
@@ -37,11 +44,9 @@ export default function Rig() {
   const compact = size.width < 900;
 
   const stops = useMemo<Stop[]>(() => {
-    // Park the cart roughly a quarter of the way in from the edge, opposite the
-    // copy. On narrow screens the copy stacks underneath, so stay centred.
+    // Park the trolley roughly a quarter of the way in from the edge, opposite
+    // the copy. On narrow screens the copy stacks underneath, so stay centred.
     const offset = compact ? 0 : Math.min(viewport.width * 0.23, 3.1);
-    // Sized so the forearm still has headroom above the handle before the top
-    // of the frame crops it — that crop is the composition in the reference.
     const scale = compact ? 0.5 : 0.66;
 
     return [
@@ -58,7 +63,7 @@ export default function Rig() {
     ];
   }, [compact, viewport.width]);
 
-  // Smoothed rig values, so a flick of the wheel never snaps the cart.
+  // Smoothed rig values, so a flick of the wheel never snaps the trolley.
   const state = useRef({ x: 0, y: 0, z: 0, rotY: 0, scale: 1, contact: 0, t: 0 });
 
   useFrame((frame, dt) => {
@@ -92,52 +97,77 @@ export default function Rig() {
 
     const float = scroll.reducedMotion ? 0 : 1;
 
+    /* ---- robot beats ------------------------------------------------ */
+
+    const heroP = sectionProgress("hero");
+    const outroP = sectionProgress("outro");
+
+    // 1. Descent to the tap.
+    s.contact = damp(s.contact, scroll.contact, 6, dt);
+    const c = s.contact;
+    // 2. Withdrawal, straight after the tap lands.
+    const withdraw = smoothstep(0.5, 0.68, heroP);
+    // 3. Return at the CTA, entering from behind the handle...
+    const ret = smoothstep(0.1, 0.42, outroP);
+    // ...then the shove that takes the trolley out of frame.
+    const push = smoothstep(0.45, 0.95, outroP);
+
+    /* ---- trolley ----------------------------------------------------- */
+
     cart.current.position.set(
-      s.x,
+      // The push travels toward -X, which is the direction the handle faces.
+      s.x - push * 16,
       s.y + Math.sin(time * 0.7) * 0.055 * float,
       s.z,
     );
     cart.current.rotation.set(
       Math.sin(time * 0.55) * 0.022 * float,
       s.rotY + Math.sin(time * 0.4) * 0.03 * float,
-      // Leans into the direction of travel.
-      THREE.MathUtils.clamp(-scroll.velocity * 0.00004, -0.08, 0.08),
+      // Leans into the direction of travel, and into the shove.
+      THREE.MathUtils.clamp(-scroll.velocity * 0.00004, -0.08, 0.08) - push * 0.06,
     );
     cart.current.scale.setScalar(s.scale);
 
-    // Hand: descends onto the handle during the hero, then stays with it.
-    s.contact = damp(s.contact, scroll.contact, 6, dt);
-    const c = s.contact;
-    const settle = Math.sin(time * 1.1) * 0.02 * float * c;
+    /* ---- robot ------------------------------------------------------- */
 
     // The fingertip sits ~1.0 below the hand root, so that is the resting
     // offset; the extra lift is what the hero scroll closes.
+    const tapY = CART_CONTACT.y + 1.0 + (1 - c) * 0.55 + withdraw * 5;
+    const tapX = CART_CONTACT.x + 0.17;
+    // On the return it comes in from further out, at grip height.
+    const pushY = CART_CONTACT.y + 0.72;
+    const pushX = CART_CONTACT.x + 0.34 + (1 - ret) * 6;
+
+    const settle = Math.sin(time * 1.1) * 0.02 * float * c;
+
     hand.current.position.set(
-      CART_CONTACT.x + 0.17,
-      CART_CONTACT.y + 1.0 + (1 - c) * 0.55 + settle,
+      THREE.MathUtils.lerp(tapX, pushX, ret),
+      THREE.MathUtils.lerp(tapY, pushY, ret) + settle,
       CART_CONTACT.z - 0.04,
     );
-    hand.current.rotation.set(0.14 * c, -0.3, 0.16 - 0.12 * c);
+    hand.current.rotation.set(
+      THREE.MathUtils.lerp(0.14 * c, -0.15, ret),
+      -0.3,
+      THREE.MathUtils.lerp(0.16 - 0.12 * c, 1.35, ret),
+    );
+    // Absent for the whole product run.
+    hand.current.visible = (c > 0.01 && withdraw < 0.995) || ret > 0.005;
 
-    // The point of contact glows as the digitisation seed catches.
-    const seed = clamp01(c) * (1 - smoothstep(0.35, 0.9, scroll.digitize));
+    // The point of contact flares as the tap seeds the conversion.
+    const seed = clamp01(c) * (1 - smoothstep(0.04, 0.3, scroll.digitize));
     spark.current.intensity = seed * (5 + Math.sin(time * 9) * 2.2);
+
+    /* ---- camera ------------------------------------------------------ */
 
     // A whisper of camera parallax keeps the fixed canvas from feeling flat.
     camera.position.x = damp(camera.position.x, s.x * -0.06, 3, dt);
-    camera.position.y = damp(
-      camera.position.y,
-      0.25 - scroll.progress * 0.5,
-      3,
-      dt,
-    );
+    camera.position.y = damp(camera.position.y, 0.25 - scroll.progress * 0.5, 3, dt);
     camera.lookAt(0, -0.1, 0);
   });
 
   return (
     <group ref={cart}>
       <Cart />
-      <VoxelSwarm />
       <Parcels />
 
       <group ref={hand}>
