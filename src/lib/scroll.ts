@@ -70,6 +70,12 @@ export function sectionProgress(id: string) {
   return scroll.sections.get(id) ?? 0;
 }
 
+/** Absolute document position of a registered section, for px-level staging. */
+export function sectionRect(id: string): { top: number; height: number } | null {
+  const entry = measured.get(id);
+  return entry ? entry.rect : null;
+}
+
 /**
  * Recomputes every derived value from a new scroll offset. Called once per
  * frame by `ScrollDriver`.

@@ -1,4 +1,7 @@
+"use client";
+
 import Logo from "@/components/brand/Logo";
+import { useSection } from "@/lib/useSection";
 
 const COLUMNS = [
   { title: "Product", links: ["Voiceshop AI", "Ranklift AI", "Restock IQ", "Convert Copilot"] },
@@ -7,8 +10,16 @@ const COLUMNS = [
 ];
 
 export default function Footer() {
+  // Registered with the scroll engine: the outro finale is staged against this
+  // element's top border — the trolley grounds itself on it and rolls out
+  // along it as the footer scrolls into view.
+  const ref = useSection<HTMLElement>("footer");
+
   return (
-    <footer className="relative z-20 border-t border-ink/10 bg-white/60 px-6 py-16 backdrop-blur-sm md:px-12">
+    <footer
+      ref={ref}
+      className="relative z-20 border-t border-ink/10 bg-white/60 px-6 py-16 backdrop-blur-sm md:px-12"
+    >
       <div className="mx-auto grid max-w-[1400px] gap-12 md:grid-cols-[1.4fr_repeat(3,1fr)]">
         <div>
           <Logo />
