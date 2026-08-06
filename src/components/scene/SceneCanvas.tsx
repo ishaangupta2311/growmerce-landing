@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { AdaptiveDpr, Environment, Lightformer, Preload } from "@react-three/drei";
 import * as THREE from "three";
@@ -103,7 +104,12 @@ export default function SceneCanvas() {
         />
       </Environment>
 
-      <Rig />
+      {/* useGLTF suspends while the trolley loads. R3F does not wrap Canvas
+          children in a boundary, so without this the whole rig stays suspended
+          and the 3D layer renders nothing at all. */}
+      <Suspense fallback={null}>
+        <Rig />
+      </Suspense>
 
       <AdaptiveDpr pixelated />
       <Preload all />
