@@ -65,7 +65,15 @@ export default function Cart() {
       rotation={[0, MODEL_TRANSFORM.rotationY, 0]}
       scale={MODEL_TRANSFORM.scale}
     >
-      <mesh ref={shell} geometry={geometry} material={material} />
+      {/* Both, not just cast: the basket is a cage, so most of what sells it as
+          a solid object is the wires shadowing each other. */}
+      <mesh
+        ref={shell}
+        geometry={geometry}
+        material={material}
+        castShadow
+        receiveShadow
+      />
       <VoxelSwarm geometry={geometry} />
     </group>
   );

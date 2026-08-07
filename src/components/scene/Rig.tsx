@@ -12,7 +12,7 @@ import Robot, {
   ROBOT_HEIGHT,
 } from "./Robot";
 import RobotHand from "./RobotHand";
-import { CART_CONTACT } from "./model";
+import { CART_CONTACT, MODEL_GROUND, MODEL_HEIGHT } from "./model";
 import { PRODUCTS } from "@/lib/products";
 import {
   clamp01,
@@ -41,16 +41,43 @@ const _up = new THREE.Vector3(0, 1, 0);
 /** How far the final push travels, in world units — enough to exit the frame. */
 const PUSH_DIST = 11;
 
-/** Handle height above the trolley's own ground plane, in trolley-local units. */
-const HANDLE_RISE = CART_CONTACT.y + 1.25;
+/** Distance from the wheels up to the trolley's origin, in trolley-local units. */
+const WHEEL_DROP = -MODEL_GROUND;
+
+/**
+ * Where the robot's palms meet the trolley, as a fraction of its height.
+ *
+ * Not the handle bar. The Neo model stands with its arms down, so its palms sit
+ * at 0.40 of its own height (see Robot.tsx) — aiming those at a handle that is
+ * effectively the top of the trolley would need a robot 2.4× the trolley's
+ * height. Aiming at the upper rear of the basket instead keeps it at a credible
+ * human-to-trolley proportion and still reads as pushing.
+ */
+const PUSH_RISE = 0.72 * MODEL_HEIGHT;
+
+/** The push point in trolley-local RIG space: rear of the basket, upper third. */
+const _pushPoint = new THREE.Vector3(
+  CART_CONTACT.x,
+  MODEL_GROUND + PUSH_RISE,
+  0,
+);
 
 /**
  * Where the hero trolley's wheels sit, as a fraction of viewport height. The
- * copy lane starts at 52vh (see Hero.tsx), so the trolley — however tall it
+ * copy lane starts at 66vh (see Hero.tsx), so the trolley — however tall it
  * renders — can never touch the type. Anchored in pixels and unprojected, not
  * tuned in world units, precisely because the two drifted apart before.
  */
-const HERO_GROUND = 0.44;
+const HERO_GROUND = 0.62;
+
+/**
+ * How far behind the copy plane the hero trolley sits. Pushing it back rather
+ * than just shrinking it is what makes it read as a backdrop: the perspective
+ * flattens slightly and it settles behind the CTA in depth, not merely in
+ * z-index. The hero scale compensates — at 10.8 units from a 30° camera the
+ * frame is 1.2× wider, so the same scale would render 1.2× smaller.
+ */
+const HERO_DEPTH = -1.8;
 
 /**
  * Drives the whole scene off the scroll timeline.
@@ -78,6 +105,8 @@ export default function Rig() {
   const hand = useRef<THREE.Group>(null!);
   const robot = useRef<THREE.Group>(null!);
   const spark = useRef<THREE.PointLight>(null!);
+  const keyLight = useRef<THREE.PointLight>(null!);
+  const rimLight = useRef<THREE.PointLight>(null!);
   const { viewport, size } = useThree();
 
   const compact = size.width < 900;
@@ -88,9 +117,16 @@ export default function Rig() {
     const offset = compact ? 0 : Math.min(viewport.width * 0.23, 3.1);
 
     return [
-      // Hero: centred in the upper half. Y here is notional — the trolley is
-      // pixel-anchored to HERO_GROUND, above the copy lane, each frame.
-      { x: 0, y: 1.0, z: 0, rotY: -0.22, scale: compact ? 0.38 : 0.5 },
+      // Hero: centred, set back, and large — a backdrop rather than an object
+      // on a shelf. Y is notional; the trolley is pixel-anchored to
+      // HERO_GROUND, above the copy lane, each frame.
+      {
+        x: 0,
+        y: 1.0,
+        z: HERO_DEPTH,
+        rotY: -0.22,
+        scale: compact ? 0.44 : 0.62,
+      },
       ...PRODUCTS.map((p) => ({
         x: p.side === "right" ? -offset : offset,
         y: compact ? 0.9 : 0.38,
@@ -109,7 +145,7 @@ export default function Rig() {
         y: 0.5,
         z: 0.35,
         rotY: -0.16,
-        scale: compact ? 0.28 : 0.34,
+        scale: compact ? 0.24 : 0.3,
       },
     ];
   }, [compact, viewport.width]);
@@ -218,12 +254,12 @@ export default function Rig() {
     /* ---- trolley -------------------------------------------------------- */
 
     // Wheels-on-ground Y for the grounded (outro/footer) staging.
-    const groundedY = groundWorldY + 1.25 * s.scale;
+    const groundedY = groundWorldY + WHEEL_DROP * s.scale;
 
     // Free-flowing Y between the pixel-anchored beats.
     const flowY = THREE.MathUtils.lerp(
       s.y + Math.sin(time * 0.7) * 0.02 * float,
-      heroGroundY + 1.25 * s.scale,
+      heroGroundY + WHEEL_DROP * s.scale,
       heroAnchor,
     );
 
@@ -243,12 +279,36 @@ export default function Rig() {
     );
     cart.current.scale.setScalar(s.scale);
 
+    /* ---- lights that ride with the trolley ------------------------------
+       The scene's key is a directional light fixed to the world, which lights
+       the trolley the same wherever it goes. These two travel with it, so the
+       chrome keeps a live highlight and a cool edge at every stop — and they
+       stay outside the trolley group on purpose, since inside it their falloff
+       would be scaled along with the model. */
+
+    const near = 2.2 + 2.4 * s.scale;
+    keyLight.current.position.set(
+      cart.current.position.x + near,
+      cart.current.position.y + near,
+      cart.current.position.z + near,
+    );
+    // Behind and opposite: draws the bright rim down the far side of the wires.
+    rimLight.current.position.set(
+      cart.current.position.x - near * 0.8,
+      cart.current.position.y + near * 0.5,
+      cart.current.position.z - near,
+    );
+
     /* ---- hero hand ------------------------------------------------------ */
 
     const settle = Math.sin(time * 1.1) * 0.02 * float * c;
     hand.current.position.set(
       CART_CONTACT.x + 0.17,
-      CART_CONTACT.y + 1.0 + (1 - c) * 0.55 + withdraw * 5 + settle,
+      // The 1.0 is the model's fingertip offset — at c = 1 the tip is on the
+      // handle. The hover is deliberately short: the trolley now stands tall
+      // enough in the hero that a longer one puts the whole hand above the top
+      // of frame instead of reaching into it.
+      CART_CONTACT.y + 1.0 + (1 - c) * 0.38 + withdraw * 5 + settle,
       CART_CONTACT.z - 0.04,
     );
     hand.current.rotation.set(0.14 * c, -0.3, 0.16 - 0.12 * c);
@@ -263,18 +323,18 @@ export default function Rig() {
        it never appeared to touch anything. Here it is placed in world space,
        against the trolley's actual handle. */
 
-    // Where the handle is, in the world: the contact point carried through the
-    // trolley's own scale and heading.
+    // Where the push point is, in the world: carried through the trolley's own
+    // scale and heading.
     _handle
-      .copy(CART_CONTACT)
+      .copy(_pushPoint)
       .multiplyScalar(s.scale)
       .applyAxisAngle(_up, cart.current.rotation.y)
       .add(cart.current.position);
 
-    // Size the robot so its palms land on the handle. See Robot.tsx: the arms
-    // hang at the sides, so the grip height is a fixed fraction of the body.
+    // Size the robot so its palms land there. See Robot.tsx: the arms hang at
+    // the sides, so the grip height is a fixed fraction of the body.
     const robotScale =
-      (HANDLE_RISE * s.scale) / (ROBOT_HEIGHT * ROBOT_GRIP_FRAC);
+      (PUSH_RISE * s.scale) / (ROBOT_HEIGHT * ROBOT_GRIP_FRAC);
     const bodyHeight = ROBOT_HEIGHT * robotScale;
 
     // Stand it back by half a torso, so the palms — which hang flush with the
@@ -331,11 +391,11 @@ export default function Rig() {
             trolley — and, in the finale, along the footer border. It renders
             the whole scene, so the robot's feet land in it too. */}
         <ContactShadows
-          position={[0, -1.245, 0]}
+          position={[0, MODEL_GROUND + 0.004, 0]}
           scale={11}
-          far={3.4}
-          blur={2.6}
-          opacity={0.42}
+          far={4.8}
+          blur={2.2}
+          opacity={0.52}
           resolution={512}
           color="#37322c"
         />
@@ -359,6 +419,10 @@ export default function Rig() {
       <group ref={robot} visible={false}>
         <Robot />
       </group>
+
+      {/* Warm key and cool rim, repositioned against the trolley every frame. */}
+      <pointLight ref={keyLight} color="#fff1de" intensity={26} distance={16} decay={2} />
+      <pointLight ref={rimLight} color="#c3d8ff" intensity={14} distance={14} decay={2} />
     </group>
   );
 }

@@ -43,6 +43,28 @@ export const MODEL_SPAN = 1.36;
 /** The same handle point, in RIG space. This is where the fingertip lands. */
 export const CART_CONTACT = new THREE.Vector3(0.979, 0.866, 0);
 
+/**
+ * Extent of the RENDERED trolley in RIG space — measured, not assumed.
+ *
+ * `Cart` renders the GLB's raw geometry and deliberately drops the node
+ * transform the exporter wrapped it in (translate y +0.4895, uniform scale
+ * 0.4895). It has to: MODEL_ORIGIN, MODEL_SPAN, VOXEL_SIZE and the digitisation
+ * shader all work in raw vertex space, so re-applying that node would
+ * invalidate every one of them at once.
+ *
+ * The consequence is the part that bit us. The mesh spans y ∈ [-0.9995, 0.9995]
+ * instead of resting on y = 0, so MODEL_TRANSFORM puts the wheels at -3.449,
+ * not at its `offsetY` of -1.25. The rig treated -1.25 as the wheel line for a
+ * long time, which quietly dropped the trolley 2.2 × scale below every pixel
+ * anchor that was supposed to be positioning it — and no amount of tuning
+ * HERO_GROUND could fix that, because the error scaled with the model.
+ *
+ * Read off the POSITION accessor bounds in `public/models/cart.glb`.
+ */
+export const MODEL_GROUND = -0.999512 * MODEL_TRANSFORM.scale + MODEL_TRANSFORM.offsetY;
+export const MODEL_TOP = 0.999512 * MODEL_TRANSFORM.scale + MODEL_TRANSFORM.offsetY;
+export const MODEL_HEIGHT = MODEL_TOP - MODEL_GROUND;
+
 /** Voxel cube edge length, in MODEL space (scaled up by the group transform). */
 export const VOXEL_SIZE = 0.016;
 

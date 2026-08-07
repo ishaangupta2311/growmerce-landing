@@ -3,10 +3,15 @@
 import { useSection } from "@/lib/useSection";
 
 /**
- * Structured after the reference: the product IS the headline. A large trolley
- * centred on a lit surface, the robot hand reaching in from the top of frame,
- * then a single bold sentence, the CTA, and a four-column feature row pinned to
- * the bottom of the first viewport.
+ * The product IS the headline — literally, now. There is no hero copy: a large
+ * lit trolley sits in the upper two thirds with the robot hand reaching in from
+ * the top of frame, and the only words are the CTA and the feature row.
+ *
+ * The trolley is staged behind this layer and, unusually, is not something this
+ * component can see. So the two lanes are divided in viewport units and nothing
+ * else: the spacer below reserves the trolley's band, and Rig.tsx pins the
+ * wheels to HERO_GROUND, a fraction of the same viewport height. Change one
+ * without the other and the cart starts sitting on the button again.
  */
 
 const FEATURES = [
@@ -65,26 +70,16 @@ export default function Hero() {
         permanent lane each: cart above, copy and features below.
       */}
       <div className="sticky top-0 flex h-screen flex-col items-center px-6">
-        {/* Reserved for the trolley and the descending hand behind this layer. */}
-        <div className="h-[52vh] shrink-0" aria-hidden />
+        {/* The trolley's band: it hangs from the top of frame down to its
+            wheels at HERO_GROUND (0.62). Everything below this line is copy. */}
+        <div className="h-[66vh] shrink-0" aria-hidden />
 
-        <div className="relative z-20 mx-auto max-w-[36rem] text-center">
-          {/* The reference has no display headline — the product carries it,
-              and the h1 is one confident sentence with a bold lead. */}
-          <h1 className="text-balance-tight text-[1.1rem] font-medium leading-[1.65] text-ink sm:text-[1.25rem]">
-            <b className="font-bold">Growmerce</b> is a suite of AI products for
-            the unglamorous half of ecommerce — search, merchandising,
-            restocking, conversion — so your store keeps selling after you close
-            the laptop.
-          </h1>
-
-          <a
-            href="#voiceshop"
-            className="mt-7 inline-flex h-[54px] items-center justify-center rounded-lg bg-brand px-12 text-[0.88rem] font-bold uppercase tracking-[0.09em] text-white shadow-[0_14px_30px_-14px_rgba(242,101,34,0.9)] transition-all duration-300 ease-out-expo hover:-translate-y-0.5 hover:bg-[#e0591a]"
-          >
-            Book a demo
-          </a>
-        </div>
+        <a
+          href="#voiceshop"
+          className="relative z-20 inline-flex h-[54px] shrink-0 items-center justify-center rounded-lg bg-brand px-12 text-[0.88rem] font-bold uppercase tracking-[0.09em] text-white shadow-[0_14px_30px_-14px_rgba(242,101,34,0.9)] transition-all duration-300 ease-out-expo hover:-translate-y-0.5 hover:bg-[#e0591a]"
+        >
+          Book a demo
+        </a>
 
         <div className="relative z-20 mt-auto hidden w-full max-w-6xl grid-cols-4 gap-10 pb-9 pt-10 md:grid">
           {FEATURES.map((f) => (

@@ -114,6 +114,8 @@ export default function Robot() {
         geometry={geometry}
         material={material}
         position={[0, FOOT_LIFT, 0]}
+        castShadow
+        receiveShadow
       />
     </group>
   );

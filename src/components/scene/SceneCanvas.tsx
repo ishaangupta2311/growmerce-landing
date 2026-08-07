@@ -41,10 +41,32 @@ export default function SceneCanvas() {
         toneMappingExposure: 1,
       }}
       camera={{ position: [0, 0.25, 9], fov: 30, near: 0.1, far: 60 }}
+      shadows="soft"
       onCreated={() => setSceneReady(true)}
     >
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[4, 6, 5]} intensity={1.9} />
+      <ambientLight intensity={0.42} />
+
+      {/* Key. The only shadow caster in the scene — a trolley is a lattice of
+          thin wires, and what stops it reading as a flat sticker is its own
+          wires shadowing the basket floor behind them. The ortho frustum is
+          sized to the trolley's travel, not the world: a wider one spreads the
+          same 2048px of shadow map over empty space and the wires go mushy. */}
+      <directionalLight
+        position={[4.5, 7, 5]}
+        intensity={2.1}
+        castShadow
+        shadow-mapSize={[2048, 2048]}
+        shadow-bias={-0.0006}
+        shadow-normalBias={0.02}
+        shadow-camera-near={1}
+        shadow-camera-far={26}
+        shadow-camera-left={-7}
+        shadow-camera-right={7}
+        shadow-camera-top={7}
+        shadow-camera-bottom={-7}
+      />
+
+      {/* Cool bounce from behind-left, so the shadowed side isn't dead. */}
       <directionalLight position={[-6, 2, -4]} intensity={0.6} color="#cfe0ff" />
 
       <Environment resolution={512} frames={1}>

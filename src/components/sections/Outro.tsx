@@ -22,7 +22,7 @@ export default function Outro() {
       {/* pb-[30vh] is not whitespace for its own sake: it reserves the bottom
           third of the viewport as the finale lane, where the trolley grounds
           itself and the robot walks in. Shrink it and the two collide. */}
-      <div className="sticky top-0 flex h-screen flex-col items-center justify-end px-6 pb-[30vh]">
+      <div className="sticky top-0 flex h-screen flex-col items-center justify-end px-6 pb-[34vh]">
         <div className="grow" aria-hidden />
 
         <div
