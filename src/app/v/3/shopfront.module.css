@@ -147,6 +147,60 @@
   );
 }
 
+/* --------------------------------------------------------------------------
+   Scroll-driven roll shutter over the Growsearch shop.
+   `--open` runs 0 (shut) → 1 (open); GrowsearchShop writes it every frame
+   from scroll position, so the shutter physically follows the scroll.
+-------------------------------------------------------------------------- */
+
+.rollShutter {
+  transform: translateY(calc(var(--open, 1) * -106%));
+  will-change: transform;
+}
+
+/* Interior wakes up as the shutter rises. */
+.shopContents {
+  opacity: calc(0.3 + var(--open, 1) * 0.7);
+  transform: translateY(calc((1 - var(--open, 1)) * 16px));
+}
+
+/* The hanging sign flips CLOSED → OPEN when the shutter clears. */
+.signFace {
+  grid-area: 1 / 1;
+  transition:
+    opacity 0.25s ease,
+    transform 0.45s var(--spring);
+}
+
+.faceClosed {
+  color: #4a4a4a;
+}
+
+.shopOpen[data-open="false"] .faceOpen {
+  opacity: 0;
+  transform: translateY(-7px) scale(0.85);
+}
+
+.shopOpen[data-open="true"] .faceClosed {
+  opacity: 0;
+  transform: translateY(7px) scale(0.85);
+}
+
+/* Give the sign a celebratory swing the moment it flips to OPEN. */
+.shopOpen[data-open="true"] .signHang {
+  animation: v3-swing 1.6s var(--glide);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rollShutter {
+    transform: translateY(-106%) !important;
+  }
+  .shopContents {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 /* Glass: a soft diagonal sheen over the lit window. */
 .glass {
   background-image: linear-gradient(

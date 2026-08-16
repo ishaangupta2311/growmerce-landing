@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Reveal from "@/components/site/Reveal";
 import styles from "../shopfront.module.css";
 import {
@@ -71,9 +71,43 @@ function CartGlyph({ className }: { className?: string }) {
 
 function GrowsearchShop() {
   const [cart, setCart] = useState(0);
+  const shopRef = useRef<HTMLElement>(null);
+  // SSR/no-JS default is fully open so the content is never lost.
+  const [opened, setOpened] = useState(true);
+
+  useEffect(() => {
+    const el = shopRef.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      // Starts rolling as the shop enters the lower viewport; fully open by
+      // the time it reaches mid-screen. Scrubs both directions.
+      const p = Math.min(1, Math.max(0, (vh * 0.92 - rect.top) / (vh * 0.5)));
+      el.style.setProperty("--open", p.toFixed(4));
+      setOpened(p > 0.88);
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
 
   return (
     <article
+      ref={shopRef}
+      data-open={opened}
       className={`${styles.shopOpen} relative`}
       aria-labelledby="shop-growsearch"
     >
@@ -85,10 +119,18 @@ function GrowsearchShop() {
             <span className={`${styles.strap} h-5 w-[3px] rounded-full`} />
           </div>
           <div className="rounded-[14px] border-2 border-[#171717] bg-[#ffffff] px-4 py-1.5 shadow-[0_10px_18px_-14px_rgba(96,44,14,0.9)]">
-            <span
-              className={`${styles.display} ${styles.openSign} block text-[15px] font-extrabold tracking-[0.16em] text-[#ff5a1f] uppercase`}
-            >
-              Open
+            <span className="grid">
+              <span
+                className={`${styles.display} ${styles.openSign} ${styles.signFace} ${styles.faceOpen} block text-center text-[15px] font-extrabold tracking-[0.16em] text-[#ff5a1f] uppercase`}
+              >
+                Open
+              </span>
+              <span
+                aria-hidden
+                className={`${styles.display} ${styles.signFace} ${styles.faceClosed} block text-center text-[15px] font-extrabold tracking-[0.16em] uppercase`}
+              >
+                Closed
+              </span>
             </span>
           </div>
         </div>
@@ -105,7 +147,21 @@ function GrowsearchShop() {
 
         <AwningBand className="h-12 sm:h-14" />
 
-        <div className="relative px-5 pt-14 pb-6 sm:px-8 sm:pt-16 sm:pb-8">
+        {/* The roll shutter: rides on --open, clipped to the interior so it
+            disappears behind the awning as it rises. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-12 bottom-0 z-30 overflow-hidden sm:top-14"
+        >
+          <div className={`${styles.shutter} ${styles.rollShutter} absolute inset-0`}>
+            <div className="absolute inset-x-0 bottom-0 h-4 bg-[#c9a68d] shadow-[0_3px_8px_rgba(96,44,14,0.4)]" />
+            <div className="absolute bottom-1 left-1/2 h-1.5 w-16 -translate-x-1/2 rounded-full bg-[#171717]/25" />
+          </div>
+        </div>
+
+        <div
+          className={`${styles.shopContents} relative px-5 pt-14 pb-6 sm:px-8 sm:pt-16 sm:pb-8`}
+        >
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h3
