@@ -92,13 +92,22 @@
   border-top: 1px solid rgba(23, 23, 23, 0.08);
 }
 
-/* z-index keeps the scalloped edge painting over the panel that follows it —
-   without it the next positioned sibling covers the half-circles. The
+/* The scalloped edge has to paint over the panel that immediately follows it,
+   or the next positioned sibling covers the half-circles. `z-index: 2` did
+   that, but it also let a shop's awning punch up through whatever sat above it
+   on the page. `isolation: isolate` on every awning's own container (see
+   .awningBox) keeps that z-index local to the card it belongs to. The
    drop-shadow lifts the scallop curve off same-tone backgrounds. */
 .scallop {
   position: relative;
   z-index: 2;
   filter: drop-shadow(0 4px 4px rgba(96, 44, 14, 0.22));
+}
+
+/* Anything that hosts an awning: a private stacking context, so the scallop's
+   z-index can only ever reach its own siblings. */
+.awningBox {
+  isolation: isolate;
 }
 
 .scallop::after {
@@ -148,10 +157,52 @@
 }
 
 /* --------------------------------------------------------------------------
-   Scroll-driven roll shutter over the Growsearch shop.
-   `--open` runs 0 (shut) → 1 (open); GrowsearchShop writes it every frame
-   from scroll position, so the shutter physically follows the scroll.
+   The visit to the shop — a pinned, scroll-driven scene.
+
+   Nothing here is gated on a media query alone: HighStreet.tsx measures the
+   viewport and the card, and only sets `data-jacked="true"` on the runway when
+   the whole shopfront genuinely fits inside the pin. Every scene rule hangs
+   off that attribute, so a short laptop, a zoomed page or reduced motion all
+   land on the same un-jacked layout with nothing hidden.
+
+   Two variables carry the scene:
+     --p     0→1 across the pinned travel (written on .runway per frame)
+     --open  0→1 shutter position        (written on .shopStage per frame)
 -------------------------------------------------------------------------- */
+
+.runway {
+  /* Height is set inline from JS: cardHeight + 3.2 viewport-heights of pinned
+     travel. Left alone, the section is simply as tall as its content. */
+  position: relative;
+}
+
+.shopStage {
+  position: relative;
+}
+
+.runway[data-jacked="true"] .stagePin {
+  position: sticky;
+  /* Measured: half the slack between the card and the viewport, capped. */
+  top: var(--pin-top, 1.5rem);
+}
+
+/* Acts 2–6: each staged item fades and rises over its own slice of --p.
+   --t is the item's start time, --ramp how long it takes to land. */
+.runway[data-jacked="true"] .stageItem {
+  --shown: clamp(0, calc((var(--p, 1) - var(--t, 0)) / var(--ramp, 0.075)), 1);
+  opacity: var(--shown);
+  transform: translateY(calc((1 - var(--shown)) * 26px))
+    scale(calc(0.955 + var(--shown) * 0.045));
+  will-change: transform, opacity;
+}
+
+/* Inside the pin the ordinary scroll reveal has nothing left to say — the
+   timeline owns the choreography, so neutralise it. */
+.runway[data-jacked="true"] :global(.reveal) {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
 
 .rollShutter {
   transform: translateY(calc(var(--open, 1) * -106%));
@@ -160,34 +211,58 @@
 
 /* Interior wakes up as the shutter rises. */
 .shopContents {
-  opacity: calc(0.3 + var(--open, 1) * 0.7);
-  transform: translateY(calc((1 - var(--open, 1)) * 16px));
+  opacity: calc(0.32 + var(--open, 1) * 0.68);
+  transform: translateY(calc((1 - var(--open, 1)) * 14px));
 }
 
-/* The hanging sign flips CLOSED → OPEN when the shutter clears. */
+/* The carton is the first thing the shutter uncovers, so it settles as the
+   shutter clears rather than waiting for a stage cue of its own. */
+.cartonReveal {
+  transform: scale(calc(0.94 + var(--open, 1) * 0.06));
+  transform-origin: 50% 80%;
+}
+
+/* --------------------------------------------------------------------------
+   The hanging sign — a real two-sided flip.
+
+   Both faces live in the same grid cell; the CLOSED face is pre-rotated a
+   half turn and `backface-visibility: hidden` guarantees exactly one of them
+   is ever facing the visitor. `data-open` is written straight onto
+   .shopStage by the scroll handler (never via React state) so the very first
+   layout pass already agrees with the scroll position, and `data-armed` holds
+   the transition off until after that first paint.
+-------------------------------------------------------------------------- */
+
+.signBoard {
+  perspective: 640px;
+}
+
+.signStack {
+  display: grid;
+  transform-style: preserve-3d;
+}
+
+.shopStage[data-armed="true"] .signStack {
+  transition: transform 0.55s var(--spring);
+}
+
 .signFace {
   grid-area: 1 / 1;
-  transition:
-    opacity 0.25s ease,
-    transform 0.45s var(--spring);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .faceClosed {
   color: #4a4a4a;
+  transform: rotateX(180deg);
 }
 
-.shopOpen[data-open="false"] .faceOpen {
-  opacity: 0;
-  transform: translateY(-7px) scale(0.85);
-}
-
-.shopOpen[data-open="true"] .faceClosed {
-  opacity: 0;
-  transform: translateY(7px) scale(0.85);
+.shopStage[data-open="false"] .signStack {
+  transform: rotateX(180deg);
 }
 
 /* Give the sign a celebratory swing the moment it flips to OPEN. */
-.shopOpen[data-open="true"] .signHang {
+.shopStage[data-armed="true"][data-open="true"] .signHang {
   animation: v3-swing 1.6s var(--glide);
 }
 
@@ -195,9 +270,146 @@
   .rollShutter {
     transform: translateY(-106%) !important;
   }
-  .shopContents {
+  .shopContents,
+  .stageItem,
+  .cartonReveal {
     opacity: 1 !important;
     transform: none !important;
+  }
+  .runway {
+    height: auto !important;
+  }
+  .stagePin {
+    position: static !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   The hero carton — a CSS-3D box on the shop floor.
+
+   Front face plus two hinged panels inside a shared perspective. The box
+   turns from ~24° to ~13° as --p advances, so it presents itself to the
+   visitor while the shop opens around it.
+-------------------------------------------------------------------------- */
+
+.cartonScene {
+  /* Viewpoint slightly above and left of the carton, so the corrugated top
+     flap reads as a lid rather than a hairline. */
+  perspective: 900px;
+  perspective-origin: 54% -60%;
+}
+
+/* Two wrappers, because an animation always beats a transition on the same
+   property: .cartonLift owns the hover, .cartonFloat owns the idle drift. */
+.cartonLift {
+  transition: transform 0.55s var(--glide);
+}
+
+.cartonFloat {
+  animation: v3-carton-float 7.5s ease-in-out infinite;
+}
+
+.carton3d {
+  position: relative;
+  transform-style: preserve-3d;
+  /* Turned 26° at the top of the scene, easing to 19° as --p runs out: the
+     carton presents itself to the visitor while the shop opens around it. */
+  transform: rotateX(-13deg) rotateY(calc(-26deg + var(--p, 1) * 7deg));
+}
+
+/* Right-hand side panel, hinged on the front face's right edge. */
+.cartonSide {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  display: flex;
+  height: 100%;
+  width: 46px;
+  align-items: center;
+  justify-content: center;
+  transform-origin: 0 50%;
+  transform: rotateY(90deg);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  background-image: linear-gradient(
+    180deg,
+    var(--orange-deep) 0%,
+    #e04a10 100%
+  );
+  box-shadow: inset 6px 0 14px -8px rgba(96, 44, 14, 0.7);
+}
+
+/* Top panel, hinged on the front face's top edge. */
+.cartonTop {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  width: 100%;
+  height: 46px;
+  transform-origin: 50% 100%;
+  transform: rotateX(90deg);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.cartonFace {
+  box-shadow: 0 26px 46px -30px rgba(96, 44, 14, 0.85);
+}
+
+.cartonFlash {
+  transform: translateZ(26px);
+}
+
+/* Corrugated flute, warmed into this page's peach rather than v05's kraft. */
+.corrugate {
+  background-color: var(--peach);
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(180, 118, 78, 0.34) 0 1px,
+    transparent 1px 3px,
+    rgba(180, 118, 78, 0.2) 3px 4px,
+    transparent 4px 8px
+  );
+  box-shadow: inset 0 -8px 14px -8px rgba(96, 44, 14, 0.5);
+}
+
+.shopOpen:hover .cartonLift {
+  transform: translateY(-8px);
+}
+
+/* 12-point starburst — the "New!" flash. */
+.starburst {
+  clip-path: polygon(
+    50% 0%,
+    58.8% 17.16%,
+    75% 6.7%,
+    74.04% 25.96%,
+    93.3% 25%,
+    82.84% 41.2%,
+    100% 50%,
+    82.84% 58.8%,
+    93.3% 75%,
+    74.04% 74.04%,
+    75% 93.3%,
+    58.8% 82.84%,
+    50% 100%,
+    41.2% 82.84%,
+    25% 93.3%,
+    25.96% 74.04%,
+    6.7% 75%,
+    17.16% 58.8%,
+    0% 50%,
+    17.16% 41.2%,
+    6.7% 25%,
+    25.96% 25.96%,
+    25% 6.7%,
+    41.2% 17.16%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cartonFloat {
+    animation: none !important;
   }
 }
 
@@ -273,6 +485,10 @@
    Paper goods — pins, tape, price tags, hanging boards
 -------------------------------------------------------------------------- */
 
+/* A push-pin head. NOTE: this is decoration only — the sticky wrapper for the
+   shop scene is `.stagePin`. Sticking `.pin` on a layout wrapper paints an
+   orange square behind it, which is exactly the corner-bleed that used to
+   show through the shopfront's rounded corners. */
 .pin {
   background: radial-gradient(
     circle at 34% 30%,
@@ -500,6 +716,16 @@
   50% {
     transform: scale(1.22) rotate(45deg);
     opacity: 1;
+  }
+}
+
+@keyframes v3-carton-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
   }
 }
 
