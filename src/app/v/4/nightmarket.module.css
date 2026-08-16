@@ -1,0 +1,889 @@
+/* ---------------------------------------------------------------------------
+   Variant 04 · Night Market — the same high street, after dark.
+
+   The world is a lit stage set, not a dashboard: deep warm browns, everything
+   readable is either ivory on brown or white on deep vermilion, and every glow
+   is decoration layered *on top of* a contrast-safe pairing. All scoped to
+   /v/4; the palette and timings are declared once on `.shell`.
+--------------------------------------------------------------------------- */
+
+.shell {
+  /* Night */
+  --night: #1d130c;
+  --night-deep: #130b06;
+  --night-mid: #241610;
+
+  /* Lit surfaces, darkest → brightest */
+  --surface: #2b1c13;
+  --surface-2: #35231a;
+  --surface-lit: #3f2717;
+
+  /* Text */
+  --ivory: #fff2e4;
+  --ivory-70: #e3cab4;
+  --ivory-55: #bda28c;
+
+  /* Light */
+  --amber: #ffc46b;
+  --neon: #ff8a3c;
+  --orange: #ff5c1a;
+  --orange-deep: #d1400a;
+  --mint: #93d3b8;
+
+  --line: rgba(255, 196, 140, 0.14);
+  --line-strong: rgba(255, 196, 140, 0.3);
+
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --glide: cubic-bezier(0.22, 1, 0.36, 1);
+
+  color-scheme: dark;
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  background-color: var(--night);
+  color: var(--ivory);
+  overflow-x: clip;
+}
+
+/* The sky itself: a low town-glow on the horizon, a cooler wash up top. */
+.shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      130% 62% at 50% 106%,
+      rgba(255, 138, 60, 0.17),
+      transparent 62%
+    ),
+    radial-gradient(
+      70% 44% at 84% -8%,
+      rgba(255, 186, 120, 0.09),
+      transparent 70%
+    ),
+    linear-gradient(180deg, #150c06 0%, #1d130c 52%, #241610 100%);
+}
+
+/* Grain + a cinema vignette so the page reads as a lit set. */
+.shell::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(
+    rgba(255, 205, 160, 0.045) 1px,
+    transparent 1px
+  );
+  background-size: 26px 26px;
+  box-shadow: inset 0 0 240px 70px rgba(8, 4, 2, 0.55);
+}
+
+.shell ::selection {
+  background: var(--orange);
+  color: #fff;
+}
+
+/* --------------------------------------------------------------------------
+   Type
+-------------------------------------------------------------------------- */
+
+.display {
+  font-family: var(--font-v4-display), "Trebuchet MS", ui-sans-serif, system-ui,
+    sans-serif;
+  letter-spacing: -0.025em;
+}
+
+.hand {
+  font-family: var(--font-v4-hand), "Bradley Hand", ui-rounded, cursive;
+  letter-spacing: 0.01em;
+}
+
+/* Signwriter's condensed caps — only ever used on things that are literally
+   signage: the neon, the letterboard, unit numbers. */
+.sign {
+  font-family: var(--font-v4-sign), "Haettenschweiler", "Impact", ui-sans-serif,
+    sans-serif;
+  letter-spacing: 0.06em;
+}
+
+/* --------------------------------------------------------------------------
+   Neon
+   Layered text-shadows: a tight white core, then three orange halos. The
+   colour of the text itself is near-white, so the copy still passes contrast
+   with every glow stripped away.
+-------------------------------------------------------------------------- */
+
+.neon {
+  color: #fff8f0;
+  text-shadow:
+    0 0 1px rgba(255, 248, 240, 0.95),
+    0 0 7px rgba(255, 168, 100, 0.85),
+    0 0 18px rgba(255, 92, 26, 0.65),
+    0 0 38px rgba(255, 92, 26, 0.42),
+    0 0 74px rgba(255, 92, 26, 0.24);
+}
+
+.neonAmber {
+  color: #fff9ec;
+  text-shadow:
+    0 0 1px rgba(255, 249, 236, 0.95),
+    0 0 7px rgba(255, 214, 140, 0.85),
+    0 0 18px rgba(255, 178, 74, 0.6),
+    0 0 40px rgba(255, 160, 60, 0.35);
+}
+
+/* One dropout every nine seconds — a tired tube, not a strobe. */
+.flicker {
+  animation: nm-flicker 9s ease-in-out infinite;
+}
+
+/* Bent glass tube used as a border on signs and frames. */
+.tube {
+  border: 2px solid rgba(255, 174, 116, 0.72);
+  box-shadow:
+    0 0 7px rgba(255, 122, 51, 0.5),
+    0 0 22px rgba(255, 92, 26, 0.32),
+    inset 0 0 14px rgba(255, 122, 51, 0.25);
+}
+
+.tubeAmber {
+  border: 2px solid rgba(255, 206, 140, 0.6);
+  box-shadow:
+    0 0 7px rgba(255, 196, 107, 0.4),
+    0 0 22px rgba(255, 176, 80, 0.24),
+    inset 0 0 14px rgba(255, 196, 107, 0.18);
+}
+
+/* --------------------------------------------------------------------------
+   Awnings — the motif carried over from the daylight street, now half in
+   shadow with its fringe catching the light from the shop below.
+   The scallop is the same striped background masked into half-circles.
+-------------------------------------------------------------------------- */
+
+.awning {
+  position: relative;
+  z-index: 2;
+  background-image: repeating-linear-gradient(
+    90deg,
+    #c5400d 0 26px,
+    #ecd5bf 26px 52px
+  );
+}
+
+/* Shading lives on ::before so ::after can `background: inherit` and get the
+   stripes alone — the fringe reads as the bit catching the light. */
+.awning::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 4, 2, 0.66) 0%,
+    rgba(8, 4, 2, 0.26) 52%,
+    rgba(255, 186, 116, 0.16) 100%
+  );
+}
+
+.awning::after {
+  content: "";
+  position: absolute;
+  inset: 100% 0 auto 0;
+  height: 13px;
+  background: inherit;
+  -webkit-mask-image: radial-gradient(
+    13px 13px at 13px 0,
+    #000 98%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(13px 13px at 13px 0, #000 98%, transparent 100%);
+  -webkit-mask-size: 26px 13px;
+  mask-size: 26px 13px;
+  -webkit-mask-repeat: repeat-x;
+  mask-repeat: repeat-x;
+}
+
+/* Over the lit vermilion panel the orange stripe would disappear into the
+   background, so that awning gets a near-black stripe instead. */
+.awningInk {
+  background-image: repeating-linear-gradient(
+    90deg,
+    #3d1608 0 26px,
+    #f2ddc8 26px 52px
+  );
+}
+
+.awningInk::before {
+  background: linear-gradient(
+    180deg,
+    rgba(8, 4, 2, 0.5) 0%,
+    rgba(8, 4, 2, 0.12) 55%,
+    rgba(255, 186, 116, 0.14) 100%
+  );
+}
+
+/* The closed units: same awning, no light on it. */
+.awningDeep {
+  background-image: repeating-linear-gradient(
+    90deg,
+    #713013 0 30px,
+    #6b5142 30px 60px
+  );
+}
+
+.awningDeep::before {
+  background: linear-gradient(
+    180deg,
+    rgba(8, 4, 2, 0.88) 0%,
+    rgba(8, 4, 2, 0.66) 100%
+  );
+}
+
+.awningDeep::after {
+  height: 15px;
+  -webkit-mask-size: 30px 15px;
+  mask-size: 30px 15px;
+  -webkit-mask-image: radial-gradient(
+    15px 15px at 15px 0,
+    #000 98%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(15px 15px at 15px 0, #000 98%, transparent 100%);
+}
+
+/* --------------------------------------------------------------------------
+   Surfaces
+-------------------------------------------------------------------------- */
+
+/* A backlit display case: dark glass with light pooling in from the top. */
+.vitrine {
+  background:
+    radial-gradient(
+      120% 80% at 50% -12%,
+      rgba(255, 184, 116, 0.18),
+      transparent 62%
+    ),
+    linear-gradient(180deg, #3b2517 0%, #2a1a11 100%);
+  border: 1px solid rgba(255, 190, 140, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 216, 174, 0.22),
+    0 22px 44px -28px rgba(0, 0, 0, 0.95);
+  transition:
+    transform 0.4s var(--spring),
+    box-shadow 0.4s var(--glide),
+    border-color 0.3s linear;
+}
+
+.vitrine:hover,
+.vitrine:focus-within {
+  transform: translateY(-5px) rotate(-0.7deg);
+  border-color: rgba(255, 160, 90, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 216, 174, 0.32),
+    0 0 38px -8px rgba(255, 122, 51, 0.4),
+    0 28px 50px -26px rgba(0, 0, 0, 0.95);
+}
+
+/* A plain unlit panel — the default card of the night. */
+.panel {
+  background: linear-gradient(180deg, #2c1d14 0%, #241710 100%);
+  border: 1px solid var(--line);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 214, 170, 0.12),
+    0 26px 50px -34px rgba(0, 0, 0, 0.95);
+}
+
+/* Glass sheen laid over lit windows. */
+.glass {
+  background-image: linear-gradient(
+    128deg,
+    rgba(255, 236, 214, 0.16) 0%,
+    rgba(255, 236, 214, 0.04) 32%,
+    rgba(255, 255, 255, 0) 46%,
+    rgba(255, 236, 214, 0.07) 62%,
+    rgba(255, 255, 255, 0) 78%
+  );
+}
+
+/* Light thrown from a window onto the pavement in front of it. */
+.spill {
+  clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 178, 104, 0.4) 0%,
+    rgba(255, 142, 62, 0.14) 52%,
+    rgba(255, 142, 62, 0) 100%
+  );
+  filter: blur(16px);
+}
+
+/* The pavement the shops stand on. */
+.pavement {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 190, 130, 0.22) 0%,
+    rgba(120, 78, 50, 0.35) 22%,
+    rgba(40, 24, 15, 0.9) 100%
+  );
+}
+
+/* Rolled-down security shutter, unlit. */
+.shutter {
+  background-color: #1d130c;
+  background-image: repeating-linear-gradient(
+    180deg,
+    rgba(255, 220, 180, 0.08) 0 2px,
+    rgba(0, 0, 0, 0.55) 2px 4px,
+    rgba(255, 220, 180, 0.025) 4px 11px,
+    rgba(0, 0, 0, 0.4) 11px 13px
+  );
+}
+
+.shutterLift {
+  transform-origin: 50% 0;
+  transition: transform 0.55s var(--spring);
+}
+
+.shopShut:hover .shutterLift,
+.shopShut:focus-within .shutterLift {
+  transform: scaleY(0.88);
+}
+
+/* The sliver of light under a closed shutter — someone is still in there. */
+.underLight {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 178, 104, 0) 0%,
+    rgba(255, 178, 104, 0.55) 60%,
+    rgba(255, 208, 150, 0.85) 100%
+  );
+  filter: blur(1.5px);
+  animation: nm-breathe 6s ease-in-out infinite;
+}
+
+/* An illuminated sign face, lit from a small lamp above it. */
+.signFace {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 208, 152, 0.44) 0%,
+      rgba(255, 184, 112, 0.12) 28%,
+      rgba(255, 176, 102, 0) 58%
+    ),
+    linear-gradient(180deg, #46291a 0%, #2b1a11 100%);
+  border: 1px solid rgba(255, 190, 140, 0.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 222, 184, 0.3),
+    0 24px 44px -30px rgba(0, 0, 0, 0.95);
+}
+
+/* Brass rail / hanging strap. */
+.strap {
+  background: linear-gradient(180deg, #d0a061, #7a5230);
+}
+
+.rail {
+  background: linear-gradient(180deg, #e0b06c 0%, #a97c45 40%, #5d3d20 100%);
+  box-shadow: 0 3px 10px -6px rgba(0, 0, 0, 0.9);
+}
+
+/* Cinema letterboard: black felt with the channel rails showing. */
+.letterboard {
+  background-color: #100a06;
+  background-image: repeating-linear-gradient(
+    180deg,
+    rgba(255, 214, 170, 0.07) 0 1px,
+    rgba(0, 0, 0, 0) 1px 8px
+  );
+  box-shadow:
+    inset 0 2px 18px rgba(0, 0, 0, 0.9),
+    inset 0 0 0 1px rgba(255, 190, 140, 0.12);
+}
+
+/* A single plastic letter tile slotted into the board. */
+.tile {
+  background: linear-gradient(180deg, #2a1c14 0%, #17100a 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 180, 0.18),
+    0 2px 4px -2px rgba(0, 0, 0, 0.9);
+}
+
+/* --------------------------------------------------------------------------
+   Lights
+-------------------------------------------------------------------------- */
+
+.bulb {
+  background: radial-gradient(
+    circle at 38% 30%,
+    #fff8e8 0%,
+    #ffd193 40%,
+    #ff9d3f 76%,
+    #d9640f 100%
+  );
+  box-shadow:
+    0 0 6px rgba(255, 186, 110, 0.9),
+    0 0 16px rgba(255, 140, 60, 0.5),
+    0 0 34px rgba(255, 110, 40, 0.28);
+  animation: nm-bulb 5s ease-in-out infinite;
+}
+
+/* Marquee border bulbs — a slow warm chase, not a running-light strobe. */
+.chase {
+  background: radial-gradient(
+    circle at 40% 32%,
+    #fff6e0 0%,
+    #ffce8a 45%,
+    #f09134 100%
+  );
+  box-shadow: 0 0 8px rgba(255, 176, 92, 0.75);
+  animation: nm-chase 2.6s ease-in-out infinite;
+}
+
+.lamphead {
+  filter: drop-shadow(0 0 18px rgba(255, 168, 92, 0.65));
+  animation: nm-breathe 7s ease-in-out infinite;
+}
+
+/* Cone of light under the lamppost. */
+.cone {
+  clip-path: polygon(48.4% 0%, 51.6% 0%, 100% 100%, 0% 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 192, 124, 0.26) 0%,
+    rgba(255, 168, 96, 0.07) 46%,
+    rgba(255, 168, 96, 0) 100%
+  );
+  /* the mask feathers the straight sides so the beam has no hard edge */
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 26%,
+    #000 74%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 26%,
+    #000 74%,
+    transparent 100%
+  );
+  filter: blur(26px);
+  animation: nm-breathe 7s ease-in-out infinite;
+}
+
+.pool {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 186, 116, 0.42) 0%,
+    rgba(255, 158, 82, 0.16) 42%,
+    rgba(255, 158, 82, 0) 72%
+  );
+  filter: blur(4px);
+}
+
+.winLit {
+  fill: #ffc46b;
+  animation: nm-window 7s ease-in-out infinite;
+}
+
+.firefly {
+  background: radial-gradient(circle, #ffe6ac 0%, rgba(255, 196, 107, 0) 70%);
+  animation: nm-firefly 16s ease-in-out infinite;
+}
+
+.shootingStar {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 240, 214, 0) 0%,
+    rgba(255, 240, 214, 0.9) 70%,
+    rgba(255, 240, 214, 0) 100%
+  );
+  opacity: 0;
+  animation: nm-shoot 26s linear infinite;
+}
+
+/* Torch: a soft pool that follows the pointer across the street section.
+   Positioned from custom properties the Torch component writes. */
+.torch {
+  background: radial-gradient(
+    260px circle at var(--tx, -999px) var(--ty, -999px),
+    rgba(255, 186, 116, 0.16),
+    rgba(255, 158, 82, 0.05) 45%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.5s var(--glide);
+}
+
+.torchOn {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Motion on interaction
+-------------------------------------------------------------------------- */
+
+.springy {
+  transition:
+    transform 0.35s var(--spring),
+    box-shadow 0.35s var(--glide),
+    background-color 0.25s linear,
+    color 0.25s linear,
+    border-color 0.25s linear;
+}
+
+.springy:hover {
+  transform: translateY(-3px) scale(1.02);
+}
+
+.springy:active {
+  transform: translateY(-1px) scale(0.985);
+}
+
+/* Anything hung from a rail: a slow idle drift, a proper swing when nudged. */
+.hang {
+  transform-origin: 50% -16px;
+  animation: nm-hang 7s ease-in-out infinite;
+}
+
+.hang:hover,
+.hang:focus-within {
+  animation: nm-swing 1.9s var(--glide);
+}
+
+.swingOnHover {
+  transform-origin: 50% -14px;
+}
+
+.swingOnHover:hover,
+.swingOnHover:focus-within {
+  animation: nm-swing 1.9s var(--glide);
+}
+
+/* The open shop leans into the light when you approach it. */
+.shopLight {
+  transition:
+    transform 0.5s var(--spring),
+    box-shadow 0.5s var(--glide);
+}
+
+.shopOpen:hover .shopLight,
+.shopOpen:focus-within .shopLight {
+  transform: translateY(-6px);
+  box-shadow:
+    0 46px 90px -40px rgba(0, 0, 0, 0.95),
+    0 0 0 1px rgba(255, 122, 51, 0.28),
+    0 0 130px -20px rgba(255, 146, 62, 0.55);
+}
+
+/* The neon over the door swings when you approach the shop, even though the
+   sign itself is not a pointer target. */
+.shopOpen:hover .hang,
+.shopOpen:focus-within .hang {
+  animation: nm-swing 1.9s var(--glide);
+}
+
+.shopGlow {
+  opacity: 0.55;
+  transition: opacity 0.55s var(--glide);
+}
+
+.shopOpen:hover .shopGlow,
+.shopOpen:focus-within .shopGlow {
+  opacity: 1;
+}
+
+.badgePop {
+  animation: nm-badge-pop 0.5s var(--spring);
+}
+
+.cartNudge {
+  animation: nm-cart-nudge 0.55s var(--spring);
+}
+
+.drift {
+  animation: nm-drift 8s ease-in-out infinite;
+}
+
+.driftSlow {
+  animation: nm-drift 12s ease-in-out infinite;
+}
+
+.twinkle {
+  animation: nm-twinkle 3.4s ease-in-out infinite;
+}
+
+.breathe {
+  animation: nm-breathe 6s ease-in-out infinite;
+}
+
+.sway {
+  transform-origin: 50% -80px;
+  animation: nm-sway 8s ease-in-out infinite;
+}
+
+/* Dotted connectors draw themselves in when their Reveal fires. */
+.drawPath {
+  stroke-dasharray: 260;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1.3s var(--glide) 0.25s;
+}
+
+:global(.js .reveal:not([data-shown="true"])) .drawPath {
+  stroke-dashoffset: 260;
+}
+
+.ribbonTrack {
+  animation: nm-ribbon 42s linear infinite;
+}
+
+/* --------------------------------------------------------------------------
+   Keyframes — transform / opacity / filter only.
+-------------------------------------------------------------------------- */
+
+@keyframes nm-flicker {
+  0%,
+  40%,
+  43.4%,
+  44.6%,
+  46.4%,
+  100% {
+    opacity: 1;
+  }
+  41.4%,
+  44% {
+    opacity: 0.32;
+  }
+  45.4% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes nm-bulb {
+  0%,
+  100% {
+    opacity: 0.84;
+    filter: brightness(0.92);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.14);
+  }
+}
+
+@keyframes nm-chase {
+  0%,
+  100% {
+    opacity: 0.38;
+    filter: brightness(0.75);
+  }
+  45% {
+    opacity: 1;
+    filter: brightness(1.25);
+  }
+}
+
+@keyframes nm-breathe {
+  0%,
+  100% {
+    opacity: 0.78;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes nm-window {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+  38% {
+    opacity: 0.95;
+  }
+  62% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes nm-sway {
+  0%,
+  100% {
+    transform: rotate(-0.4deg);
+  }
+  50% {
+    transform: rotate(0.4deg);
+  }
+}
+
+@keyframes nm-hang {
+  0%,
+  100% {
+    transform: rotate(-0.7deg);
+  }
+  50% {
+    transform: rotate(0.7deg);
+  }
+}
+
+@keyframes nm-swing {
+  0% {
+    transform: rotate(0deg);
+  }
+  22% {
+    transform: rotate(3.4deg);
+  }
+  46% {
+    transform: rotate(-2.3deg);
+  }
+  68% {
+    transform: rotate(1.3deg);
+  }
+  86% {
+    transform: rotate(-0.6deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes nm-firefly {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.7);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.85;
+  }
+  46% {
+    transform: translate3d(30px, -46px, 0) scale(1.05);
+    opacity: 0.45;
+  }
+  74% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate3d(-16px, -104px, 0) scale(0.7);
+    opacity: 0;
+  }
+}
+
+@keyframes nm-shoot {
+  0%,
+  90% {
+    transform: translate3d(0, 0, 0) rotate(19deg);
+    opacity: 0;
+  }
+  90.6% {
+    opacity: 0.95;
+  }
+  95.5% {
+    transform: translate3d(460px, 158px, 0) rotate(19deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translate3d(460px, 158px, 0) rotate(19deg);
+    opacity: 0;
+  }
+}
+
+@keyframes nm-badge-pop {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.28);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes nm-cart-nudge {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  35% {
+    transform: translateY(-7px) rotate(-4deg);
+  }
+  70% {
+    transform: translateY(1px) rotate(2deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+@keyframes nm-drift {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(-1.2deg);
+  }
+}
+
+@keyframes nm-twinkle {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.22) rotate(45deg);
+    opacity: 1;
+  }
+}
+
+@keyframes nm-ribbon {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* The global reduced-motion rule zeroes durations; this stops every ambient
+   loop outright so nothing is left frozen mid-transform. */
+@media (prefers-reduced-motion: reduce) {
+  .flicker,
+  .bulb,
+  .chase,
+  .lamphead,
+  .cone,
+  .underLight,
+  .winLit,
+  .firefly,
+  .shootingStar,
+  .drift,
+  .driftSlow,
+  .twinkle,
+  .breathe,
+  .sway,
+  .hang,
+  .ribbonTrack,
+  .hang:hover,
+  .hang:focus-within,
+  .swingOnHover:hover,
+  .swingOnHover:focus-within {
+    animation: none !important;
+  }
+  .shootingStar {
+    display: none;
+  }
+  .drawPath {
+    stroke-dashoffset: 0;
+  }
+  .torch {
+    display: none;
+  }
+}

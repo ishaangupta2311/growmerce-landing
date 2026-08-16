@@ -1,0 +1,121 @@
+/* ---------------------------------------------------------------------------
+   "Ledger" variant — editorial print direction.
+   Local tokens live here (not in the global theme) since this design owns a
+   distinct palette: warm paper, near-black ink, one disciplined orange.
+--------------------------------------------------------------------------- */
+
+.page {
+  --paper: #faf6ef;
+  --paper-deep: #f2e9d8;
+  --ink: #141210;
+  --ink-85: rgba(20, 18, 16, 0.85);
+  --ink-70: rgba(20, 18, 16, 0.7);
+  --ink-55: rgba(20, 18, 16, 0.55);
+  --ink-40: rgba(20, 18, 16, 0.4);
+  --ink-25: rgba(20, 18, 16, 0.25);
+  --ink-15: rgba(20, 18, 16, 0.15);
+  --ink-10: rgba(20, 18, 16, 0.1);
+  --ink-06: rgba(20, 18, 16, 0.06);
+
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  position: relative;
+}
+
+/* Faint ledger-ruling texture across the whole page — horizontal hairlines,
+   barely-there, so the "document" feel survives without hurting legibility. */
+.page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 43px,
+    var(--ink-06) 43px,
+    var(--ink-06) 44px
+  );
+  z-index: 0;
+}
+
+.serif {
+  font-family: var(--font-v1-display), "Iowan Old Style", Georgia, serif;
+}
+
+/* Drop cap for the thesis' opening paragraph. */
+.dropCap::first-letter {
+  font-family: var(--font-v1-display), Georgia, serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 4.75rem;
+  line-height: 0.8;
+  float: left;
+  padding-right: 0.55rem;
+  padding-top: 0.35rem;
+  color: var(--ink);
+}
+
+/* Table-of-contents dot leaders. */
+.tocLeader {
+  flex: 1 1 auto;
+  border-bottom: 1px dotted var(--ink-25);
+  margin: 0 0.75rem;
+  transform: translateY(-0.3em);
+}
+
+/* Redacted / blank ledger entries for the pipeline tease. */
+.redactedBar {
+  height: 0.85em;
+  border-radius: 1px;
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--ink-15),
+    var(--ink-15) 3px,
+    transparent 3px,
+    transparent 7px
+  );
+}
+
+/* Duotone treatment for the hero plate — grayscale + warm multiply tint. */
+.plateImage {
+  filter: grayscale(1) contrast(1.08) brightness(0.92);
+}
+
+.plateTint {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(235, 82, 19, 0.22), rgba(20, 18, 16, 0.55));
+  mix-blend-mode: multiply;
+}
+
+.plateScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 55%, rgba(20, 18, 16, 0.75) 100%);
+}
+
+/* Ledger table rules. */
+.ledgerTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ledgerTable th,
+.ledgerTable td {
+  border-top: 1px solid var(--ink-15);
+  padding: 1.1rem 0.5rem;
+  text-align: left;
+  vertical-align: baseline;
+}
+
+.ledgerTable tr:last-child td {
+  border-bottom: 1px solid var(--ink-15);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page::before {
+    /* texture stays static either way, nothing to disable */
+  }
+}

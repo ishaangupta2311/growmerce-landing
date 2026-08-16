@@ -1,0 +1,898 @@
+/* ---------------------------------------------------------------------------
+   Variant 05 · Sticker Bazaar — the Growmerce brand as a packaging system.
+
+   Everything below is scoped to this route. Two rules keep the maximalism from
+   turning into noise:
+
+   1. TWO SHADOW LANGUAGES, never mixed on the same object.
+      Paper (stickers, labels, receipts, tags) gets a *flat offset* shadow, the
+      way ink prints. Objects with volume (the product box, the kraft cartons,
+      the CTA slab) get a *soft* shadow because they cast real light.
+   2. ONE ROTATION SCALE. Every tilt in the page is set through `--rot` and
+      lives inside -6deg … 6deg, so the chaos still reads as art direction.
+--------------------------------------------------------------------------- */
+
+.shell {
+  /* ink */
+  --ink: #2b1c14;
+  --ink-80: #432c20;
+  --ink-70: #5a4034;
+  --ink-55: #7a5a48;
+  --ink-30: #a98872;
+
+  /* paper */
+  --cream: #fff6ee;
+  --card: #fffaf5;
+  --peach: #ffe8df;
+  --peach-deep: #ffd7c5;
+
+  /* corrugate */
+  --kraft: #dda877;
+  --kraft-deep: #c1854e;
+  --kraft-light: #efcda8;
+
+  /* brand orange. `--orange-ink` is the deepened tone reserved for anything
+     carrying small white text — it clears AA where #ff5c1a does not. */
+  --orange: #ff5c1a;
+  --orange-deep: #eb5213;
+  --orange-ink: #d1400a;
+
+  /* supporting print tones */
+  --butter: #ffd66e;
+  --butter-deep: #f2ae1f;
+  --sky: #8ed4e6;
+  --sky-ink: #16697f;
+  --mint: #93d3b8;
+
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --glide: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* flat "printed" offset shadows — paper only */
+  --flat-1: 3px 4px 0 rgba(96, 44, 14, 0.3);
+  --flat-2: 5px 6px 0 rgba(96, 44, 14, 0.3);
+  --flat-3: 9px 11px 0 rgba(96, 44, 14, 0.26);
+
+  /* soft shadows — volume only */
+  --soft-1: 0 12px 26px -16px rgba(96, 44, 14, 0.7);
+  --soft-2: 0 26px 52px -28px rgba(96, 44, 14, 0.72);
+  --soft-3: 0 44px 84px -36px rgba(96, 44, 14, 0.7);
+
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  background-color: var(--cream);
+  color: var(--ink);
+  overflow-x: clip;
+}
+
+/* Halftone dot field — the printed ground the whole page sits on. */
+.shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-image:
+    radial-gradient(rgba(235, 82, 19, 0.11) 1.4px, transparent 1.5px),
+    radial-gradient(rgba(43, 28, 20, 0.05) 1.1px, transparent 1.2px);
+  background-size:
+    16px 16px,
+    16px 16px;
+  background-position:
+    0 0,
+    8px 8px;
+}
+
+/* Paper grain. Generated noise rather than an asset so it costs nothing. */
+.shell::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.4;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)' opacity='0.34'/%3E%3C/svg%3E");
+}
+
+/* Opt-in grain for large printed panels, so the texture carries onto the
+   artwork instead of stopping at the page background. Uses ::before so it can
+   sit on the same element as the sticker peel, which owns ::after. */
+.grain {
+  position: relative;
+}
+
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0.3;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)' opacity='0.3'/%3E%3C/svg%3E");
+}
+
+/* --------------------------------------------------------------------------
+   Type roles
+-------------------------------------------------------------------------- */
+
+.display {
+  font-family: var(--font-v5-display), "Trebuchet MS", ui-sans-serif, system-ui,
+    sans-serif;
+  letter-spacing: -0.025em;
+}
+
+/* Anton is only ever used large + uppercase; the tiny positive tracking stops
+   the condensed forms from closing up at poster size. */
+.poster {
+  font-family: var(--font-v5-poster), "Haettenschweiler", "Arial Narrow",
+    ui-sans-serif, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.012em;
+  line-height: 0.86;
+  font-weight: 400;
+}
+
+.mono {
+  font-family: var(--font-v5-mono), "Courier New", ui-monospace, monospace;
+}
+
+.hand {
+  font-family: var(--font-v5-hand), "Bradley Hand", ui-rounded, cursive;
+  letter-spacing: 0.01em;
+}
+
+/* --------------------------------------------------------------------------
+   Stickers — a colour fill, a white die-cut keyline, an ink outline and a
+   printed offset shadow. Rest tilt comes from `--rot`; hover peels it up.
+-------------------------------------------------------------------------- */
+
+.sticker {
+  position: relative;
+  border: 3px solid #fff;
+  box-shadow:
+    0 0 0 2px var(--ink),
+    var(--flat-2);
+  transform: rotate(var(--rot, 0deg));
+  transition:
+    transform 0.4s var(--spring),
+    box-shadow 0.4s var(--glide);
+}
+
+.sticker:hover,
+.sticker:focus-within {
+  transform: rotate(calc(var(--rot, 0deg) + 2.5deg)) translateY(-5px)
+    scale(1.035);
+  box-shadow:
+    0 0 0 2px var(--ink),
+    var(--flat-3);
+}
+
+/* The corner actually lifts off the sheet. Only on stickers big enough to
+   keep their top-right corner clear of content. */
+.peelCorner::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 0;
+  height: 0;
+  z-index: 2;
+  border-top-right-radius: inherit;
+  background: linear-gradient(215deg, #fffdf9 35%, #ecd6c4 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  box-shadow: -2px 3px 5px rgba(96, 44, 14, 0.4);
+  transition:
+    width 0.4s var(--spring),
+    height 0.4s var(--spring);
+}
+
+.peelCorner:hover::after,
+.peelCorner:focus-within::after {
+  width: 24px;
+  height: 24px;
+}
+
+/* Flat paper that shouldn't wear a die-cut keyline: cards, panels, tickets. */
+.paper {
+  transform: rotate(var(--rot, 0deg));
+  transition:
+    transform 0.4s var(--spring),
+    box-shadow 0.4s var(--glide);
+}
+
+.paper:hover,
+.paper:focus-within {
+  transform: rotate(0deg) translateY(-4px);
+  box-shadow: var(--flat-3);
+}
+
+/* --------------------------------------------------------------------------
+   Die-cut shapes
+-------------------------------------------------------------------------- */
+
+/* 12-point starburst — the "NEW!" flash. */
+.starburst {
+  clip-path: polygon(
+    50% 0%,
+    58.8% 17.16%,
+    75% 6.7%,
+    74.04% 25.96%,
+    93.3% 25%,
+    82.84% 41.2%,
+    100% 50%,
+    82.84% 58.8%,
+    93.3% 75%,
+    74.04% 74.04%,
+    75% 93.3%,
+    58.8% 82.84%,
+    50% 100%,
+    41.2% 82.84%,
+    25% 93.3%,
+    25.96% 74.04%,
+    6.7% 75%,
+    17.16% 58.8%,
+    0% 50%,
+    17.16% 41.2%,
+    6.7% 25%,
+    25.96% 25.96%,
+    25% 6.7%,
+    41.2% 17.16%
+  );
+}
+
+/* 16-point burst, used behind the price flash so the two edges never line up. */
+.starburstFine {
+  clip-path: polygon(
+    50% 0%,
+    57.61% 11.75%,
+    69.13% 3.81%,
+    71.67% 17.57%,
+    85.36% 14.64%,
+    82.43% 28.33%,
+    96.19% 30.87%,
+    88.25% 42.39%,
+    100% 50%,
+    88.25% 57.61%,
+    96.19% 69.13%,
+    82.43% 71.67%,
+    85.36% 85.36%,
+    71.67% 82.43%,
+    69.13% 96.19%,
+    57.61% 88.25%,
+    50% 100%,
+    42.39% 88.25%,
+    30.87% 96.19%,
+    28.33% 82.43%,
+    14.64% 85.36%,
+    17.57% 71.67%,
+    3.81% 69.13%,
+    11.75% 57.61%,
+    0% 50%,
+    11.75% 42.39%,
+    3.81% 30.87%,
+    17.57% 28.33%,
+    14.64% 14.64%,
+    28.33% 17.57%,
+    30.87% 3.81%,
+    42.39% 11.75%
+  );
+}
+
+/* Arch label — the fruit-crate / apothecary shape. */
+.arch {
+  border-radius: 999px 999px 10px 10px;
+}
+
+/* Price-gun tag: rectangle with the string notch bitten out of the top-left.
+   clip-path discards box-shadow, so every die-cut shape casts its printed
+   shadow with a filter instead — filters are applied after the clip. */
+.gunTag {
+  clip-path: polygon(
+    0 14px,
+    14px 0,
+    100% 0,
+    100% 100%,
+    0 100%
+  );
+  filter: drop-shadow(4px 5px 0 rgba(96, 44, 14, 0.32));
+}
+
+.dieCutShadow {
+  filter: drop-shadow(4px 6px 0 rgba(96, 44, 14, 0.3));
+}
+
+/* --------------------------------------------------------------------------
+   Packing tape — translucent, multiplied over whatever it holds down, with
+   torn ends. Never a solid block: the point is that you can read through it.
+-------------------------------------------------------------------------- */
+
+.tape {
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.34) 0 1.5px,
+      transparent 1.5px 8px
+    ),
+    linear-gradient(
+      175deg,
+      rgba(255, 214, 110, 0.92) 0%,
+      rgba(244, 186, 74, 0.82) 55%,
+      rgba(255, 214, 110, 0.88) 100%
+    );
+  mix-blend-mode: multiply;
+  clip-path: polygon(
+    6px 0,
+    100% 0,
+    calc(100% - 6px) 12.5%,
+    100% 25%,
+    calc(100% - 4px) 37.5%,
+    100% 50%,
+    calc(100% - 7px) 62.5%,
+    100% 75%,
+    calc(100% - 4px) 87.5%,
+    100% 100%,
+    6px 100%,
+    0 87.5%,
+    5px 75%,
+    0 62.5%,
+    7px 50%,
+    0 37.5%,
+    4px 25%,
+    0 12.5%
+  );
+  filter: drop-shadow(0 1px 2px rgba(96, 44, 14, 0.3));
+}
+
+/* Brown parcel tape, for the kraft cartons. */
+.tapeKraft {
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.22) 0 1.5px,
+      transparent 1.5px 8px
+    ),
+    linear-gradient(
+      175deg,
+      rgba(199, 141, 82, 0.95),
+      rgba(168, 112, 60, 0.9)
+    );
+  mix-blend-mode: multiply;
+}
+
+/* Hazard stripes — the "handle with care" band on a crate. */
+.hazard {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--orange) 0 12px,
+    var(--peach) 12px 24px
+  );
+}
+
+.hazardInk {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--butter) 0 12px,
+    var(--ink) 12px 24px
+  );
+}
+
+/* --------------------------------------------------------------------------
+   Corrugated cardboard
+-------------------------------------------------------------------------- */
+
+.kraft {
+  background-color: var(--kraft);
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.14) 0 3px,
+      rgba(150, 96, 48, 0.1) 3px 6px,
+      transparent 6px 13px
+    ),
+    radial-gradient(
+      120% 100% at 20% 0%,
+      rgba(255, 240, 220, 0.4),
+      transparent 62%
+    );
+}
+
+/* The exposed flute you see on a cut edge. */
+.flute {
+  background-color: var(--kraft-light);
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(140, 88, 44, 0.42) 0 1px,
+    transparent 1px 3px,
+    rgba(140, 88, 44, 0.28) 3px 4px,
+    transparent 4px 8px
+  );
+}
+
+/* Shrink-wrap over the unreleased units: a hard diagonal sheen plus a couple
+   of wrinkles. Screen blend so it lightens the box instead of tinting it. */
+.shrinkWrap {
+  background-image: linear-gradient(
+    116deg,
+    rgba(255, 255, 255, 0) 12%,
+    rgba(255, 255, 255, 0.62) 24%,
+    rgba(255, 255, 255, 0.04) 34%,
+    rgba(255, 255, 255, 0) 46%,
+    rgba(255, 255, 255, 0.4) 58%,
+    rgba(255, 255, 255, 0) 68%,
+    rgba(255, 255, 255, 0.22) 84%,
+    rgba(255, 255, 255, 0) 94%
+  );
+  mix-blend-mode: screen;
+}
+
+/* --------------------------------------------------------------------------
+   Receipt / packing slip — torn along both short edges. clip-path removes the
+   box-shadow with it, so the drop shadow is applied to the wrapper as a
+   filter, which follows the tear.
+-------------------------------------------------------------------------- */
+
+.receiptShadow {
+  filter: drop-shadow(7px 9px 0 rgba(96, 44, 14, 0.22));
+}
+
+.receipt {
+  clip-path: polygon(
+    0% 9px,
+    2.5% 0,
+    5% 9px,
+    7.5% 0,
+    10% 9px,
+    12.5% 0,
+    15% 9px,
+    17.5% 0,
+    20% 9px,
+    22.5% 0,
+    25% 9px,
+    27.5% 0,
+    30% 9px,
+    32.5% 0,
+    35% 9px,
+    37.5% 0,
+    40% 9px,
+    42.5% 0,
+    45% 9px,
+    47.5% 0,
+    50% 9px,
+    52.5% 0,
+    55% 9px,
+    57.5% 0,
+    60% 9px,
+    62.5% 0,
+    65% 9px,
+    67.5% 0,
+    70% 9px,
+    72.5% 0,
+    75% 9px,
+    77.5% 0,
+    80% 9px,
+    82.5% 0,
+    85% 9px,
+    87.5% 0,
+    90% 9px,
+    92.5% 0,
+    95% 9px,
+    97.5% 0,
+    100% 9px,
+    100% calc(100% - 9px),
+    97.5% 100%,
+    95% calc(100% - 9px),
+    92.5% 100%,
+    90% calc(100% - 9px),
+    87.5% 100%,
+    85% calc(100% - 9px),
+    82.5% 100%,
+    80% calc(100% - 9px),
+    77.5% 100%,
+    75% calc(100% - 9px),
+    72.5% 100%,
+    70% calc(100% - 9px),
+    67.5% 100%,
+    65% calc(100% - 9px),
+    62.5% 100%,
+    60% calc(100% - 9px),
+    57.5% 100%,
+    55% calc(100% - 9px),
+    52.5% 100%,
+    50% calc(100% - 9px),
+    47.5% 100%,
+    45% calc(100% - 9px),
+    42.5% 100%,
+    40% calc(100% - 9px),
+    37.5% 100%,
+    35% calc(100% - 9px),
+    32.5% 100%,
+    30% calc(100% - 9px),
+    27.5% 100%,
+    25% calc(100% - 9px),
+    22.5% 100%,
+    20% calc(100% - 9px),
+    17.5% 100%,
+    15% calc(100% - 9px),
+    12.5% 100%,
+    10% calc(100% - 9px),
+    7.5% 100%,
+    5% calc(100% - 9px),
+    2.5% 100%,
+    0% calc(100% - 9px)
+  );
+}
+
+/* Dotted leader between a line item and its quantity. */
+.leader {
+  flex: 1 1 auto;
+  min-width: 1.5rem;
+  align-self: flex-end;
+  margin-bottom: 0.28em;
+  border-bottom: 2px dotted rgba(43, 28, 20, 0.35);
+}
+
+/* --------------------------------------------------------------------------
+   Product box — a real carton: front face, receding right side, receding top.
+-------------------------------------------------------------------------- */
+
+.boxScene {
+  perspective: 1400px;
+  perspective-origin: 60% 40%;
+}
+
+/* The box already sits at an angle on the shelf; hover just turns it a little
+   further towards you. Anything shallower and the side panel disappears. */
+.box3d {
+  transform-style: preserve-3d;
+  transform: rotateX(4deg) rotateY(-14deg);
+  transition: transform 0.75s var(--glide);
+}
+
+.boxScene:hover .box3d,
+.boxScene:focus-within .box3d {
+  transform: rotateX(7deg) rotateY(-22deg) translateZ(18px);
+}
+
+/* Right-hand side panel, hinged on the front face's right edge. */
+.boxSide {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  height: 100%;
+  width: 52px;
+  transform-origin: 0 50%;
+  transform: rotateY(90deg);
+  backface-visibility: hidden;
+}
+
+/* Top panel, hinged on the front face's top edge. */
+.boxTop {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  width: 100%;
+  height: 52px;
+  transform-origin: 50% 100%;
+  transform: rotateX(90deg);
+  backface-visibility: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   Barcode — the bars draw themselves up once, when the section reveals.
+-------------------------------------------------------------------------- */
+
+.barcodeBar {
+  transform-origin: bottom;
+  transition: transform 0.5s var(--spring);
+  transition-delay: calc(var(--i, 0) * 16ms);
+}
+
+:global(.js .reveal:not([data-shown="true"])) .barcodeBar {
+  transform: scaleY(0.04);
+}
+
+/* --------------------------------------------------------------------------
+   Rubber stamp — lands with a thunk when its section reveals.
+-------------------------------------------------------------------------- */
+
+.stamp {
+  transform: rotate(var(--rot, -8deg)) scale(1);
+  opacity: 0.92;
+  mix-blend-mode: multiply;
+  transition:
+    transform 0.55s var(--spring) 0.3s,
+    opacity 0.2s linear 0.3s;
+}
+
+:global(.js .reveal:not([data-shown="true"])) .stamp {
+  transform: rotate(calc(var(--rot, -8deg) - 16deg)) scale(2.1);
+  opacity: 0;
+}
+
+/* Ink that never quite covers the paper: a fine speckle mask knocks holes in
+   the rules and the letterforms, the way a real rubber stamp prints. */
+.stampInk {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.45' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -9 5.9'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23r)'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.45' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -9 5.9'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23r)'/%3E%3C/svg%3E");
+}
+
+/* On a dark ground the stamp lightens the paper instead of darkening it. */
+.stampLight {
+  mix-blend-mode: screen;
+}
+
+/* --------------------------------------------------------------------------
+   Hanging tags and swinging things
+-------------------------------------------------------------------------- */
+
+.dangle {
+  transform-origin: 12px -6px;
+  animation: v5-dangle 5.5s ease-in-out infinite;
+}
+
+.dangleSlow {
+  transform-origin: 50% -10px;
+  animation: v5-dangle 8s ease-in-out infinite;
+  animation-delay: -1.8s;
+}
+
+.swingOnHover {
+  transform-origin: 50% -12px;
+}
+
+.swingOnHover:hover,
+.swingOnHover:focus-within {
+  animation: v5-swing 1.8s var(--glide);
+}
+
+.drift {
+  animation: v5-drift 7.5s ease-in-out infinite;
+}
+
+.driftSlow {
+  animation: v5-drift 11s ease-in-out infinite;
+}
+
+.twinkle {
+  animation: v5-twinkle 3.2s ease-in-out infinite;
+}
+
+.spin {
+  animation: v5-spin 22s linear infinite;
+}
+
+/* --------------------------------------------------------------------------
+   Interactive
+-------------------------------------------------------------------------- */
+
+/* Printed slabs: they sit on the page, lift towards you, and press flat when
+   clicked. Base / hover / active shadows all live here so nothing has to fight
+   a utility class for specificity. */
+.springy {
+  box-shadow: 5px 6px 0 rgba(43, 28, 20, 0.9);
+  transition:
+    transform 0.32s var(--spring),
+    box-shadow 0.32s var(--glide),
+    background-color 0.22s linear,
+    color 0.22s linear;
+}
+
+.springy:hover {
+  transform: translate(-2px, -3px);
+  box-shadow: 8px 10px 0 rgba(43, 28, 20, 0.9);
+}
+
+.springy:active {
+  transform: translate(2px, 3px);
+  box-shadow: 2px 3px 0 rgba(43, 28, 20, 0.9);
+}
+
+.springySm {
+  box-shadow: 4px 5px 0 rgba(43, 28, 20, 0.9);
+}
+
+.springySm:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 8px 0 rgba(43, 28, 20, 0.9);
+}
+
+.springySm:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 rgba(43, 28, 20, 0.9);
+}
+
+.badgePop {
+  animation: v5-badge-pop 0.5s var(--spring);
+}
+
+.cartNudge {
+  animation: v5-cart-nudge 0.55s var(--spring);
+}
+
+/* Confetti burst — 12 printed rectangles, one shot per click. */
+.confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.confettiPiece {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 11px;
+  border-radius: 1px;
+  opacity: 0;
+  animation: v5-confetti 0.95s cubic-bezier(0.18, 0.72, 0.36, 1) forwards;
+  animation-delay: var(--d, 0ms);
+}
+
+/* Marquee ribbon that runs the other way. */
+.reverse {
+  animation-direction: reverse;
+}
+
+/* Dotted connector arrows draw themselves in with their Reveal wrapper. */
+.drawPath {
+  stroke-dasharray: 260;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1.3s var(--glide) 0.25s;
+}
+
+:global(.js .reveal:not([data-shown="true"])) .drawPath {
+  stroke-dashoffset: 260;
+}
+
+/* --------------------------------------------------------------------------
+   Keyframes — transform / opacity only.
+-------------------------------------------------------------------------- */
+
+@keyframes v5-dangle {
+  0%,
+  100% {
+    transform: rotate(-2.4deg);
+  }
+  50% {
+    transform: rotate(2.4deg);
+  }
+}
+
+@keyframes v5-swing {
+  0% {
+    transform: rotate(0deg);
+  }
+  22% {
+    transform: rotate(6deg);
+  }
+  46% {
+    transform: rotate(-4deg);
+  }
+  68% {
+    transform: rotate(2.4deg);
+  }
+  86% {
+    transform: rotate(-1.1deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes v5-drift {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-13px) rotate(-1.4deg);
+  }
+}
+
+@keyframes v5-twinkle {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.22) rotate(45deg);
+    opacity: 1;
+  }
+}
+
+@keyframes v5-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes v5-badge-pop {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes v5-cart-nudge {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  35% {
+    transform: translateY(-7px) rotate(-5deg);
+  }
+  70% {
+    transform: translateY(1px) rotate(2.5deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+@keyframes v5-confetti {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg) scale(0.4);
+    opacity: 1;
+  }
+  45% {
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy)))
+      rotate(calc(var(--spin) * 0.5)) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(
+        calc(-50% + var(--dx) * 1.22),
+        calc(-50% + var(--dy) + 46px)
+      )
+      rotate(var(--spin)) scale(0.9);
+    opacity: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion. The global rule zeroes durations; these belt-and-braces
+   stops make sure nothing is left parked mid-transform.
+-------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .dangle,
+  .dangleSlow,
+  .drift,
+  .driftSlow,
+  .twinkle,
+  .spin,
+  .confettiPiece {
+    animation: none !important;
+  }
+  .dangle,
+  .dangleSlow {
+    transform: rotate(0deg);
+  }
+  .confettiPiece {
+    display: none;
+  }
+  .drawPath {
+    stroke-dashoffset: 0;
+  }
+  .stamp,
+  :global(.js .reveal:not([data-shown="true"])) .stamp {
+    transform: rotate(var(--rot, -8deg)) scale(1);
+    opacity: 0.92;
+  }
+  :global(.js .reveal:not([data-shown="true"])) .barcodeBar {
+    transform: none;
+  }
+}
