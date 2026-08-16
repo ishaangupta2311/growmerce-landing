@@ -8,10 +8,17 @@
 --------------------------------------------------------------------------- */
 
 @theme {
-  --color-brand: #eb5213;
-  --color-brand-bright: #ff5c1a;
-  --color-peach: #ffe8df;
-  --color-body-mute: #58585a;
+  /* Official brand scheme: primary bright orange, coral accent, charcoal
+     text, warm-cream and pale-peach surfaces. */
+  --color-brand: #ff5a1f;
+  --color-brand-bright: #ff5a1f;
+  --color-coral: #ff6b35;
+  --color-charcoal: #171717;
+  --color-cream: #fff4ee;
+  --color-peach: #ffe4d6;
+  --color-body-mute: #4a4a4a;
+  --color-muted: #8a8a8a;
+  --color-line: #e5e5e5;
   --color-logobar: #d9d9d9;
 
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;

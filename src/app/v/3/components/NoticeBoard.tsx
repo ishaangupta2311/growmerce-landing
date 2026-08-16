@@ -60,7 +60,7 @@ export default function NoticeBoard() {
               {CLIPPINGS.map((c, i) => (
                 <Reveal key={c.source} delay={i * 110}>
                   <article
-                    className={`${styles.pinned} relative h-full rounded-[20px] bg-[#fffaf6] px-5 pt-8 pb-6 shadow-[0_20px_38px_-24px_rgba(96,44,14,0.95)]`}
+                    className={`${styles.pinned} relative h-full rounded-[20px] bg-[#ffffff] px-5 pt-8 pb-6 shadow-[0_20px_38px_-24px_rgba(96,44,14,0.95)]`}
                     style={{ "--tilt": c.tilt } as React.CSSProperties}
                   >
                     <span
@@ -68,7 +68,7 @@ export default function NoticeBoard() {
                       className={`${styles.pin} absolute -top-2.5 left-1/2 size-[18px] -translate-x-1/2 rounded-full`}
                     />
                     <p
-                      className={`${styles.display} text-[clamp(2rem,4vw,2.6rem)] leading-none font-extrabold text-[#eb5213]`}
+                      className={`${styles.display} text-[clamp(2rem,4vw,2.6rem)] leading-none font-extrabold text-[#ff5a1f]`}
                     >
                       {c.stat}
                     </p>
@@ -77,10 +77,10 @@ export default function NoticeBoard() {
                     >
                       {c.label}
                     </p>
-                    <p className="mt-3 text-[13.5px] leading-relaxed text-[#5a4034]">
+                    <p className="mt-3 text-[13.5px] leading-relaxed text-[#4a4a4a]">
                       {c.detail}
                     </p>
-                    <p className="mt-4 border-t border-dashed border-[#2b1c14]/15 pt-3 text-[12px] font-bold tracking-[0.08em] text-[#7a5a48] uppercase">
+                    <p className="mt-4 border-t border-dashed border-[#171717]/15 pt-3 text-[12px] font-bold tracking-[0.08em] text-[#8a8a8a] uppercase">
                       Source: {c.source}
                     </p>
                   </article>
@@ -97,7 +97,7 @@ export default function NoticeBoard() {
                     className={`${styles.tape} absolute -top-3 left-1/2 h-6 w-20 -translate-x-1/2 rotate-[2deg] rounded-[2px] opacity-90`}
                   />
                   <p
-                    className={`${styles.hand} text-center text-[23px] leading-tight text-[#2b1c14]`}
+                    className={`${styles.hand} text-center text-[23px] leading-tight text-[#171717]`}
                   >
                     These are category benchmarks, not our results. Ours go up
                     on this board the moment we can prove them.

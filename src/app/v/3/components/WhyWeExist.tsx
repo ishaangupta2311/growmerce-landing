@@ -49,7 +49,7 @@ export default function WhyWeExist() {
                 aria-hidden
                 className={`${styles.tape} absolute -top-3 left-1/2 h-7 w-24 -translate-x-1/2 rotate-[-3deg] rounded-[3px]`}
               />
-              <div className="overflow-hidden rounded-[28px] bg-[#fffaf6] p-3 shadow-[0_30px_60px_-34px_rgba(96,44,14,0.8)] ring-1 ring-[#2b1c14]/8">
+              <div className="overflow-hidden rounded-[28px] bg-[#ffffff] p-3 shadow-[0_30px_60px_-34px_rgba(96,44,14,0.8)] ring-1 ring-[#171717]/8">
                 <Image
                   src="/img/hero-shopper.jpg"
                   alt="A shopper walking home at dusk, bags in hand."
@@ -60,7 +60,7 @@ export default function WhyWeExist() {
                 />
               </div>
               <figcaption
-                className={`${styles.hand} mt-3 text-center text-[21px] leading-tight text-[#7a5a48]`}
+                className={`${styles.hand} mt-3 text-center text-[21px] leading-tight text-[#8a8a8a]`}
               >
                 the person on the other side of the search bar
               </figcaption>
@@ -73,7 +73,7 @@ export default function WhyWeExist() {
           {BEATS.map((beat, i) => (
             <Reveal key={beat.n} delay={i * 110}>
               <div className="relative h-full">
-                <div className="flex h-full flex-col rounded-[26px] bg-[#fffaf6] p-6 shadow-[0_20px_42px_-30px_rgba(96,44,14,0.9)] ring-1 ring-[#2b1c14]/8 sm:p-7">
+                <div className="flex h-full flex-col rounded-[26px] bg-[#ffffff] p-6 shadow-[0_20px_42px_-30px_rgba(96,44,14,0.9)] ring-1 ring-[#171717]/8 sm:p-7">
                   <PriceTag tone="orange" className="self-start">
                     {beat.n}
                   </PriceTag>
@@ -82,7 +82,7 @@ export default function WhyWeExist() {
                   >
                     {beat.title}
                   </h3>
-                  <p className="mt-3 text-[15.5px] leading-relaxed text-[#5a4034]">
+                  <p className="mt-3 text-[15.5px] leading-relaxed text-[#4a4a4a]">
                     {beat.body}
                   </p>
                 </div>
@@ -92,7 +92,7 @@ export default function WhyWeExist() {
                 />
                 {i < BEATS.length - 1 ? (
                   <DottedArrow
-                    className="absolute top-[46%] -right-12 hidden h-8 w-16 text-[#eb5213]/55 lg:block"
+                    className="absolute top-[46%] -right-12 hidden h-8 w-16 text-[#ff5a1f]/55 lg:block"
                     variant="right"
                   />
                 ) : null}
@@ -102,7 +102,7 @@ export default function WhyWeExist() {
         </div>
 
         <Reveal delay={140}>
-          <div className="relative mt-14 overflow-hidden rounded-[32px] bg-[#2b1c14] px-7 py-9 text-white sm:px-12 sm:py-11">
+          <div className="relative mt-14 overflow-hidden rounded-[32px] bg-[#171717] px-7 py-9 text-white sm:px-12 sm:py-11">
             <div
               aria-hidden
               className="pointer-events-none absolute -top-16 -right-10 size-56 rounded-full bg-[radial-gradient(circle,rgba(255,92,26,0.55),transparent_65%)]"

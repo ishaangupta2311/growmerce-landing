@@ -14,7 +14,7 @@ function Underline({ className }: { className?: string }) {
     >
       <path
         d="M3 12.5C58 5.5 138 3 297 6.5"
-        stroke="#ff5c1a"
+        stroke="#ff5a1f"
         strokeWidth="6"
         strokeLinecap="round"
       />
@@ -34,10 +34,10 @@ export default function Hero() {
       <div className="mx-auto grid w-full max-w-[1280px] items-center gap-14 px-5 sm:px-8 lg:grid-cols-[1.02fr_0.98fr] lg:gap-10">
         <div className="relative z-10">
           <p
-            className="hero-enter inline-flex items-center gap-2 rounded-full border border-[#2b1c14]/12 bg-[#fffaf6] py-1.5 pr-4 pl-3 text-[13px] font-semibold tracking-wide text-[#5a4034] shadow-[0_6px_14px_-10px_rgba(96,44,14,0.9)]"
+            className="hero-enter inline-flex items-center gap-2 rounded-full border border-[#171717]/12 bg-[#ffffff] py-1.5 pr-4 pl-3 text-[13px] font-semibold tracking-wide text-[#4a4a4a] shadow-[0_6px_14px_-10px_rgba(96,44,14,0.9)]"
             style={{ animationDelay: "60ms" }}
           >
-            <Sparkle className={`${styles.twinkle} size-3 text-[#ff5c1a]`} />
+            <Sparkle className={`${styles.twinkle} size-3 text-[#ff5a1f]`} />
             An ecommerce AI studio · Delhi → global
           </p>
 
@@ -54,7 +54,7 @@ export default function Hero() {
           </h1>
 
           <p
-            className="hero-enter mt-7 max-w-[38rem] text-[clamp(1.0625rem,1.45vw,1.25rem)] leading-relaxed text-[#5a4034]"
+            className="hero-enter mt-7 max-w-[38rem] text-[clamp(1.0625rem,1.45vw,1.25rem)] leading-relaxed text-[#4a4a4a]"
             style={{ animationDelay: "220ms" }}
           >
             AI is becoming table stakes for online stores — but most owners
@@ -76,17 +76,17 @@ export default function Hero() {
           </div>
 
           <div
-            className="hero-enter mt-9 flex flex-wrap items-center gap-x-5 gap-y-3 text-[14px] text-[#7a5a48]"
+            className="hero-enter mt-9 flex flex-wrap items-center gap-x-5 gap-y-3 text-[14px] text-[#8a8a8a]"
             style={{ animationDelay: "380ms" }}
           >
-            <span className="inline-flex items-center gap-2 font-semibold text-[#2b1c14]">
+            <span className="inline-flex items-center gap-2 font-semibold text-[#171717]">
               <span
                 aria-hidden
                 className="size-2 rounded-full bg-[#93d3b8] ring-4 ring-[#93d3b8]/25"
               />
               First shop open: Growsearch
             </span>
-            <span className="hidden h-4 w-px bg-[#2b1c14]/15 sm:block" />
+            <span className="hidden h-4 w-px bg-[#171717]/15 sm:block" />
             <span>Launching now on the Shopify App Store</span>
           </div>
         </div>
@@ -99,11 +99,11 @@ export default function Hero() {
           <div className="relative mx-auto max-w-[560px]">
             <AwningBand className="h-11 rounded-t-[38px] shadow-[0_10px_20px_-16px_rgba(96,44,14,0.9)] sm:h-12" />
 
-            <div className="relative overflow-hidden rounded-b-[38px] bg-[#fffaf6] px-6 pt-16 pb-8 shadow-[0_36px_70px_-40px_rgba(96,44,14,0.75)] ring-1 ring-[#2b1c14]/8 sm:px-9 sm:pb-10">
+            <div className="relative overflow-hidden rounded-b-[38px] bg-[#ffffff] px-6 pt-16 pb-8 shadow-[0_36px_70px_-40px_rgba(96,44,14,0.75)] ring-1 ring-[#171717]/8 sm:px-9 sm:pb-10">
               {/* window glass + warm floor */}
               <div
                 aria-hidden
-                className="absolute inset-x-5 top-8 bottom-[132px] rounded-[26px] bg-[radial-gradient(120%_90%_at_50%_10%,#ffe8df_0%,#ffd7c5_100%)]"
+                className="absolute inset-x-5 top-8 bottom-[132px] rounded-[26px] bg-[radial-gradient(120%_90%_at_50%_10%,#ffe4d6_0%,#ffd6c2_100%)]"
               />
               <div
                 aria-hidden
@@ -128,8 +128,8 @@ export default function Hero() {
 
               <HeroSearch className="relative" />
 
-              <p className="relative mt-4 flex items-center justify-between gap-3 text-[12.5px] text-[#7a5a48]">
-                <span className={`${styles.hand} text-[19px] text-[#eb5213]`}>
+              <p className="relative mt-4 flex items-center justify-between gap-3 text-[12.5px] text-[#8a8a8a]">
+                <span className={`${styles.hand} text-[19px] text-[#ff5a1f]`}>
                   a small wink at our first shop
                 </span>
                 <span className="font-semibold tracking-wide uppercase opacity-70">
@@ -148,7 +148,7 @@ export default function Hero() {
             </div>
 
             <div
-              className={`${styles.drift} absolute -right-3 bottom-44 z-10 rotate-[6deg] rounded-2xl bg-[#2b1c14] px-4 py-2.5 text-white shadow-[0_16px_30px_-16px_rgba(96,44,14,0.95)] sm:-right-7`}
+              className={`${styles.drift} absolute -right-3 bottom-44 z-10 rotate-[6deg] rounded-2xl bg-[#171717] px-4 py-2.5 text-white shadow-[0_16px_30px_-16px_rgba(96,44,14,0.95)] sm:-right-7`}
               style={{ animationDelay: "1.4s" }}
             >
               <span className={`${styles.display} text-[15px] font-extrabold`}>

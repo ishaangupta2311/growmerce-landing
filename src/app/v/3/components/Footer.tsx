@@ -40,7 +40,7 @@ export default function Footer() {
     <footer className="relative">
       <AwningBand deep className="h-8" />
 
-      <div className="bg-[#ffe8df] px-5 pt-16 pb-10 sm:px-8">
+      <div className="bg-[#ffe4d6] px-5 pt-16 pb-10 sm:px-8">
         <div className="mx-auto w-full max-w-[1280px]">
           <div className="grid gap-12 lg:grid-cols-[1.2fr_2fr]">
             <div>
@@ -51,7 +51,7 @@ export default function Footer() {
                 height={66}
                 className="h-10 w-auto"
               />
-              <p className="mt-5 max-w-sm text-[15px] leading-relaxed text-[#5a4034]">
+              <p className="mt-5 max-w-sm text-[15px] leading-relaxed text-[#4a4a4a]">
                 An ecommerce AI studio: we own, operate and build practical
                 tools for the people actually running stores. Delhi-made,
                 globally useful.
@@ -63,7 +63,7 @@ export default function Footer() {
                     <Link
                       href={s.href}
                       aria-label={s.label}
-                      className={`${styles.springy} ${focusRing} grid size-11 place-items-center rounded-full bg-[#fffaf6] ring-1 ring-[#2b1c14]/10 hover:bg-white`}
+                      className={`${styles.springy} ${focusRing} grid size-11 place-items-center rounded-full bg-[#ffffff] ring-1 ring-[#171717]/10 hover:bg-white`}
                     >
                       <Image
                         src={s.src}
@@ -91,7 +91,7 @@ export default function Footer() {
                       <li key={link.label}>
                         <Link
                           href={link.href}
-                          className={`${focusRing} inline-block rounded-md text-[15px] font-medium text-[#3d2a20] transition-colors duration-200 hover:text-[#eb5213]`}
+                          className={`${focusRing} inline-block rounded-md text-[15px] font-medium text-[#4a4a4a] transition-colors duration-200 hover:text-[#e04a10]`}
                         >
                           {link.label}
                         </Link>
@@ -105,12 +105,12 @@ export default function Footer() {
 
           <div
             aria-hidden
-            className="mt-14 h-px w-full bg-[#2b1c14]/10"
+            className="mt-14 h-px w-full bg-[#171717]/10"
           />
 
-          <div className="mt-6 flex flex-col-reverse items-start justify-between gap-4 text-[13.5px] text-[#7a5a48] sm:flex-row sm:items-center">
+          <div className="mt-6 flex flex-col-reverse items-start justify-between gap-4 text-[13.5px] text-[#8a8a8a] sm:flex-row sm:items-center">
             <p>© {new Date().getFullYear()} Growmerce. All rights reserved.</p>
-            <p className={`${styles.hand} flex items-center gap-2 text-[20px] text-[#eb5213]`}>
+            <p className={`${styles.hand} flex items-center gap-2 text-[20px] text-[#ff5a1f]`}>
               <Sparkle className={`${styles.twinkle} size-3`} />
               open most hours, building the rest
             </p>

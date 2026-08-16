@@ -38,13 +38,13 @@ export default function Nav() {
     <header className="sticky top-0 z-50">
       <a
         href="#main"
-        className={`${styles.display} ${focusRing} sr-only rounded-full bg-[#2b1c14] px-5 py-2.5 font-bold text-white focus:not-sr-only focus:absolute focus:top-3 focus:left-4 focus:z-[60]`}
+        className={`${styles.display} ${focusRing} sr-only rounded-full bg-[#171717] px-5 py-2.5 font-bold text-white focus:not-sr-only focus:absolute focus:top-3 focus:left-4 focus:z-[60]`}
       >
         Skip to content
       </a>
 
       {/* Ribbon of shop notices. */}
-      <div className="overflow-hidden bg-[#2b1c14] py-1.5 text-white">
+      <div className="overflow-hidden bg-[#171717] py-1.5 text-white">
         <div className={`${styles.ribbonTrack} flex w-max`}>
           {[0, 1].map((copy) => (
             <ul
@@ -57,7 +57,7 @@ export default function Nav() {
                   key={notice}
                   className="flex items-center gap-3 px-5 text-[12px] font-semibold tracking-[0.12em] whitespace-nowrap uppercase"
                 >
-                  <Sparkle className="size-2.5 text-[#ff5c1a]" />
+                  <Sparkle className="size-2.5 text-[#ff5a1f]" />
                   {notice}
                 </li>
               ))}
@@ -66,7 +66,7 @@ export default function Nav() {
         </div>
       </div>
 
-      <div className="border-b border-[#2b1c14]/8 bg-[#fff4ec]/92 backdrop-blur-md">
+      <div className="border-b border-[#171717]/8 bg-[#fff4ee]/92 backdrop-blur-md">
         <div className="mx-auto flex h-[72px] w-full max-w-[1280px] items-center justify-between gap-4 px-5 sm:px-8">
           <Link
             href="/v/3"
@@ -91,7 +91,7 @@ export default function Nav() {
               <Link
                 key={link.label}
                 href={link.href}
-                className={`${focusRing} relative rounded-md py-1 transition-colors duration-200 hover:text-[#eb5213] after:absolute after:-bottom-0.5 after:left-0 after:h-[3px] after:w-full after:origin-left after:scale-x-0 after:rounded-full after:bg-[#ff5c1a] after:transition-transform after:duration-300 hover:after:scale-x-100`}
+                className={`${focusRing} relative rounded-md py-1 transition-colors duration-200 hover:text-[#e04a10] after:absolute after:-bottom-0.5 after:left-0 after:h-[3px] after:w-full after:origin-left after:scale-x-0 after:rounded-full after:bg-[#ff5a1f] after:transition-transform after:duration-300 hover:after:scale-x-100`}
               >
                 {link.label}
               </Link>
@@ -101,7 +101,7 @@ export default function Nav() {
           <div className="flex shrink-0 items-center gap-2.5">
             <Link
               href="#early-access"
-              className={`${styles.springy} ${styles.display} ${focusRing} hidden rounded-full bg-[#ff5c1a] px-5 py-2.5 text-[15px] font-bold text-white shadow-[0_10px_22px_-12px_rgba(235,82,19,0.95)] hover:bg-[#eb5213] sm:inline-flex`}
+              className={`${styles.springy} ${styles.display} ${focusRing} hidden rounded-full bg-[#ff5a1f] px-5 py-2.5 text-[15px] font-bold text-white shadow-[0_10px_22px_-12px_rgba(255,90,31,0.95)] hover:bg-[#e04a10] sm:inline-flex`}
             >
               Get early access
             </Link>
@@ -111,7 +111,7 @@ export default function Nav() {
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
               aria-controls="v3-mobile-menu"
-              className={`${focusRing} inline-flex size-10 items-center justify-center rounded-full border-2 border-[#2b1c14]/85 text-[#2b1c14] md:hidden`}
+              className={`${focusRing} inline-flex size-10 items-center justify-center rounded-full border-2 border-[#171717]/85 text-[#171717] md:hidden`}
             >
               <span className="sr-only">
                 {open ? "Close menu" : "Open menu"}
@@ -144,7 +144,7 @@ export default function Nav() {
         {open ? (
           <div
             id="v3-mobile-menu"
-            className="border-t border-[#2b1c14]/8 bg-[#fff4ec] px-5 pt-3 pb-5 md:hidden"
+            className="border-t border-[#171717]/8 bg-[#fff4ee] px-5 pt-3 pb-5 md:hidden"
           >
             <ul className={`${styles.display} space-y-1 text-[19px] font-bold`}>
               {LINKS.map((link) => (
@@ -152,7 +152,7 @@ export default function Nav() {
                   <Link
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className={`${focusRing} block rounded-xl px-3 py-2.5 hover:bg-[#ffe8df]`}
+                    className={`${focusRing} block rounded-xl px-3 py-2.5 hover:bg-[#ffe4d6]`}
                   >
                     {link.label}
                   </Link>
@@ -162,7 +162,7 @@ export default function Nav() {
             <Link
               href="#early-access"
               onClick={() => setOpen(false)}
-              className={`${styles.display} ${focusRing} mt-3 flex items-center justify-center rounded-full bg-[#ff5c1a] px-5 py-3 text-[16px] font-bold text-white`}
+              className={`${styles.display} ${focusRing} mt-3 flex items-center justify-center rounded-full bg-[#ff5a1f] px-5 py-3 text-[16px] font-bold text-white`}
             >
               Get early access
             </Link>

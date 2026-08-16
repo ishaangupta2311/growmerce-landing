@@ -37,9 +37,9 @@ export default function Shopkeeper() {
                 {COUNTER_NOTES.map((note) => (
                   <li
                     key={note}
-                    className="flex items-start gap-3 text-[15.5px] leading-relaxed text-[#5a4034]"
+                    className="flex items-start gap-3 text-[15.5px] leading-relaxed text-[#4a4a4a]"
                   >
-                    <Sparkle className="mt-1 size-3.5 shrink-0 text-[#ff5c1a]" />
+                    <Sparkle className="mt-1 size-3.5 shrink-0 text-[#ff5a1f]" />
                     {note}
                   </li>
                 ))}
@@ -59,14 +59,14 @@ export default function Shopkeeper() {
                 className={`${styles.tape} absolute -top-3.5 right-10 h-8 w-24 rotate-[5deg] rounded-[3px]`}
               />
 
-              <div className="rounded-[28px] bg-[#fffaf6] px-7 py-8 shadow-[0_34px_64px_-38px_rgba(96,44,14,0.9)] ring-1 ring-[#2b1c14]/8 sm:px-10 sm:py-10">
+              <div className="rounded-[28px] bg-[#ffffff] px-7 py-8 shadow-[0_34px_64px_-38px_rgba(96,44,14,0.9)] ring-1 ring-[#171717]/8 sm:px-10 sm:py-10">
                 <div className="flex items-center gap-4">
                   <span
                     aria-hidden
-                    className="grid size-14 shrink-0 place-items-center rounded-full border-2 border-[#2b1c14] bg-[#ffe8df]"
+                    className="grid size-14 shrink-0 place-items-center rounded-full border-2 border-[#171717] bg-[#ffe4d6]"
                   >
                     <span
-                      className={`${styles.display} text-[22px] font-extrabold text-[#eb5213]`}
+                      className={`${styles.display} text-[22px] font-extrabold text-[#ff5a1f]`}
                     >
                       G
                     </span>
@@ -77,7 +77,7 @@ export default function Shopkeeper() {
                     >
                       The founder
                     </p>
-                    <p className="text-[13.5px] font-semibold tracking-wide text-[#7a5a48]">
+                    <p className="text-[13.5px] font-semibold tracking-wide text-[#8a8a8a]">
                       Growmerce · Delhi, India
                     </p>
                   </div>
@@ -85,24 +85,24 @@ export default function Shopkeeper() {
 
                 <div
                   aria-hidden
-                  className="mt-6 h-px w-full bg-[#2b1c14]/10"
+                  className="mt-6 h-px w-full bg-[#171717]/10"
                 />
 
-                <p className="mt-6 text-[16px] leading-relaxed text-[#3d2a20]">
+                <p className="mt-6 text-[16px] leading-relaxed text-[#4a4a4a]">
                   I started Growmerce because I kept meeting store owners who
                   were told AI was now essential, quoted a platform migration,
                   and left to work out the rest alone. So we build small, sharp
                   tools instead — sold to real stores from day one, kept only if
                   they keep earning their place.
                 </p>
-                <p className="mt-4 text-[16px] leading-relaxed text-[#3d2a20]">
+                <p className="mt-4 text-[16px] leading-relaxed text-[#4a4a4a]">
                   Book a demo and you get me: the roadmap, the honest version of
                   what works today, and a straight answer on whether Growsearch
                   fits your catalogue yet.
                 </p>
 
                 <p
-                  className={`${styles.hand} mt-7 text-[27px] leading-none text-[#eb5213]`}
+                  className={`${styles.hand} mt-7 text-[27px] leading-none text-[#ff5a1f]`}
                 >
                   — the shopkeeper
                 </p>
@@ -140,7 +140,7 @@ export default function Shopkeeper() {
                     <PrimaryButton
                       href="#"
                       size="lg"
-                      className="!bg-[#fffaf6] !text-[#2b1c14] !shadow-[0_16px_30px_-16px_rgba(43,28,20,0.75)] hover:!bg-white"
+                      className="!bg-[#ffffff] !text-[#171717] !shadow-[0_16px_30px_-16px_rgba(43,28,20,0.75)] hover:!bg-white"
                     >
                       Get early access
                     </PrimaryButton>
@@ -153,7 +153,7 @@ export default function Shopkeeper() {
                     </SecondaryButton>
                   </div>
 
-                  <p className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#fffaf6] px-4 py-2 text-[13.5px] font-bold tracking-wide text-[#2b1c14]">
+                  <p className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#ffffff] px-4 py-2 text-[13.5px] font-bold tracking-wide text-[#171717]">
                     <span
                       aria-hidden
                       className="size-2 rounded-full bg-[#93d3b8] ring-4 ring-[#93d3b8]/30"

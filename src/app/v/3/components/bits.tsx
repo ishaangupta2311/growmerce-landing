@@ -6,7 +6,7 @@ import styles from "../shopfront.module.css";
    and spring timings stay identical everywhere they show up. */
 
 export const focusRing =
-  "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#ff5c1a]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fff4ec]";
+  "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#ff5a1f]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fff4ee]";
 
 export function Sparkle({ className }: { className?: string }) {
   return (
@@ -114,9 +114,9 @@ export function PriceTag({
   tone?: "orange" | "cream" | "butter";
 }) {
   const tones = {
-    orange: "bg-[#ff5c1a] text-white",
-    cream: "bg-[#fffaf6] text-[#2b1c14] ring-1 ring-[#2b1c14]/12",
-    butter: "bg-[#ffcf6b] text-[#2b1c14]",
+    orange: "bg-[#ff5a1f] text-white",
+    cream: "bg-[#ffffff] text-[#171717] ring-1 ring-[#171717]/12",
+    butter: "bg-[#ffcf6b] text-[#171717]",
   } as const;
 
   return (
@@ -154,7 +154,7 @@ export function SectionHeading({
       className={`${align === "center" ? "mx-auto text-center" : ""} max-w-2xl ${className ?? ""}`}
     >
       <p
-        className={`${styles.hand} text-[26px] leading-none text-[#eb5213]`}
+        className={`${styles.hand} text-[26px] leading-none text-[#ff5a1f]`}
       >
         {eyebrow}
       </p>
@@ -165,7 +165,7 @@ export function SectionHeading({
       </h2>
       {lead ? (
         <p
-          className={`mt-5 text-[clamp(1.0625rem,1.35vw,1.1875rem)] leading-relaxed text-[#5a4034] ${
+          className={`mt-5 text-[clamp(1.0625rem,1.35vw,1.1875rem)] leading-relaxed text-[#4a4a4a] ${
             align === "center" ? "mx-auto" : ""
           }`}
         >
@@ -192,7 +192,7 @@ export function PrimaryButton({
   return (
     <Link
       href={href}
-      className={`${styles.springy} ${styles.display} ${focusRing} group inline-flex items-center gap-2.5 rounded-full bg-[#ff5c1a] font-bold text-white shadow-[0_12px_26px_-12px_rgba(235,82,19,0.9)] hover:bg-[#eb5213] hover:shadow-[0_18px_34px_-12px_rgba(235,82,19,0.95)] ${
+      className={`${styles.springy} ${styles.display} ${focusRing} group inline-flex items-center gap-2.5 rounded-full bg-[#ff5a1f] font-bold text-white shadow-[0_12px_26px_-12px_rgba(255,90,31,0.9)] hover:bg-[#e04a10] hover:shadow-[0_18px_34px_-12px_rgba(255,90,31,0.95)] ${
         size === "lg"
           ? "px-8 py-4 text-[19px]"
           : "px-6 py-3 text-[16px]"
@@ -213,7 +213,7 @@ export function SecondaryButton({
   return (
     <Link
       href={href}
-      className={`${styles.springy} ${styles.display} ${focusRing} inline-flex items-center gap-2.5 rounded-full border-2 border-[#2b1c14]/85 bg-[#fffaf6] font-bold text-[#2b1c14] hover:bg-[#ffe8df] ${
+      className={`${styles.springy} ${styles.display} ${focusRing} inline-flex items-center gap-2.5 rounded-full border-2 border-[#171717]/85 bg-[#ffffff] font-bold text-[#171717] hover:bg-[#ffe4d6] ${
         size === "lg"
           ? "px-8 py-[14px] text-[19px]"
           : "px-6 py-[10px] text-[16px]"

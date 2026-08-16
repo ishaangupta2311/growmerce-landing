@@ -30,7 +30,7 @@ export default function HouseRules() {
     <section
       id="house-rules"
       aria-labelledby="rules-title"
-      className="relative bg-[#ffe8df] px-5 py-20 sm:px-8 lg:py-28"
+      className="relative bg-[#ffe4d6] px-5 py-20 sm:px-8 lg:py-28"
     >
       <div className="mx-auto grid w-full max-w-[1280px] items-center gap-14 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
         <Reveal>
@@ -41,7 +41,7 @@ export default function HouseRules() {
               lead="Five things we decided before we wrote any code, and check ourselves against every week."
             />
             <p
-              className={`${styles.hand} mt-8 flex items-center gap-2 text-[22px] leading-tight text-[#eb5213]`}
+              className={`${styles.hand} mt-8 flex items-center gap-2 text-[22px] leading-tight text-[#ff5a1f]`}
             >
               <Sparkle className={`${styles.twinkle} size-3.5`} />
               nudge the board, it swings
@@ -84,13 +84,13 @@ export default function HouseRules() {
                   {RULES.map((item, i) => (
                     <li key={item.rule} className="flex gap-4">
                       <span
-                        className={`${styles.display} mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-[#ff5c1a] text-[13px] font-extrabold text-white`}
+                        className={`${styles.display} mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-[#ff5a1f] text-[13px] font-extrabold text-white`}
                       >
                         {i + 1}
                       </span>
                       <span className="min-w-0">
                         <span
-                          className={`${styles.display} block text-[18px] leading-snug font-bold text-[#fff4ec]`}
+                          className={`${styles.display} block text-[18px] leading-snug font-bold text-[#fff4ee]`}
                         >
                           {item.rule}
                         </span>

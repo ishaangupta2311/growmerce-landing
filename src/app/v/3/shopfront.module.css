@@ -7,15 +7,17 @@
 --------------------------------------------------------------------------- */
 
 .shell {
-  --ink: #2b1c14;
-  --ink-70: #5a4034;
-  --ink-55: #7a5a48;
-  --cream: #fff4ec;
-  --cream-card: #fffaf6;
-  --peach: #ffe8df;
-  --peach-deep: #ffd7c5;
-  --orange: #ff5c1a;
-  --orange-deep: #eb5213;
+  /* Brand scheme: charcoal ink, warm-cream ground, bright-orange primary,
+     coral accent, pale-peach decoration. */
+  --ink: #171717;
+  --ink-70: #4a4a4a;
+  --ink-55: #8a8a8a;
+  --cream: #fff4ee;
+  --cream-card: #ffffff;
+  --peach: #ffe4d6;
+  --peach-deep: #ffd6c2;
+  --orange: #ff5a1f;
+  --orange-deep: #ff6b35;
   --butter: #ffcf6b;
   --mint: #93d3b8;
 
@@ -71,26 +73,32 @@
 -------------------------------------------------------------------------- */
 
 .awning {
+  /* Pure white against the cream page — the near-cream stripe used before
+     made the band disappear into the background. */
   background-image: repeating-linear-gradient(
     90deg,
     var(--orange) 0 26px,
-    #fff6f0 26px 52px
+    #ffffff 26px 52px
   );
+  border-top: 1px solid rgba(23, 23, 23, 0.08);
 }
 
 .awningDeep {
   background-image: repeating-linear-gradient(
     90deg,
     var(--orange-deep) 0 30px,
-    #fff1e7 30px 60px
+    #ffffff 30px 60px
   );
+  border-top: 1px solid rgba(23, 23, 23, 0.08);
 }
 
 /* z-index keeps the scalloped edge painting over the panel that follows it —
-   without it the next positioned sibling covers the half-circles. */
+   without it the next positioned sibling covers the half-circles. The
+   drop-shadow lifts the scallop curve off same-tone backgrounds. */
 .scallop {
   position: relative;
   z-index: 2;
+  filter: drop-shadow(0 4px 4px rgba(96, 44, 14, 0.22));
 }
 
 .scallop::after {

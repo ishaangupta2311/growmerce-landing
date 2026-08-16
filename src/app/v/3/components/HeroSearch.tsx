@@ -37,7 +37,7 @@ export default function HeroSearch({ className }: { className?: string }) {
       </p>
       <div
         aria-hidden
-        className="flex items-center gap-3 rounded-full border border-[#2b1c14]/10 bg-white py-3 pr-3 pl-5 shadow-[0_18px_36px_-20px_rgba(96,44,14,0.75)]"
+        className="flex items-center gap-3 rounded-full border border-[#171717]/10 bg-white py-3 pr-3 pl-5 shadow-[0_18px_36px_-20px_rgba(96,44,14,0.75)]"
       >
         <svg
           viewBox="0 0 24 24"
@@ -49,12 +49,12 @@ export default function HeroSearch({ className }: { className?: string }) {
             cx="10.5"
             cy="10.5"
             r="6.5"
-            stroke="#eb5213"
+            stroke="#ff5a1f"
             strokeWidth="2.4"
           />
           <path
             d="m15.5 15.5 5 5"
-            stroke="#eb5213"
+            stroke="#ff5a1f"
             strokeWidth="2.4"
             strokeLinecap="round"
           />
@@ -65,7 +65,7 @@ export default function HeroSearch({ className }: { className?: string }) {
             {QUERIES.map((q, index) => (
               <span
                 key={q}
-                className="col-start-1 row-start-1 truncate text-[15px] font-medium text-[#5a4034] transition-all duration-500 ease-out sm:text-base"
+                className="col-start-1 row-start-1 truncate text-[15px] font-medium text-[#4a4a4a] transition-all duration-500 ease-out sm:text-base"
                 style={{
                   opacity: index === i ? 1 : 0,
                   transform:
@@ -76,11 +76,11 @@ export default function HeroSearch({ className }: { className?: string }) {
               </span>
             ))}
           </span>
-          <span className="ml-1 h-[18px] w-[2px] shrink-0 animate-caret bg-[#ff5c1a]" />
+          <span className="ml-1 h-[18px] w-[2px] shrink-0 animate-caret bg-[#ff5a1f]" />
         </span>
 
         <span
-          className={`${styles.display} hidden shrink-0 rounded-full bg-[#ff5c1a] px-4 py-2 text-[14px] font-bold text-white sm:inline-block`}
+          className={`${styles.display} hidden shrink-0 rounded-full bg-[#ff5a1f] px-4 py-2 text-[14px] font-bold text-white sm:inline-block`}
         >
           Search
         </span>
