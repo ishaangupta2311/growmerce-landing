@@ -239,7 +239,7 @@ export default function Founder() {
                     size="lg"
                     className="!border-[#fffaf5] !bg-transparent !text-white hover:!bg-white/15 hover:!text-white"
                   >
-                    Book a founder demo
+                    View demo
                   </SecondaryButton>
                 </div>
 

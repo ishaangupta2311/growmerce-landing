@@ -45,7 +45,7 @@ export default function Footer() {
                 href="#"
                 className="inline-flex items-center gap-2 border-b border-[var(--paper)]/60 pb-0.5 text-[15px] font-semibold text-[var(--paper)] transition-colors hover:border-brand hover:text-brand"
               >
-                Book a founder demo
+                View demo
               </Link>
             </div>
           </Reveal>

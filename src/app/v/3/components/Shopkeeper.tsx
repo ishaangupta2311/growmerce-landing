@@ -149,7 +149,7 @@ export default function Shopkeeper() {
                       size="lg"
                       className="!border-white/70 !bg-transparent !text-white hover:!bg-white/12"
                     >
-                      Book a founder demo
+                      View demo
                     </SecondaryButton>
                   </div>
 

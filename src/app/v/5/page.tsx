@@ -37,7 +37,7 @@ const AISLE = [
 const OPEN = [
   "Come in — we're open",
   "Get early access",
-  "Book a founder demo",
+  "View demo",
   "The founder answers",
 ];
 

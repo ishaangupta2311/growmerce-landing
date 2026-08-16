@@ -67,7 +67,7 @@ export default function Hero() {
               href="#cta"
               className="inline-flex items-center gap-2 border-b border-[var(--ink)] pb-0.5 text-[15px] font-semibold text-[var(--ink)] transition-colors hover:border-brand hover:text-brand"
             >
-              Book a founder demo
+              View demo
             </Link>
           </div>
 

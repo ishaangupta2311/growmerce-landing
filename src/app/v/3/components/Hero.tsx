@@ -71,7 +71,7 @@ export default function Hero() {
               Get early access
             </PrimaryButton>
             <SecondaryButton href="#shopkeeper" size="lg">
-              Book a founder demo
+              View demo
             </SecondaryButton>
           </div>
 

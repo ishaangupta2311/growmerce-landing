@@ -24,7 +24,7 @@ const COLUMNS = [
     heading: "Come in",
     links: [
       { label: "Get early access", href: "#early-access" },
-      { label: "Book a founder demo", href: "#early-access" },
+      { label: "View demo", href: "#early-access" },
     ],
   },
 ];

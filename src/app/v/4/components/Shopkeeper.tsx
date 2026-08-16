@@ -232,7 +232,7 @@ export default function Shopkeeper() {
                       size="lg"
                       className="!border-white/75 !bg-transparent !text-white !shadow-none hover:!bg-white/12"
                     >
-                      Book a founder demo
+                      View demo
                     </SecondaryButton>
                   </div>
 
