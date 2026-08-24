@@ -51,7 +51,7 @@ export default function PricingPage() {
   return (
     <>
       <Navbar />
-      <main>
+      <main className="font-bricolage">
         {/* Hero */}
         <section className="mx-auto max-w-[1370px] px-6 pt-16 pb-14 text-center lg:pt-24">
           <h1 className="hero-enter mx-auto max-w-[24ch] text-[clamp(2rem,5.4vw,5rem)] leading-[1.06] font-extrabold tracking-tight text-balance">

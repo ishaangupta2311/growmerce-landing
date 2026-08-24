@@ -21,7 +21,7 @@ export default function GrowsearchPage() {
   return (
     <>
       <Navbar />
-      <main>
+      <main className="font-bricolage">
         <SearchHero />
         <PlatformStrip label="Works with" className="mt-16" />
         <WhyGrowsearch />

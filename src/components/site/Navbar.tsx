@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import PlatformMegaMenu from "./PlatformMegaMenu";
 
 type MenuItem = { label: string; href: string; note?: string };
 type NavEntry = { label: string; href?: string; items?: MenuItem[] };
@@ -51,7 +52,7 @@ function Caret({ open }: { open: boolean }) {
   );
 }
 
-export default function Navbar() {
+export default function Navbar({ homepage = false }: { homepage?: boolean }) {
   const [open, setOpen] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
@@ -72,6 +73,7 @@ export default function Navbar() {
     return () => {
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("mousedown", onClick);
+      if (closeTimer.current) window.clearTimeout(closeTimer.current);
     };
   }, []);
 
@@ -82,11 +84,13 @@ export default function Navbar() {
   };
   const hoverClose = () => {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
-    closeTimer.current = window.setTimeout(() => setOpen(null), 140);
+    closeTimer.current = window.setTimeout(() => {
+      if (!navRef.current?.contains(document.activeElement)) setOpen(null);
+    }, 140);
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-cream/95 shadow-[0_1px_0_rgba(23,23,23,0.07)] backdrop-blur-md">
+    <header className="sticky top-0 z-50 bg-cream/95 font-bricolage shadow-[0_1px_0_rgba(23,23,23,0.07)] backdrop-blur-md">
       <div
         ref={navRef}
         className="relative mx-auto flex h-[84px] w-full max-w-[1440px] items-center justify-between px-5 sm:px-8"
@@ -116,7 +120,12 @@ export default function Navbar() {
                   type="button"
                   aria-expanded={open === entry.label}
                   aria-haspopup="true"
-                  onClick={() => setOpen(open === entry.label ? null : entry.label)}
+                  aria-controls={
+                    homepage && entry.label === "Platform"
+                      ? "platform-mega-menu"
+                      : undefined
+                  }
+                  onClick={() => setOpen(entry.label)}
                   onFocus={() => hoverOpen(entry.label)}
                   className="flex items-center gap-1.5 rounded-md py-2 transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                 >
@@ -124,33 +133,35 @@ export default function Navbar() {
                   <Caret open={open === entry.label} />
                 </button>
 
-                <div
-                  className={`absolute top-full left-1/2 w-[290px] -translate-x-1/2 pt-3 transition-[opacity,transform] duration-200 ${
-                    open === entry.label
-                      ? "pointer-events-auto opacity-100"
-                      : "pointer-events-none -translate-y-1 opacity-0"
-                  }`}
-                >
-                  <div className="overflow-hidden rounded-2xl border border-line bg-white p-2 shadow-[0_24px_60px_-24px_rgba(23,23,23,0.28)]">
-                    {entry.items.map((item) => (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        onClick={() => setOpen(null)}
-                        className="block rounded-xl px-3.5 py-2.5 transition-colors hover:bg-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                      >
-                        <span className="block text-[15px] font-semibold text-charcoal">
-                          {item.label}
-                        </span>
-                        {item.note ? (
-                          <span className="mt-0.5 block font-sans text-[13px] leading-snug text-muted">
-                            {item.note}
+                {homepage && entry.label === "Platform" ? null : (
+                  <div
+                    className={`absolute top-full left-1/2 w-[290px] -translate-x-1/2 pt-3 transition-[opacity,transform] duration-200 ${
+                      open === entry.label
+                        ? "pointer-events-auto opacity-100"
+                        : "pointer-events-none -translate-y-1 opacity-0"
+                    }`}
+                  >
+                    <div className="overflow-hidden rounded-2xl border border-line bg-white p-2 shadow-[0_24px_60px_-24px_rgba(23,23,23,0.28)]">
+                      {entry.items.map((item) => (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          onClick={() => setOpen(null)}
+                          className="block rounded-xl px-3.5 py-2.5 transition-colors hover:bg-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                        >
+                          <span className="block text-[15px] font-semibold text-charcoal">
+                            {item.label}
                           </span>
-                        ) : null}
-                      </Link>
-                    ))}
+                          {item.note ? (
+                            <span className="mt-0.5 block text-[13px] leading-snug text-muted">
+                              {item.note}
+                            </span>
+                          ) : null}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             ) : (
               <Link
@@ -163,6 +174,14 @@ export default function Navbar() {
             ),
           )}
         </nav>
+
+        {homepage && open === "Platform" ? (
+          <PlatformMegaMenu
+            onNavigate={() => setOpen(null)}
+            onMouseEnter={() => hoverOpen("Platform")}
+            onMouseLeave={hoverClose}
+          />
+        ) : null}
 
         <div className="flex shrink-0 items-center gap-2.5">
           <Link

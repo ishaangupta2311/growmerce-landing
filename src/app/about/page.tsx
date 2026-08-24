@@ -88,7 +88,7 @@ export default function AboutPage() {
   return (
     <>
       <Navbar />
-      <main>
+      <main className="font-bricolage">
         {/* Hero */}
         <section className="mx-auto max-w-[1370px] px-6 pt-16 pb-14 text-center lg:pt-24">
           <p className="hero-enter font-poppins text-[13px] font-extrabold tracking-[0.2em] text-brand uppercase">

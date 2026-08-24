@@ -84,7 +84,7 @@ export default function SolutionsPage() {
   return (
     <>
       <Navbar />
-      <main>
+      <main className="font-bricolage">
         {/* Hero */}
         <section className="mx-auto max-w-[1370px] px-6 pt-14 pb-12 lg:pt-20">
           <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">

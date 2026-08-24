@@ -22,8 +22,11 @@
   --color-logobar: #d9d9d9;
 
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-  --font-poppins: var(--font-poppins-loaded), ui-sans-serif, system-ui, sans-serif;
-  --font-grotesk: var(--font-grotesk-loaded), ui-sans-serif, system-ui, sans-serif;
+  --font-bricolage: var(--font-bricolage-loaded), ui-sans-serif, system-ui, sans-serif;
+  /* Legacy utility names remain aliases so existing production typography
+     keeps its carefully selected weights and sizes while using one face. */
+  --font-poppins: var(--font-bricolage-loaded), ui-sans-serif, system-ui, sans-serif;
+  --font-grotesk: var(--font-bricolage-loaded), ui-sans-serif, system-ui, sans-serif;
 
   /* Soft orange glow used on cards, the footer shell and the AI card. */
   --shadow-glow: 0 10px 60px rgba(255, 92, 26, 0.16);
@@ -127,6 +130,22 @@ body {
   50% {
     opacity: 0;
   }
+}
+
+@keyframes mega-menu-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+.mega-menu-enter {
+  animation: mega-menu-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top center;
 }
 
 /* Hero entrance — staggered, runs once on load. */

@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope, Poppins, Space_Grotesk } from "next/font/google";
+import { Bricolage_Grotesque, Manrope } from "next/font/google";
 import "./globals.css";
 
-// Manrope carries almost all copy in the reference; Poppins is reserved for
-// the nav links and the hero headline, Space Grotesk for the pricing headline.
+// Manrope remains available to the archived /v concepts, which intentionally
+// use a different type system. Every production route uses Bricolage through
+// the shared `font-bricolage` token.
 const manrope = Manrope({
   variable: "--font-manrope",
   subsets: ["latin"],
@@ -11,17 +12,9 @@ const manrope = Manrope({
   display: "swap",
 });
 
-const poppins = Poppins({
-  variable: "--font-poppins-loaded",
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage-loaded",
   subsets: ["latin"],
-  weight: ["500"],
-  display: "swap",
-});
-
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-grotesk-loaded",
-  subsets: ["latin"],
-  weight: ["400"],
   display: "swap",
 });
 
@@ -55,7 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // The inline script below adds a `js` class before hydration; React must
       // not treat that attribute delta as a mismatch.
       suppressHydrationWarning
-      className={`${manrope.variable} ${poppins.variable} ${spaceGrotesk.variable} antialiased`}
+      className={`${manrope.variable} ${bricolage.variable} antialiased`}
     >
       <head>
         {/* Tags the document so scroll-reveal hidden states only apply with JS. */}

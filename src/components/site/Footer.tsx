@@ -42,7 +42,7 @@ const SOCIALS = [
 
 export default function Footer() {
   return (
-    <footer className="mx-auto max-w-[1370px] px-6 pb-10">
+    <footer className="mx-auto max-w-[1370px] px-6 pb-10 font-bricolage">
       <div className="border-t border-line pt-12">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,1fr))] lg:gap-8">
           {COLUMNS.map((col) => (

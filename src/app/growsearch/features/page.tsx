@@ -23,7 +23,7 @@ export default function GrowsearchFeaturesPage() {
   return (
     <>
       <Navbar />
-      <main>
+      <main className="font-bricolage">
         <FeaturesHero />
 
         <Reveal className="mx-auto mt-16 max-w-[1370px] px-6">
