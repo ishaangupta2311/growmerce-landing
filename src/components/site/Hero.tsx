@@ -48,13 +48,13 @@ export default function Hero() {
             priority
             sizes="(min-width: 1024px) 101vw, 100vw"
             className="hero-enter-scale absolute h-auto"
-            style={{ left: "-6.51%", top: "13.67%", width: "101.03%", animationDelay: "150ms" }}
+            style={{ left: "-6.51%", top: "18.74%", width: "101.03%", animationDelay: "150ms" }}
           />
 
           {/* Chart card */}
           <div
             className="hero-enter-scale absolute rounded-[10px] bg-[#fae2d2] p-4"
-            style={{ left: "72.52%", top: "11.33%", width: "24.88%", height: "36.08%", animationDelay: "230ms" }}
+            style={{ left: "72.52%", top: "11.33%", width: "24.88%", height: "34.71%", animationDelay: "230ms" }}
           >
             <CandleChart className="h-full w-full" />
           </div>
@@ -62,13 +62,13 @@ export default function Hero() {
           {/* The three orange blocks */}
           <h1 className="contents font-poppins font-extrabold tracking-[-0.02em] text-white">
             {[
-              { text: "The high street of", left: "2.19%", top: "10.34%", width: "67.92%", delay: 0 },
-              { text: "AI tools for", left: "25.36%", top: "30.79%", width: "44.76%", delay: 90 },
-              { text: "ecommerce.", left: "44.69%", top: "50.37%", width: "52.71%", delay: 180 },
+              { text: "The high street of", left: "2.19%", top: "10.34%", width: "67.92%", radius: "rounded-tl-[14px] rounded-tr-[14px]", delay: 0 },
+              { text: "AI tools for", left: "25.36%", top: "30.79%", width: "44.76%", radius: "rounded-bl-[14px]", delay: 90 },
+              { text: "ecommerce.", left: "45.39%", top: "50.37%", width: "52.01%", radius: "rounded-tr-[14px] rounded-br-[14px] rounded-bl-[14px]", delay: 180 },
             ].map((b) => (
               <span
                 key={b.text}
-                className="hero-enter absolute flex items-center bg-brand px-6 text-[clamp(2rem,6.2vw,5.63rem)] leading-none"
+                className={`hero-enter absolute flex items-center bg-brand px-6 text-[clamp(2rem,6.2vw,5.63rem)] leading-none ${b.radius}`}
                 style={{ left: b.left, top: b.top, width: b.width, height: "20.44%", animationDelay: `${b.delay}ms` }}
               >
                 {b.text}
@@ -79,7 +79,7 @@ export default function Hero() {
           {/* Subtext + CTAs */}
           <p
             className="hero-enter absolute text-[clamp(1rem,1.65vw,1.5rem)] leading-snug text-body-mute"
-            style={{ left: "46.06%", top: "70.94%", width: "51.89%", animationDelay: "300ms" }}
+            style={{ left: "46.76%", top: "70.94%", width: "51.19%", animationDelay: "300ms" }}
           >
             Growmerce turns search into sales by understanding what shoppers
             actually ask for.
@@ -87,7 +87,7 @@ export default function Hero() {
 
           <div
             className="hero-enter absolute flex items-center gap-4"
-            style={{ left: "46.06%", top: "87.07%", animationDelay: "380ms" }}
+            style={{ left: "46.76%", top: "87.07%", animationDelay: "380ms" }}
           >
             <Link
               href="#demo"
