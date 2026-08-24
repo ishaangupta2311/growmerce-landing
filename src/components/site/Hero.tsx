@@ -68,7 +68,7 @@ export default function Hero() {
             ].map((b) => (
               <span
                 key={b.text}
-                className="hero-enter absolute flex items-center bg-brand px-6 text-[clamp(2rem,6.2vw,5.63rem)] leading-none"
+                className="hero-enter absolute flex items-center rounded-[14px] bg-brand px-6 text-[clamp(2rem,6.2vw,5.63rem)] leading-none"
                 style={{ left: b.left, top: b.top, width: b.width, height: "20.44%", animationDelay: `${b.delay}ms` }}
               >
                 {b.text}
@@ -110,7 +110,7 @@ export default function Hero() {
             {["The high street of", "AI tools for", "ecommerce."].map((line, i) => (
               <span
                 key={line}
-                className={`hero-enter block w-fit bg-brand px-4 pt-2 pb-3 text-[clamp(2.15rem,8.6vw,3.4rem)] leading-[1.02] ${i > 0 ? "mt-2" : ""} ${i === 1 ? "ml-6" : ""}`}
+                className={`hero-enter block w-fit rounded-[10px] bg-brand px-4 pt-2 pb-3 text-[clamp(2.15rem,8.6vw,3.4rem)] leading-[1.02] ${i > 0 ? "mt-2" : ""} ${i === 1 ? "ml-6" : ""}`}
                 style={{ animationDelay: `${i * 100}ms` }}
               >
                 {line}

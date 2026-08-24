@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import HeaderMegaMenu from "./HeaderMegaMenu";
 import PlatformMegaMenu from "./PlatformMegaMenu";
 
 type MenuItem = { label: string; href: string; note?: string };
@@ -123,6 +124,10 @@ export default function Navbar({ homepage = false }: { homepage?: boolean }) {
                   aria-controls={
                     homepage && entry.label === "Platform"
                       ? "platform-mega-menu"
+                      : entry.label === "Resources"
+                        ? "resources-mega-menu"
+                        : entry.label === "Why us"
+                          ? "why-us-mega-menu"
                       : undefined
                   }
                   onClick={() => setOpen(entry.label)}
@@ -133,7 +138,7 @@ export default function Navbar({ homepage = false }: { homepage?: boolean }) {
                   <Caret open={open === entry.label} />
                 </button>
 
-                {homepage && entry.label === "Platform" ? null : (
+                {(homepage && entry.label === "Platform") || entry.label === "Resources" || entry.label === "Why us" ? null : (
                   <div
                     className={`absolute top-full left-1/2 w-[290px] -translate-x-1/2 pt-3 transition-[opacity,transform] duration-200 ${
                       open === entry.label
@@ -179,6 +184,24 @@ export default function Navbar({ homepage = false }: { homepage?: boolean }) {
           <PlatformMegaMenu
             onNavigate={() => setOpen(null)}
             onMouseEnter={() => hoverOpen("Platform")}
+            onMouseLeave={hoverClose}
+          />
+        ) : null}
+
+        {open === "Resources" ? (
+          <HeaderMegaMenu
+            variant="resources"
+            onNavigate={() => setOpen(null)}
+            onMouseEnter={() => hoverOpen("Resources")}
+            onMouseLeave={hoverClose}
+          />
+        ) : null}
+
+        {open === "Why us" ? (
+          <HeaderMegaMenu
+            variant="why-us"
+            onNavigate={() => setOpen(null)}
+            onMouseEnter={() => hoverOpen("Why us")}
             onMouseLeave={hoverClose}
           />
         ) : null}
