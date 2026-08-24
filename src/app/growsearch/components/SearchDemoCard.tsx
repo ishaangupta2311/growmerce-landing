@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 /* Inline magnifying-glass glyph, matching the hand-drawn style of the other
-   shared icon components (Arrow, the SmartSearch CircleTick) rather than
+   shared icon components (Arrow, the Growsearch CircleTick) rather than
    pulling in a new asset. */
 function SearchGlyph({ className }: { className?: string }) {
   return (

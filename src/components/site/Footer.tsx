@@ -13,7 +13,7 @@ const COLUMNS = [
   {
     heading: "Product",
     links: [
-      { label: "Smart Search", href: "/growsearch" },
+      { label: "Growsearch", href: "/growsearch" },
       { label: "All products", href: "/growsearch/features" },
     ],
   },

@@ -62,7 +62,7 @@ export default function Hero() {
           {/* The three orange blocks */}
           <h1 className="contents font-poppins font-extrabold tracking-[-0.02em] text-white">
             {[
-              { text: "The high street of", left: "2.19%", top: "10.34%", width: "67.92%", radius: "rounded-tl-[14px] rounded-tr-[14px]", delay: 0 },
+              { text: "The high street of", left: "2.19%", top: "10.34%", width: "67.92%", radius: "rounded-tl-[14px] rounded-tr-[14px] rounded-bl-[14px]", delay: 0 },
               { text: "AI tools for", left: "25.36%", top: "30.79%", width: "44.76%", radius: "rounded-bl-[14px]", delay: 90 },
               { text: "ecommerce.", left: "45.39%", top: "50.37%", width: "52.01%", radius: "rounded-tr-[14px] rounded-br-[14px] rounded-bl-[14px]", delay: 180 },
             ].map((b) => (

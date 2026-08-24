@@ -38,7 +38,7 @@ function CircleTick() {
   );
 }
 
-export default function SmartSearch() {
+export default function Growsearch() {
   return (
     <section id="products" className="mx-auto max-w-[1370px] px-6 pt-24">
       <div className="grid items-start gap-12 lg:grid-cols-[1fr_703px]">
@@ -47,7 +47,7 @@ export default function SmartSearch() {
             Solutions
           </span>
           <h2 className="mt-4 text-[clamp(2.5rem,4.5vw,4rem)] font-semibold">
-            Smart Search
+            Growsearch
           </h2>
           <p className="mt-2 text-xl font-extrabold leading-tight">
             AI search that understands your customers,
@@ -69,7 +69,7 @@ export default function SmartSearch() {
 
           <div className="mt-12 flex flex-wrap items-center gap-5">
             <Link href="#demo" className="block-cta bg-brand-bright text-white">
-              Explore smart Search
+              Explore Growsearch
               <Arrow className="cta-arrow" />
             </Link>
             <Link
@@ -84,7 +84,7 @@ export default function SmartSearch() {
         <Reveal delay={150}>
           <Image
             src="/img/smart-search-mock.png"
-            alt="Smart Search results page showing top TV matches, recommendations and click-through-rate analytics"
+            alt="Growsearch results page showing top TV matches, recommendations and click-through-rate analytics"
             width={1536}
             height={1024}
             className="w-full rounded-[27px]"

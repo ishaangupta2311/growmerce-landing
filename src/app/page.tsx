@@ -2,7 +2,7 @@ import Navbar from "@/components/site/Navbar";
 import Hero from "@/components/site/Hero";
 import PlatformStrip from "@/components/site/PlatformStrip";
 import Fighting from "@/components/site/Fighting";
-import SmartSearch from "@/components/site/SmartSearch";
+import Growsearch from "@/components/site/Growsearch";
 import PricingBand from "@/components/site/PricingBand";
 import AiSection from "@/components/site/AiSection";
 import Faq, { HOME_FAQ } from "@/components/site/Faq";
@@ -16,7 +16,7 @@ export default function Home() {
         <Hero />
         <PlatformStrip />
         <Fighting />
-        <SmartSearch />
+        <Growsearch />
         <PricingBand />
         <AiSection />
         <Faq items={HOME_FAQ} />
