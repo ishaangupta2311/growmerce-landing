@@ -7,20 +7,24 @@ import Reveal from "./Reveal";
 
 const ITEMS = [
   {
-    title: "Personalization",
-    body: "We harness the power of artificial intelligence and machine learning to deliver personalized shopping experiences that resonate with each customer. By analyzing extensive data on user behavior and preferences, our AI-driven products provide tailored recommendations and customizations that enhance customer experiences and drive higher engagement and conversion rates.",
+    title: "Intent, not keywords",
+    body:
+      "A shopper types a sentence, not a search term. \u201CSkincare under $10\u201D, \u201Cwarm but not bulky\u201D, \u201Cgift, arrives Friday\u201D \u2014 price, attribute, timing and intent get read straight out of the sentence. No filter menus to dig through, no keyword archaeology, and no teaching your customer how to talk to your store.",
   },
   {
-    title: "Real time learning",
-    body: "Models retrain continuously on live shopper behavior, so results improve with every session instead of waiting on batch updates.",
+    title: "It only ever talks about products you actually stock",
+    body:
+      "The model never invents a product, a price or a promise. Every answer is grounded in your live catalogue \u2014 real SKUs, real stock, real prices, synced from Shopify as they change \u2014 so there is nothing for it to be confidently wrong about. If we can\u2019t ground a claim in your data, the AI doesn\u2019t make it.",
   },
   {
-    title: "Powerful rule engine",
-    body: "Merchandisers stay in control: pin, boost, or bury products with rules that work alongside the AI ranking, not against it.",
+    title: "Speed is part of the answer",
+    body:
+      "An assistant that thinks for four seconds has already lost the sale. Your native results appear instantly, then AI ranking and semantic matches layer in on top of them. The shopper never sits watching a spinner while a model makes up its mind.",
   },
   {
-    title: "Advanced Analytics",
-    body: "See exactly how search and recommendations convert, with click-through, revenue, and trend reporting built in.",
+    title: "If it doesn\u2019t sell, it\u2019s decoration",
+    body:
+      "Every AI decision is tied back to a checkout. Search-attributed revenue, add-to-cart rate, zero-result rate, and the questions shoppers actually asked \u2014 all measured in the open, so you can judge the AI on money rather than on vibes.",
   },
 ];
 
@@ -38,6 +42,10 @@ export default function AiSection() {
           <h2 className="text-[clamp(1.875rem,3vw,2.5rem)] font-semibold">
             AI at Growmerce
           </h2>
+          <p className="mt-4 max-w-[46ch] text-[16px] leading-relaxed text-body-mute">
+            Every tool we ship runs on the same few convictions about where AI
+            belongs in a store &mdash; and where it doesn&rsquo;t.
+          </p>
 
           <ul className="mt-8">
             {ITEMS.map((item, i) => (
@@ -72,10 +80,10 @@ export default function AiSection() {
           </ul>
 
           <Link
-            href="#products"
+            href="/growsearch"
             className="block-cta mt-12 bg-brand-bright text-white"
           >
-            Explore all features
+            See it running in Growsearch
             <Arrow className="cta-arrow" />
           </Link>
         </div>

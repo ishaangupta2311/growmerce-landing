@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Arrow from "./Arrow";
 import Reveal from "./Reveal";
+import { PLATFORMS } from "./PlatformStrip";
 
 const CHECKLIST = [
   "Understands natural language and intent.",
@@ -97,7 +98,7 @@ export default function SmartSearch() {
           <div className="h-px flex-1 bg-brand" />
           <Image src="/img/icon-sparkle.svg" alt="" width={23} height={23} />
           <p className="text-center text-2xl font-bold">
-            Explore more products in Growmerce ecosystem
+            Explore our products in these ecosystem
           </p>
           <Image src="/img/icon-sparkle.svg" alt="" width={23} height={23} />
           <div className="h-px flex-1 bg-brand" />
@@ -105,9 +106,17 @@ export default function SmartSearch() {
       </Reveal>
 
       <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-4 lg:gap-10 lg:px-24">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Reveal key={i} delay={i * 100}>
-            <div className="h-[142px] rounded-[26px] bg-white shadow-[0_12px_40px_rgba(0,0,0,0.10)] transition-transform duration-300 hover:-translate-y-1.5" />
+        {PLATFORMS.map((p, i) => (
+          <Reveal key={p.name} delay={i * 100}>
+            <div className="grid h-[142px] place-items-center rounded-[26px] bg-white px-6 shadow-[0_12px_40px_rgba(0,0,0,0.10)] transition-transform duration-300 hover:-translate-y-1.5">
+              <Image
+                src={p.src}
+                alt={p.name}
+                width={p.w}
+                height={p.h}
+                className={`w-auto max-w-full object-contain ${p.cls}`}
+              />
+            </div>
           </Reveal>
         ))}
       </div>

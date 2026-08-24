@@ -6,7 +6,7 @@ const CARDS = [
     icon: "/img/icon-search-circle.svg",
     bare: false,
     title: "Category",
-    body: "AI platforms promise to transform your business. What you get is a login screen, a signup form, and 'coming soon.'",
+    body: "Every AI platform promises the same thing. You get a login screen, a sign-up form, and \"coming soon.\"",
   },
   {
     icon: "/img/icon-workflow.svg",
@@ -18,7 +18,7 @@ const CARDS = [
     icon: "/img/icon-wallet.svg",
     bare: true,
     title: "Economic",
-    body: "Ecommerce brands and agencies are asked to do more with the same people, the same budget. Now, not someday.",
+    body: "You're expected to do more with the same team and the same budget. This quarter, not next year.",
   },
 ];
 

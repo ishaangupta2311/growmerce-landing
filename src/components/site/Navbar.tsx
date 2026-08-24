@@ -1,18 +1,96 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
-const LINKS = [
-  { label: "Products", href: "#products" },
-  { label: "Prices", href: "#pricing" },
-  { label: "Service", href: "#service" },
-  { label: "About us", href: "#about" },
+type MenuItem = { label: string; href: string; note?: string };
+type NavEntry = { label: string; href?: string; items?: MenuItem[] };
+
+/* Figma draws Platform / Resources / Why us with carets; they resolve to the
+   real routes below. Pricing is a plain link. */
+const NAV: NavEntry[] = [
+  {
+    label: "Platform",
+    items: [
+      { label: "Growsearch", href: "/growsearch", note: "Storefront search that never dead-ends" },
+      { label: "All features", href: "/growsearch/features", note: "Everything Growsearch does" },
+      { label: "Solutions", href: "/solutions", note: "The revenue your search bar is leaking" },
+    ],
+  },
+  {
+    label: "Resources",
+    items: [
+      { label: "What is Growmerce", href: "/about" },
+      { label: "FAQ", href: "/#faq" },
+      { label: "Help center", href: "#" },
+    ],
+  },
+  {
+    label: "Why us",
+    items: [
+      { label: "How we work", href: "/about" },
+      { label: "Same catalog, different outcome", href: "/solutions" },
+    ],
+  },
+  { label: "Pricing", href: "/pricing" },
 ];
 
-export default function Navbar() {
+function Caret({ open }: { open: boolean }) {
   return (
-    <header className="sticky top-0 z-50 bg-white/85 shadow-[0_1px_0_rgba(0,0,0,0.06)] backdrop-blur-md">
-      {/* Full-bleed: logo hugs the top-left corner, CTAs the top-right. */}
-      <div className="relative flex h-[87px] w-full items-center justify-between px-5 sm:px-8">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className={`transition-transform duration-200 ${open ? "" : "rotate-180"}`}
+    >
+      <path d="m5 14 7-7 7 7" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export default function Navbar() {
+  const [open, setOpen] = useState<string | null>(null);
+  const [mobile, setMobile] = useState(false);
+  const navRef = useRef<HTMLDivElement>(null);
+  const closeTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(null);
+        setMobile(false);
+      }
+    };
+    const onClick = (e: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) setOpen(null);
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("mousedown", onClick);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("mousedown", onClick);
+    };
+  }, []);
+
+  // Hover with a short close delay so the pointer can travel into the panel.
+  const hoverOpen = (label: string) => {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    setOpen(label);
+  };
+  const hoverClose = () => {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => setOpen(null), 140);
+  };
+
+  return (
+    <header className="sticky top-0 z-50 bg-cream/95 shadow-[0_1px_0_rgba(23,23,23,0.07)] backdrop-blur-md">
+      <div
+        ref={navRef}
+        className="relative mx-auto flex h-[84px] w-full max-w-[1440px] items-center justify-between px-5 sm:px-8"
+      >
         <Link href="/" aria-label="Growmerce home" className="shrink-0">
           <Image
             src="/brand/logo.svg"
@@ -20,31 +98,148 @@ export default function Navbar() {
             width={305}
             height={66}
             priority
-            className="h-11 w-auto"
+            className="h-10 w-auto sm:h-11"
           />
         </Link>
 
-        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-10 font-poppins text-lg font-medium lg:flex">
-          {LINKS.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="transition-colors hover:text-brand"
-            >
-              {link.label}
-            </Link>
-          ))}
+        {/* Desktop nav */}
+        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 font-poppins text-[17px] font-medium lg:flex">
+          {NAV.map((entry) =>
+            entry.items ? (
+              <div
+                key={entry.label}
+                className="relative"
+                onMouseEnter={() => hoverOpen(entry.label)}
+                onMouseLeave={hoverClose}
+              >
+                <button
+                  type="button"
+                  aria-expanded={open === entry.label}
+                  aria-haspopup="true"
+                  onClick={() => setOpen(open === entry.label ? null : entry.label)}
+                  onFocus={() => hoverOpen(entry.label)}
+                  className="flex items-center gap-1.5 rounded-md py-2 transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                >
+                  {entry.label}
+                  <Caret open={open === entry.label} />
+                </button>
+
+                <div
+                  className={`absolute top-full left-1/2 w-[290px] -translate-x-1/2 pt-3 transition-[opacity,transform] duration-200 ${
+                    open === entry.label
+                      ? "pointer-events-auto opacity-100"
+                      : "pointer-events-none -translate-y-1 opacity-0"
+                  }`}
+                >
+                  <div className="overflow-hidden rounded-2xl border border-line bg-white p-2 shadow-[0_24px_60px_-24px_rgba(23,23,23,0.28)]">
+                    {entry.items.map((item) => (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        onClick={() => setOpen(null)}
+                        className="block rounded-xl px-3.5 py-2.5 transition-colors hover:bg-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                      >
+                        <span className="block text-[15px] font-semibold text-charcoal">
+                          {item.label}
+                        </span>
+                        {item.note ? (
+                          <span className="mt-0.5 block font-sans text-[13px] leading-snug text-muted">
+                            {item.note}
+                          </span>
+                        ) : null}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Link
+                key={entry.label}
+                href={entry.href!}
+                className="rounded-md py-2 transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              >
+                {entry.label}
+              </Link>
+            ),
+          )}
         </nav>
 
-        <div className="flex shrink-0 items-center gap-3">
-          <Link href="#demo" className="pill-cta-white">
-            Get a demo
+        <div className="flex shrink-0 items-center gap-2.5">
+          <Link
+            href="#demo"
+            className="hidden rounded-full border border-line px-5 py-2 font-poppins text-[15px] text-muted transition-colors hover:border-charcoal/30 hover:text-charcoal sm:inline-flex"
+          >
+            See Demo
           </Link>
-          <Link href="#trial" className="pill-cta-outline hidden sm:inline-flex">
-            Try it free
+          <Link
+            href="#login"
+            className="hidden rounded-full border border-charcoal/25 px-5 py-2 font-poppins text-[15px] text-charcoal transition-colors hover:border-brand hover:text-brand sm:inline-flex"
+          >
+            Login
           </Link>
+          <button
+            type="button"
+            aria-label="Menu"
+            aria-expanded={mobile}
+            onClick={() => setMobile(!mobile)}
+            className="grid size-11 place-items-center rounded-full border border-charcoal/20 lg:hidden"
+          >
+            <span className="sr-only">Menu</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+              {mobile ? (
+                <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+              ) : (
+                <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+              )}
+            </svg>
+          </button>
         </div>
       </div>
+
+      {/* Mobile sheet */}
+      {mobile ? (
+        <div className="border-t border-line bg-white px-5 pb-6 lg:hidden">
+          {NAV.map((entry) => (
+            <div key={entry.label} className="border-b border-line py-3 last:border-0">
+              {entry.href ? (
+                <Link
+                  href={entry.href}
+                  onClick={() => setMobile(false)}
+                  className="block font-poppins text-[17px] font-medium"
+                >
+                  {entry.label}
+                </Link>
+              ) : (
+                <>
+                  <p className="font-poppins text-[13px] font-semibold tracking-[0.12em] text-muted uppercase">
+                    {entry.label}
+                  </p>
+                  <div className="mt-1.5 space-y-1.5">
+                    {entry.items!.map((item) => (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        onClick={() => setMobile(false)}
+                        className="block text-[16px] font-medium text-charcoal"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+          <div className="mt-5 flex gap-3">
+            <Link href="#demo" onClick={() => setMobile(false)} className="flex-1 rounded-full border border-line py-2.5 text-center font-poppins text-[15px]">
+              See Demo
+            </Link>
+            <Link href="#login" onClick={() => setMobile(false)} className="flex-1 rounded-full border border-charcoal/25 py-2.5 text-center font-poppins text-[15px]">
+              Login
+            </Link>
+          </div>
+        </div>
+      ) : null}
     </header>
   );
 }

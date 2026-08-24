@@ -1,198 +1,152 @@
 import Image from "next/image";
 import Link from "next/link";
 
-function HeroHeading({ className }: { className?: string }) {
+/* Decorative market chart from the Figma hero card, drawn as SVG so it stays
+   crisp. Candles alternate charcoal/orange over peach gridlines. */
+function CandleChart({ className }: { className?: string }) {
+  const candles = [
+    { x: 16, open: 112, close: 150, low: 158, high: 96, up: false },
+    { x: 52, open: 84, close: 128, low: 140, high: 70, up: false },
+    { x: 88, open: 82, close: 126, low: 138, high: 68, up: false },
+    { x: 124, open: 44, close: 92, low: 104, high: 30, up: true },
+    { x: 160, open: 24, close: 66, low: 78, high: 12, up: false },
+    { x: 196, open: 62, close: 104, low: 116, high: 50, up: false },
+    { x: 232, open: 34, close: 74, low: 86, high: 22, up: true },
+    { x: 268, open: 70, close: 118, low: 130, high: 58, up: true },
+    { x: 304, open: 30, close: 78, low: 92, high: 18, up: true },
+  ];
   return (
-    <h1
-      className={`font-poppins font-medium leading-[1.12] text-[clamp(2rem,3.95vw,3.55rem)] ${className ?? ""}`}
-    >
-      Shopping, made Smarter
-      <br />
-      <span className="text-brand-bright">for every customer</span>
-    </h1>
-  );
-}
-
-function HeroCopy({ className }: { className?: string }) {
-  return (
-    <div className={className}>
-      <p className="max-w-[600px] text-[clamp(1.125rem,1.6vw,1.5rem)] leading-snug text-body-mute">
-        Growmerce turns browsing into buying with AI-powered personalization
-        built for modern commerce.
-      </p>
-      <div className="mt-6 flex items-center gap-4">
-        <Link href="#demo" className="pill-cta-white">
-          Get a demo
-        </Link>
-        <Link href="#trial" className="pill-cta-outline">
-          Try it free
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-/* Crisp, hand-built stand-ins for the flattened UI bits baked into the old
-   (520px…) Figma collage: a live search bar, a product-feed card and an
-   order-confirmed chip, all floating over the dark bokeh panels. */
-
-function SearchPill({ className }: { className?: string }) {
-  return (
-    <div
-      className={`flex items-center gap-3 rounded-full bg-white/95 py-3 pr-4 pl-5 shadow-[0_18px_50px_rgba(0,0,0,0.45)] ${className ?? ""}`}
-    >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <circle cx="10.5" cy="10.5" r="6.5" stroke="#eb5213" strokeWidth="2.4" />
-        <path d="m15.5 15.5 5 5" stroke="#eb5213" strokeWidth="2.4" strokeLinecap="round" />
-      </svg>
-      <span className="text-sm font-medium text-black/70">
-        white sneakers under ₹3,000
-      </span>
-      <span className="h-4 w-0.5 animate-caret bg-brand" aria-hidden />
-    </div>
-  );
-}
-
-function ProductCard({ className }: { className?: string }) {
-  return (
-    <div
-      className={`w-44 rounded-2xl bg-white/95 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.45)] ${className ?? ""}`}
-    >
-      <p className="text-[11px] font-extrabold tracking-wide text-black/80 uppercase">
-        Top match
-      </p>
-      {[92, 87, 81].map((match, i) => (
-        <div key={match} className="mt-2.5 flex items-center gap-2.5">
-          <span
-            className={`size-8 shrink-0 rounded-lg ${
-              ["bg-peach", "bg-brand-bright/30", "bg-logobar/60"][i]
-            }`}
-          />
-          <span className="min-w-0 flex-1">
-            <span className="block h-1.5 w-full rounded-full bg-black/10" />
-            <span className="mt-1.5 block h-1.5 w-2/3 rounded-full bg-black/10" />
-          </span>
-          <span className="text-[10px] font-bold text-brand">{match}%</span>
-        </div>
+    <svg viewBox="0 0 336 180" fill="none" aria-hidden className={className}>
+      {[24, 60, 96, 132, 168].map((y) => (
+        <line key={y} x1="4" x2="332" y1={y} y2={y} stroke="#FFD6C2" strokeWidth="1.5" />
       ))}
-    </div>
+      {candles.map((c) => (
+        <g key={c.x} stroke={c.up ? "#FF5A1F" : "#171717"} fill={c.up ? "#FF5A1F" : "#171717"}>
+          <line x1={c.x + 10} x2={c.x + 10} y1={c.high} y2={c.low} strokeWidth="2.5" />
+          <rect x={c.x} y={c.open} width="20" height={Math.max(6, c.close - c.open)} rx="2.5" />
+        </g>
+      ))}
+    </svg>
   );
 }
-
-function OrderChip({ className }: { className?: string }) {
-  return (
-    <div
-      className={`flex items-center gap-2.5 rounded-full bg-white/95 py-2.5 pr-5 pl-3 shadow-[0_18px_50px_rgba(0,0,0,0.45)] ${className ?? ""}`}
-    >
-      <span className="flex size-7 items-center justify-center rounded-full bg-brand-bright">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path d="m4 12.5 5.5 5.5L20 6.5" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </span>
-      <span className="text-sm font-bold text-black/80">Order confirmed</span>
-    </div>
-  );
-}
-
-/* Dark bokeh panel backgrounds, drawn with layered radial gradients so they
-   stay tack-sharp at any size. */
-const BOKEH_BG: React.CSSProperties = {
-  backgroundImage: [
-    "radial-gradient(90px 90px at 78% 18%, rgba(255,146,72,0.5), transparent 70%)",
-    "radial-gradient(60px 60px at 22% 40%, rgba(255,92,26,0.42), transparent 70%)",
-    "radial-gradient(46px 46px at 60% 74%, rgba(255,210,150,0.32), transparent 70%)",
-    "radial-gradient(120px 120px at 8% 85%, rgba(255,120,60,0.25), transparent 70%)",
-    "linear-gradient(140deg, #241610 0%, #140d09 55%, #0b0705 100%)",
-  ].join(", "),
-};
-
-const DOTS_BG: React.CSSProperties = {
-  backgroundImage:
-    "radial-gradient(rgba(255,140,80,0.55) 1.2px, transparent 1.4px)",
-  backgroundSize: "14px 14px",
-};
 
 export default function Hero() {
   return (
-    <section className="relative mx-auto max-w-[1440px]">
-      {/* Warm ambient glow behind the composition. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-24 right-0 -z-10 h-[460px] w-[48%] rounded-full bg-brand-bright/[0.06] blur-[120px]"
-      />
-
-      {/* Desktop: stepped-panel collage rebuilt in code — photo left, dark
-          bokeh panels stepping down to the right, crisp floating UI. */}
-      <div className="relative hidden aspect-[1440/900] lg:block">
-        <HeroHeading className="hero-enter absolute top-[8%] left-[46%] w-[54%] text-center [animation-delay:150ms]" />
-
-        {/* Dark panels (base layer of the blob). */}
-        <div
-          className="hero-enter-scale absolute top-[32%] left-[45.2%] h-[60%] w-[30.8%] rounded-[48px] [animation-delay:250ms]"
-          style={BOKEH_BG}
-        />
-        <div
-          className="hero-enter-scale absolute top-[50%] left-[62%] h-[48%] w-[34.4%] rounded-[48px] [animation-delay:350ms]"
-          style={BOKEH_BG}
-        >
-          <div className="absolute inset-6 rounded-[32px] opacity-60" style={DOTS_BG} />
-          {/* faint product thumbnails strip, echoing the reference dashboard */}
-          <div className="absolute bottom-8 left-8 flex gap-2.5">
-            {["bg-peach/80", "bg-white/85", "bg-brand-bright/60", "bg-white/60"].map(
-              (c, i) => (
-                <span key={i} className={`h-12 w-10 rounded-md ${c}`} />
-              ),
-            )}
-          </div>
-        </div>
-
-        {/* Photo panel (sits above the dark panels). */}
-        <div className="hero-enter-scale absolute top-[4%] left-[3.6%] h-[70%] w-[42%] overflow-hidden rounded-[48px] [animation-delay:100ms]">
+    <section className="relative overflow-hidden pt-10 pb-10 lg:pt-4 lg:pb-6">
+      <div className="mx-auto w-full max-w-[1370px] px-6">
+        {/* Desktop: an absolutely-composed stage so the offset blocks, the
+            full-bleed photo and the chart card land exactly where Figma puts
+            them (frame 1459x812 below the nav; every value below is that
+            frame's own percentage). */}
+        <div className="relative hidden aspect-[1459/812] w-full lg:block">
+          {/* The photo is a wide composition that bleeds off the left edge. */}
           <Image
-            src="/img/hero-shopper.jpg"
-            alt="A shopper smiling under warm street lights in the city at dusk"
-            fill
+            src="/img/pages/hero-shopping-desk.png"
+            alt="A shopping trolley of parcels on a desk beside a laptop showing an online store"
+            width={1474}
+            height={737}
             priority
-            sizes="(min-width: 1024px) 42vw"
-            className="object-cover"
+            sizes="(min-width: 1024px) 101vw, 100vw"
+            className="hero-enter-scale absolute h-auto"
+            style={{ left: "-6.51%", top: "13.67%", width: "101.03%", animationDelay: "150ms" }}
           />
-          {/* warm grade so the photo sits in the brand palette */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-brand-bright/15 via-transparent to-transparent" />
-        </div>
 
-        {/* Floating UI elements. */}
-        <SearchPill className="hero-enter absolute top-[38%] left-[46%] z-10 [animation-delay:600ms]" />
-        <ProductCard className="hero-enter absolute top-[50%] left-[48.5%] z-10 animate-float-slow [animation-delay:750ms]" />
-        <OrderChip className="hero-enter absolute top-[60%] left-[67%] z-10 animate-float [animation-delay:900ms]" />
-        <Image
-          src="/img/hero-cart.png"
-          alt=""
-          width={474}
-          height={468}
-          className="hero-enter absolute top-[27%] left-[78%] z-10 w-[18%] animate-float [animation-delay:450ms]"
-        />
-
-        <HeroCopy className="hero-enter absolute top-[78%] left-[5.5%] w-[36%] [animation-delay:500ms]" />
-      </div>
-
-      {/* Mobile / tablet: stacked flow with a compact composition. */}
-      <div className="px-6 pt-10 lg:hidden">
-        <HeroHeading className="hero-enter text-center [animation-delay:100ms]" />
-        <div className="hero-enter-scale relative mt-8 [animation-delay:250ms]">
-          <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[36px] sm:aspect-[16/11]">
-            <Image
-              src="/img/hero-shopper.jpg"
-              alt="A shopper smiling under warm street lights in the city at dusk"
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-tr from-brand-bright/15 via-transparent to-transparent" />
+          {/* Chart card */}
+          <div
+            className="hero-enter-scale absolute rounded-[10px] bg-[#fae2d2] p-4"
+            style={{ left: "72.52%", top: "11.33%", width: "24.88%", height: "36.08%", animationDelay: "230ms" }}
+          >
+            <CandleChart className="h-full w-full" />
           </div>
-          <SearchPill className="absolute -bottom-5 left-1/2 w-max max-w-[90%] -translate-x-1/2" />
+
+          {/* The three orange blocks */}
+          <h1 className="contents font-poppins font-extrabold tracking-[-0.02em] text-white">
+            {[
+              { text: "The high street of", left: "2.19%", top: "10.34%", width: "67.92%", delay: 0 },
+              { text: "AI tools for", left: "25.36%", top: "30.79%", width: "44.76%", delay: 90 },
+              { text: "ecommerce.", left: "44.69%", top: "50.37%", width: "52.71%", delay: 180 },
+            ].map((b) => (
+              <span
+                key={b.text}
+                className="hero-enter absolute flex items-center bg-brand px-6 text-[clamp(2rem,6.2vw,5.63rem)] leading-none"
+                style={{ left: b.left, top: b.top, width: b.width, height: "20.44%", animationDelay: `${b.delay}ms` }}
+              >
+                {b.text}
+              </span>
+            ))}
+          </h1>
+
+          {/* Subtext + CTAs */}
+          <p
+            className="hero-enter absolute text-[clamp(1rem,1.65vw,1.5rem)] leading-snug text-body-mute"
+            style={{ left: "46.06%", top: "70.94%", width: "51.89%", animationDelay: "300ms" }}
+          >
+            Growmerce turns search into sales by understanding what shoppers
+            actually ask for.
+          </p>
+
+          <div
+            className="hero-enter absolute flex items-center gap-4"
+            style={{ left: "46.06%", top: "87.07%", animationDelay: "380ms" }}
+          >
+            <Link
+              href="#demo"
+              className="inline-flex items-center justify-center rounded-[8px] bg-white px-7 py-2.5 font-poppins text-[clamp(0.95rem,1.35vw,1.25rem)] font-semibold text-brand shadow-[0_6px_20px_-8px_rgba(255,90,31,0.55)] ring-1 ring-brand/20 transition-transform duration-200 hover:-translate-y-0.5"
+            >
+              See demo
+            </Link>
+            <Link
+              href="#trial"
+              className="inline-flex items-center justify-center rounded-[8px] border border-charcoal px-7 py-2.5 font-poppins text-[clamp(0.95rem,1.35vw,1.25rem)] font-semibold text-charcoal transition-[transform,background-color,color] duration-200 hover:-translate-y-0.5 hover:bg-charcoal hover:text-white"
+            >
+              Try it free
+            </Link>
+          </div>
         </div>
-        <HeroCopy className="hero-enter mt-12 [animation-delay:400ms]" />
+
+        {/* Mobile / tablet: stacked blocks, photo below, chart last. */}
+        <div className="lg:hidden">
+          <h1 className="font-poppins font-bold tracking-[-0.02em] text-white">
+            {["The high street of", "AI tools for", "ecommerce."].map((line, i) => (
+              <span
+                key={line}
+                className={`hero-enter block w-fit bg-brand px-4 pt-2 pb-3 text-[clamp(2.15rem,8.6vw,3.4rem)] leading-[1.02] ${i > 0 ? "mt-2" : ""} ${i === 1 ? "ml-6" : ""}`}
+                style={{ animationDelay: `${i * 100}ms` }}
+              >
+                {line}
+              </span>
+            ))}
+          </h1>
+
+          <p className="hero-enter mt-6 text-[clamp(1.0625rem,4.4vw,1.25rem)] leading-snug text-body-mute" style={{ animationDelay: "300ms" }}>
+            Growmerce turns search into sales by understanding what shoppers
+            actually ask for.
+          </p>
+
+          <div className="hero-enter mt-6 flex flex-wrap gap-3" style={{ animationDelay: "360ms" }}>
+            <Link href="#demo" className="inline-flex items-center rounded-[8px] border border-brand/40 bg-white px-6 py-3 font-poppins text-[16px] font-semibold text-brand">
+              See demo
+            </Link>
+            <Link href="#trial" className="inline-flex items-center rounded-[8px] border border-charcoal px-6 py-3 font-poppins text-[16px] font-semibold">
+              Try it free
+            </Link>
+          </div>
+
+          <Image
+            src="/img/pages/hero-shopping-desk.png"
+            alt="A shopping trolley of parcels on a desk beside a laptop showing an online store"
+            width={1474}
+            height={737}
+            priority
+            sizes="100vw"
+            className="hero-enter-scale mt-8 h-auto w-full rounded-[10px]"
+            style={{ animationDelay: "200ms" }}
+          />
+
+          <div className="mt-4 rounded-[20px] bg-peach/60 p-4">
+            <CandleChart className="h-auto w-full" />
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -1,110 +1,91 @@
 import Image from "next/image";
 import Link from "next/link";
-import Reveal from "./Reveal";
 
 const COLUMNS = [
   {
+    heading: "Company",
+    links: [
+      { label: "About", href: "/about" },
+      { label: "Newsroom", href: "#" },
+      { label: "Contact us", href: "#" },
+    ],
+  },
+  {
     heading: "Product",
-    links: ["Smart Search", "All products"],
+    links: [
+      { label: "Smart Search", href: "/growsearch" },
+      { label: "All products", href: "/growsearch/features" },
+    ],
   },
   {
     heading: "Explore more",
-    links: ["Pricing", "Coming soon"],
+    links: [
+      { label: "Pricing", href: "/pricing" },
+      { label: "Coming soon", href: "#" },
+    ],
   },
   {
-    heading: "Support",
-    links: ["Help center", "Getting started", "Customer Success"],
+    heading: "Need help?",
+    links: [
+      { label: "Help center", href: "#" },
+      { label: "Getting started", href: "#" },
+      { label: "Customer Success", href: "#" },
+    ],
   },
 ];
 
 const SOCIALS = [
-  { name: "LinkedIn", icon: "/img/icon-linkedin.svg", href: "#" },
-  { name: "Instagram", icon: "/img/icon-instagram.svg", href: "#" },
-  { name: "X", icon: "/img/icon-x.svg", href: "#" },
+  { name: "LinkedIn", icon: "/img/icon-linkedin.svg" },
+  { name: "Instagram", icon: "/img/icon-instagram.svg" },
+  { name: "X", icon: "/img/icon-x.svg" },
 ];
-
-function CtaBox({ label }: { label: string }) {
-  return (
-    <div className="relative h-[240px] rounded-[52px] border border-brand-bright sm:h-[393px]">
-      <Link
-        href="#demo"
-        className="absolute -right-6 bottom-10 rounded-full bg-brand-bright px-8 py-2.5 text-2xl font-semibold text-white transition-transform duration-200 hover:-translate-y-0.5 lg:-right-24"
-      >
-        {label}
-      </Link>
-    </div>
-  );
-}
 
 export default function Footer() {
   return (
-    <footer className="px-3 pb-6">
-      <div className="mx-auto max-w-[1459px] rounded-[56px] bg-white px-8 pt-20 pb-10 shadow-glow-lg sm:px-14 lg:px-24">
-        <div id="demo" className="grid gap-16 pr-6 sm:grid-cols-2 lg:gap-44 lg:pr-24">
-          <Reveal>
-            <CtaBox label="Get a Demo" />
-          </Reveal>
-          <Reveal delay={150}>
-            <CtaBox label="Free trial" />
-          </Reveal>
+    <footer className="mx-auto max-w-[1370px] px-6 pb-10">
+      <div className="border-t border-line pt-12">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,1fr))] lg:gap-8">
+          {COLUMNS.map((col) => (
+            <div key={col.heading}>
+              <h3 className="text-[clamp(1.125rem,1.6vw,1.5rem)] font-bold">
+                {col.heading}
+              </h3>
+              <ul className="mt-4 space-y-3">
+                {col.links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-[17px] text-body-mute transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
-        <hr className="mt-20 border-black/15" />
-
-        <div className="mt-10 flex flex-col justify-between gap-12 lg:flex-row">
-          <div>
-            <h3 className="text-2xl font-bold">Company</h3>
-            <ul className="mt-4 space-y-3 text-lg">
-              {["About", "Newsroom", "Contact us"].map((label) => (
-                <li key={label}>
-                  <Link href="#" className="transition-colors hover:text-brand">
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="grid gap-12 sm:grid-cols-3 lg:gap-16">
-            {COLUMNS.map((col) => (
-              <div key={col.heading}>
-                <h3 className="text-2xl font-bold">{col.heading}</h3>
-                <ul className="mt-4 space-y-3 text-lg">
-                  {col.links.map((label) => (
-                    <li key={label}>
-                      <Link
-                        href="#"
-                        className="transition-colors hover:text-brand"
-                      >
-                        {label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <hr className="mt-16 border-black/15" />
-
-        <div className="mt-8 flex flex-col items-center justify-between gap-6 sm:flex-row">
-          <div className="flex items-center gap-8">
-            {SOCIALS.map((social) => (
-              <Link key={social.name} href={social.href} aria-label={social.name}>
+        <div className="mt-14 flex flex-col items-start justify-between gap-6 border-t border-line pt-7 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-7">
+            {SOCIALS.map((s) => (
+              <Link key={s.name} href="#" aria-label={s.name}>
                 <Image
-                  src={social.icon}
+                  src={s.icon}
                   alt=""
-                  width={31}
-                  height={30}
-                  className="transition-opacity hover:opacity-70"
+                  width={28}
+                  height={28}
+                  className="transition-opacity hover:opacity-65"
                 />
               </Link>
             ))}
           </div>
-          <div className="flex items-center gap-8 text-lg">
-            <span>©2026 Growmerce</span>
-            <Link href="#" className="transition-colors hover:text-brand">
+          <div className="flex items-center gap-8 text-[16px]">
+            <span className="font-semibold">@2026 Growmerce</span>
+            <Link
+              href="#"
+              className="text-body-mute transition-colors hover:text-brand"
+            >
               Terms &amp; Privacy
             </Link>
           </div>
