@@ -70,7 +70,7 @@ export default function PricingPage() {
             className="mt-10 justify-center"
             primaryHref="#plans"
             secondaryHref="/growsearch/features"
-            secondaryLabel="COMPARE WITH COMPETITORS"
+            secondaryLabel="Compare with competitors"
           />
         </section>
 
@@ -125,14 +125,14 @@ export default function PricingPage() {
               <div className="flex flex-wrap items-center gap-4">
                 <Link
                   href="#demo"
-                  className="inline-flex items-center gap-3 rounded-full bg-brand px-8 py-3.5 font-poppins text-[clamp(1rem,1.6vw,1.375rem)] font-bold text-white shadow-[0_14px_30px_-14px_rgba(255,90,31,0.95)] transition-transform duration-200 hover:-translate-y-0.5"
+                  className="cta-primary"
                 >
                   Talk to sales
                   <Arrow className="size-5" />
                 </Link>
                 <Link
                   href="#demo"
-                  className="inline-flex items-center gap-3 rounded-full border border-charcoal/25 bg-white px-8 py-3.5 font-poppins text-[clamp(1rem,1.5vw,1.25rem)] font-semibold text-charcoal transition-colors duration-200 hover:border-brand hover:text-brand"
+                  className="cta-secondary"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
                     <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" stroke="currentColor" strokeWidth="1.8" />

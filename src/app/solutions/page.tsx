@@ -111,7 +111,7 @@ export default function SolutionsPage() {
                 className="mt-9"
                 primaryHref="/pricing"
                 secondaryHref="/growsearch"
-                secondaryLabel="SEE GROWSEARCH"
+                secondaryLabel="See Growsearch"
               />
             </div>
 
@@ -277,7 +277,7 @@ export default function SolutionsPage() {
             </p>
             <Link
               href="/pricing"
-              className="inline-flex items-center gap-3 rounded-full bg-white px-8 py-3.5 font-poppins text-[17px] font-bold text-brand transition-transform duration-200 hover:-translate-y-0.5"
+              className="cta-primary-inverse"
             >
               Start free trial
               <Arrow className="size-5" />

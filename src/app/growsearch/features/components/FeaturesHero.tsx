@@ -18,9 +18,9 @@ export default function FeaturesHero() {
         <CtaPair
           className="mt-9"
           primaryHref="/pricing"
-          primaryLabel="GET STARTED"
+          primaryLabel="Get started"
           secondaryHref="/growsearch"
-          secondaryLabel="SEE ALL OUR PRODUCTS"
+          secondaryLabel="See all our products"
         />
       </Reveal>
     </section>

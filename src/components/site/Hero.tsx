@@ -91,13 +91,13 @@ export default function Hero() {
           >
             <Link
               href="#demo"
-              className="inline-flex items-center justify-center rounded-[8px] bg-white px-7 py-2.5 font-poppins text-[clamp(0.95rem,1.35vw,1.25rem)] font-semibold text-brand shadow-[0_6px_20px_-8px_rgba(255,90,31,0.55)] ring-1 ring-brand/20 transition-transform duration-200 hover:-translate-y-0.5"
+              className="cta-primary"
             >
               See demo
             </Link>
             <Link
               href="#trial"
-              className="inline-flex items-center justify-center rounded-[8px] border border-charcoal px-7 py-2.5 font-poppins text-[clamp(0.95rem,1.35vw,1.25rem)] font-semibold text-charcoal transition-[transform,background-color,color] duration-200 hover:-translate-y-0.5 hover:bg-charcoal hover:text-white"
+              className="cta-secondary"
             >
               Try it free
             </Link>
@@ -124,10 +124,10 @@ export default function Hero() {
           </p>
 
           <div className="hero-enter mt-6 flex flex-wrap gap-3" style={{ animationDelay: "360ms" }}>
-            <Link href="#demo" className="inline-flex items-center rounded-[8px] border border-brand/40 bg-white px-6 py-3 font-poppins text-[16px] font-semibold text-brand">
+            <Link href="#demo" className="cta-primary">
               See demo
             </Link>
-            <Link href="#trial" className="inline-flex items-center rounded-[8px] border border-charcoal px-6 py-3 font-poppins text-[16px] font-semibold">
+            <Link href="#trial" className="cta-secondary">
               Try it free
             </Link>
           </div>

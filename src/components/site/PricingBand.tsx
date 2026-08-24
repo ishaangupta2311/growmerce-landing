@@ -37,12 +37,9 @@ export default function PricingBand() {
           <h2 className="mt-3 max-w-[530px] font-grotesk text-[clamp(2rem,3.5vw,3.125rem)] leading-[1.28]">
             Choose the perfect plan for your business
           </h2>
-          <div className="mt-8 inline-block rounded-[13px] border border-white/90 p-[5px]">
-            <Link
-              href="#demo"
-              className="block-cta rounded-[11px] bg-white text-brand"
-            >
-              Get My custom Plan
+          <div className="mt-8">
+            <Link href="#demo" className="cta-primary-inverse">
+              Get my custom plan
               <Arrow className="cta-arrow" />
             </Link>
           </div>

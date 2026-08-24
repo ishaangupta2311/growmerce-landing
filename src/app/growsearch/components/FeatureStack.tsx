@@ -123,7 +123,7 @@ export default function FeatureStack() {
       <div className="mt-14 flex justify-center">
         <Link
           href="/growsearch/features"
-          className="block-cta bg-brand-bright text-white"
+          className="cta-primary"
         >
           Explore all features
           <Arrow className="cta-arrow" />

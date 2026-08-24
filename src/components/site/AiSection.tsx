@@ -81,7 +81,7 @@ export default function AiSection() {
 
           <Link
             href="/growsearch"
-            className="block-cta mt-12 bg-brand-bright text-white"
+            className="cta-primary mt-12"
           >
             See it running in Growsearch
             <Arrow className="cta-arrow" />

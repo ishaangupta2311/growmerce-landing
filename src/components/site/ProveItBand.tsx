@@ -62,9 +62,9 @@ export default function ProveItBand({ className }: { className?: string }) {
               />
               <button
                 type="submit"
-                className="inline-flex shrink-0 items-center justify-center gap-2.5 rounded-full bg-brand px-7 py-3.5 font-poppins text-[15px] font-bold tracking-wide text-white uppercase transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                className="cta-primary shrink-0"
               >
-                okay, prove it
+                Okay, prove it
                 <Arrow className="size-4" />
               </button>
             </form>

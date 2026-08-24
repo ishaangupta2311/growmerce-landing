@@ -68,15 +68,15 @@ export default function Growsearch() {
           </ul>
 
           <div className="mt-12 flex flex-wrap items-center gap-5">
-            <Link href="#demo" className="block-cta bg-brand-bright text-white">
+            <Link href="/growsearch" className="cta-primary">
               Explore Growsearch
               <Arrow className="cta-arrow" />
             </Link>
             <Link
               href="#demo"
-              className="block-cta rounded-[9px] border-[3px] border-brand text-brand hover:bg-brand hover:text-white"
+              className="cta-secondary"
             >
-              Get a Demo
+              Get a demo
             </Link>
           </div>
         </Reveal>
@@ -133,7 +133,7 @@ export default function Growsearch() {
               Power your entire commerce journey with AI.
             </p>
           </div>
-          <Link href="#demo" className="block-cta bg-brand-bright text-white">
+          <Link href="#demo" className="cta-primary">
             Book a demo session
             <Arrow className="cta-arrow" />
           </Link>

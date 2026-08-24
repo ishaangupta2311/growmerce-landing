@@ -133,11 +133,7 @@ export default function PricingPreview() {
 
               <Link
                 href="/pricing"
-                className={`mt-6 inline-flex items-center justify-center rounded-full px-6 py-3 text-center font-poppins text-sm font-semibold transition-[transform,background-color] duration-200 hover:-translate-y-0.5 ${
-                  tier.featured
-                    ? "bg-white text-charcoal"
-                    : "bg-brand text-white"
-                }`}
+                className={`mt-6 w-full ${tier.featured ? "cta-primary-inverse" : "cta-primary"}`}
               >
                 Start free trial
               </Link>

@@ -201,13 +201,13 @@ export default function Navbar({ homepage = false }: { homepage?: boolean }) {
         <div className="flex shrink-0 items-center gap-2.5">
           <Link
             href="#demo"
-            className="hidden rounded-full border border-line px-5 py-2 font-poppins text-[15px] text-muted transition-colors hover:border-charcoal/30 hover:text-charcoal sm:inline-flex"
+            className="hidden items-center justify-center rounded-[10px] bg-brand px-5 py-2 font-poppins text-[15px] font-bold text-white shadow-[0_10px_24px_-14px_rgba(255,90,31,0.9)] transition-transform duration-200 hover:-translate-y-0.5 sm:inline-flex"
           >
-            See Demo
+            See demo
           </Link>
           <Link
             href="#login"
-            className="hidden rounded-full border border-charcoal/25 px-5 py-2 font-poppins text-[15px] text-charcoal transition-colors hover:border-brand hover:text-brand sm:inline-flex"
+            className="hidden items-center justify-center rounded-[10px] border-2 border-brand bg-white px-5 py-2 font-poppins text-[15px] font-bold text-brand transition-[background-color,color] duration-200 hover:bg-brand hover:text-white sm:inline-flex"
           >
             Login
           </Link>
@@ -265,10 +265,10 @@ export default function Navbar({ homepage = false }: { homepage?: boolean }) {
             </div>
           ))}
           <div className="mt-5 flex gap-3">
-            <Link href="#demo" onClick={() => setMobile(false)} className="flex-1 rounded-full border border-line py-2.5 text-center font-poppins text-[15px]">
-              See Demo
+            <Link href="#demo" onClick={() => setMobile(false)} className="flex-1 rounded-[10px] bg-brand py-2.5 text-center font-poppins text-[15px] font-bold text-white">
+              See demo
             </Link>
-            <Link href="#login" onClick={() => setMobile(false)} className="flex-1 rounded-full border border-charcoal/25 py-2.5 text-center font-poppins text-[15px]">
+            <Link href="#login" onClick={() => setMobile(false)} className="flex-1 rounded-[10px] border-2 border-brand bg-white py-2.5 text-center font-poppins text-[15px] font-bold text-brand">
               Login
             </Link>
           </div>

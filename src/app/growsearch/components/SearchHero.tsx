@@ -20,13 +20,13 @@ export default function SearchHero() {
             what it sold.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-4">
-            <Link href="#trial" className="block-cta bg-brand-bright text-white">
+            <Link href="#trial" className="cta-primary">
               Start free trial
               <Arrow className="cta-arrow" />
             </Link>
             <Link
               href="#demo"
-              className="block-cta rounded-[10px] border-2 border-charcoal text-charcoal hover:bg-charcoal hover:text-white"
+              className="cta-secondary"
             >
               Book a demo
             </Link>

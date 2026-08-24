@@ -17,9 +17,9 @@ export default function ClosingCta() {
           <CtaPair
             className="mt-8 justify-center"
             primaryHref="/pricing"
-            primaryLabel="GET STARTED"
+            primaryLabel="Get started"
             secondaryHref="/growsearch"
-            secondaryLabel="BACK TO GROWSEARCH"
+            secondaryLabel="Back to Growsearch"
           />
         </div>
       </Reveal>

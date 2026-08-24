@@ -21,14 +21,14 @@ export default function TrialBand() {
           <div className="relative mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="#trial-form"
-              className="block-cta bg-white text-brand"
+              className="cta-primary-inverse"
             >
               Start free trial
               <Arrow className="cta-arrow" />
             </Link>
             <Link
               href="#demo"
-              className="block-cta rounded-[10px] border-2 border-white text-white hover:bg-white hover:text-brand"
+              className="cta-secondary-inverse"
             >
               Book a demo
             </Link>

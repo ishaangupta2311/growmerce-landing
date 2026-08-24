@@ -115,7 +115,7 @@ export default function AboutPage() {
             className="mt-10 justify-center"
             primaryHref="/pricing"
             secondaryHref="/growsearch"
-            secondaryLabel="SEE ALL OUR PRODUCTS"
+            secondaryLabel="See all our products"
           />
         </section>
 
@@ -210,9 +210,9 @@ export default function AboutPage() {
             </p>
             <Link
               href="/pricing"
-              className="inline-flex items-center gap-3 rounded-[10px] bg-brand px-7 py-3.5 font-poppins text-[17px] font-bold text-white transition-transform duration-200 hover:-translate-y-0.5"
+              className="cta-primary"
             >
-              Get My custom Plan
+              Get my custom plan
               <Arrow className="size-5" />
             </Link>
           </div>
