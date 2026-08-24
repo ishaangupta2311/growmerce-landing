@@ -1,0 +1,80 @@
+/*
+ * Scroll-stacking feature cards (Figma: "stack animation design for
+ * features", nodes 273:284 / 273:295 / 273:343).
+ *
+ * Each .stackItem is a tall spacer; the .stackCard inside it is `sticky`
+ * with an incremental `top` and a slight scale step per card, so later
+ * cards visually pile on top of earlier ones as the page scrolls. No JS
+ * scroll listener — position: sticky does the work.
+ *
+ * Degrades to a plain stacked list (no stickiness, no scale) on small
+ * screens and under prefers-reduced-motion, per the brief.
+ */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.stackItem {
+  min-height: 64vh;
+  display: flex;
+  align-items: flex-start;
+}
+
+.stackItem + .stackItem {
+  margin-top: -22vh;
+}
+
+.stackCard {
+  position: sticky;
+  width: 100%;
+  transition: transform 0.3s ease;
+}
+
+.stackItem:nth-child(1) .stackCard {
+  top: 6.5rem;
+  transform: scale(1);
+}
+
+.stackItem:nth-child(2) .stackCard {
+  top: 8rem;
+  transform: scale(0.98);
+}
+
+.stackItem:nth-child(3) .stackCard {
+  top: 9.5rem;
+  transform: scale(0.96);
+}
+
+.stackItem:nth-child(4) .stackCard {
+  top: 11rem;
+  transform: scale(0.94);
+}
+
+@media (max-width: 1023px) {
+  .stackItem {
+    min-height: auto;
+  }
+  .stackItem + .stackItem {
+    margin-top: 1.5rem;
+  }
+  .stackCard {
+    position: static;
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stackItem {
+    min-height: auto;
+  }
+  .stackItem + .stackItem {
+    margin-top: 1.5rem;
+  }
+  .stackCard {
+    position: static;
+    transform: none !important;
+    transition: none;
+  }
+}
