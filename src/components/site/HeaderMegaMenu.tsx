@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import MegaMenuPromo from "./MegaMenuPromo";
+import PlatformMegaMenuContent from "./PlatformMegaMenu";
 
-type MenuVariant = "resources" | "why-us";
+export type HeaderMegaMenuVariant = "platform" | "resources" | "why-us";
 
 const RESOURCE_GROUPS = [
   {
@@ -83,27 +83,29 @@ export default function HeaderMegaMenu({
   onMouseEnter,
   onMouseLeave,
 }: {
-  variant: MenuVariant;
+  variant: HeaderMegaMenuVariant;
   onNavigate: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
 }) {
+  const isPlatform = variant === "platform";
   const isResources = variant === "resources";
   const groups = isResources ? RESOURCE_GROUPS : WHY_US_GROUPS;
+  const label = isPlatform ? "Platform" : isResources ? "Resources" : "Why us";
 
   return (
     <div
-      id={`${variant}-mega-menu`}
+      id="header-mega-menu"
       role="region"
-      aria-label={`${isResources ? "Resources" : "Why us"} menu`}
+      aria-label={`${label} menu`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       className="mega-menu-enter fixed top-[84px] left-1/2 z-60 w-[calc(100vw-64px)] max-w-[1160px] overflow-hidden rounded-b-[38px] border-x border-b border-brand/15 bg-white font-bricolage shadow-[0_28px_64px_-34px_rgba(73,28,8,0.34)]"
     >
-      <MegaMenuPromo onNavigate={onNavigate} />
-
-      {isResources ? (
-        <div className="grid min-h-[270px] grid-cols-[1fr_1fr_0.95fr] gap-12 px-16 py-7">
+      {isPlatform ? (
+        <PlatformMegaMenuContent onNavigate={onNavigate} />
+      ) : isResources ? (
+        <div className="grid h-[282px] grid-cols-[1fr_1fr_0.95fr] gap-12 px-16 py-7">
           {groups.map((group) => (
             <LinkGroup key={group.title} group={group} onNavigate={onNavigate} />
           ))}
@@ -125,7 +127,7 @@ export default function HeaderMegaMenu({
           </Link>
         </div>
       ) : (
-        <div className="grid min-h-[270px] grid-cols-3 gap-16 px-20 py-9">
+        <div className="grid h-[282px] grid-cols-3 gap-16 px-20 py-9">
           {groups.map((group) => (
             <LinkGroup key={group.title} group={group} onNavigate={onNavigate} />
           ))}

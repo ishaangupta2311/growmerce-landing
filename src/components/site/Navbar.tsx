@@ -3,8 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import HeaderMegaMenu from "./HeaderMegaMenu";
-import PlatformMegaMenu from "./PlatformMegaMenu";
+import HeaderMegaMenu, { type HeaderMegaMenuVariant } from "./HeaderMegaMenu";
 
 type MenuItem = { label: string; href: string; note?: string };
 type NavEntry = { label: string; href?: string; items?: MenuItem[] };
@@ -83,12 +82,24 @@ export default function Navbar({ homepage = false }: { homepage?: boolean }) {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
     setOpen(label);
   };
+  const keepOpen = () => {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+  };
   const hoverClose = () => {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
     closeTimer.current = window.setTimeout(() => {
       if (!navRef.current?.contains(document.activeElement)) setOpen(null);
     }, 140);
   };
+
+  const megaMenuVariant: HeaderMegaMenuVariant | null =
+    homepage && open === "Platform"
+      ? "platform"
+      : open === "Resources"
+        ? "resources"
+        : open === "Why us"
+          ? "why-us"
+          : null;
 
   return (
     <header className="sticky top-0 z-50 bg-cream/95 font-bricolage shadow-[0_1px_0_rgba(23,23,23,0.07)] backdrop-blur-md">
@@ -122,12 +133,8 @@ export default function Navbar({ homepage = false }: { homepage?: boolean }) {
                   aria-expanded={open === entry.label}
                   aria-haspopup="true"
                   aria-controls={
-                    homepage && entry.label === "Platform"
-                      ? "platform-mega-menu"
-                      : entry.label === "Resources"
-                        ? "resources-mega-menu"
-                        : entry.label === "Why us"
-                          ? "why-us-mega-menu"
+                    (homepage && entry.label === "Platform") || entry.label === "Resources" || entry.label === "Why us"
+                      ? "header-mega-menu"
                       : undefined
                   }
                   onClick={() => setOpen(entry.label)}
@@ -180,28 +187,13 @@ export default function Navbar({ homepage = false }: { homepage?: boolean }) {
           )}
         </nav>
 
-        {homepage && open === "Platform" ? (
-          <PlatformMegaMenu
-            onNavigate={() => setOpen(null)}
-            onMouseEnter={() => hoverOpen("Platform")}
-            onMouseLeave={hoverClose}
-          />
-        ) : null}
-
-        {open === "Resources" ? (
+        {/* Keep one shell mounted while moving between mega-menu triggers.
+            Only its content variant changes, so the entrance motion does not replay. */}
+        {megaMenuVariant ? (
           <HeaderMegaMenu
-            variant="resources"
+            variant={megaMenuVariant}
             onNavigate={() => setOpen(null)}
-            onMouseEnter={() => hoverOpen("Resources")}
-            onMouseLeave={hoverClose}
-          />
-        ) : null}
-
-        {open === "Why us" ? (
-          <HeaderMegaMenu
-            variant="why-us"
-            onNavigate={() => setOpen(null)}
-            onMouseEnter={() => hoverOpen("Why us")}
+            onMouseEnter={keepOpen}
             onMouseLeave={hoverClose}
           />
         ) : null}

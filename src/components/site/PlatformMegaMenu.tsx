@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import MegaMenuPromo from "./MegaMenuPromo";
 import { PLATFORMS } from "./PlatformStrip";
 
 const PRIMARY_LINKS = [
@@ -57,27 +56,13 @@ function MenuIcon({ type }: { type: (typeof PRIMARY_LINKS)[number]["icon"] }) {
   );
 }
 
-export default function PlatformMegaMenu({
+export default function PlatformMegaMenuContent({
   onNavigate,
-  onMouseEnter,
-  onMouseLeave,
 }: {
   onNavigate: () => void;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
 }) {
   return (
-    <div
-      id="platform-mega-menu"
-      role="region"
-      aria-label="Platform menu"
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      className="mega-menu-enter fixed top-[84px] left-1/2 z-60 w-[calc(100vw-64px)] max-w-[1160px] overflow-hidden rounded-b-[38px] border-x border-b border-brand/15 bg-white font-bricolage shadow-[0_28px_64px_-34px_rgba(73,28,8,0.34)]"
-    >
-      <MegaMenuPromo onNavigate={onNavigate} />
-
-      <div className="grid min-h-[282px] grid-cols-[minmax(220px,0.95fr)_minmax(340px,1.35fr)_minmax(250px,0.9fr)] gap-6 px-6 py-5">
+    <div className="grid h-[282px] grid-cols-[minmax(220px,0.95fr)_minmax(340px,1.35fr)_minmax(250px,0.9fr)] gap-6 px-6 py-5">
         <div className="flex flex-col justify-center border-r border-line pr-6">
           {PRIMARY_LINKS.map((item) => (
             <Link
@@ -164,7 +149,6 @@ export default function PlatformMegaMenu({
             </svg>
           </span>
         </Link>
-      </div>
     </div>
   );
 }
