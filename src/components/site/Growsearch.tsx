@@ -110,7 +110,7 @@ export default function Growsearch() {
       <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-4 lg:gap-10 lg:px-24">
         {PLATFORMS.map((p, i) => (
           <Reveal key={p.name} delay={i * 100}>
-            <div className="grid h-[142px] place-items-center rounded-[26px] bg-white px-6 shadow-[0_12px_40px_rgba(0,0,0,0.10)] transition-transform duration-300 hover:-translate-y-1.5">
+            <div className="grid h-[142px] place-items-center rounded-[26px] bg-white px-6 shadow-[0_12px_40px_rgba(0,0,0,0.10)] transition-transform duration-300 hover-lift [--lift:6px]">
               <Image
                 src={p.src}
                 alt={p.name}

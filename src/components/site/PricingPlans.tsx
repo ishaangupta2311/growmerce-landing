@@ -77,7 +77,7 @@ export default function PricingPlans() {
         {PLANS.map((plan) => (
           <article
             key={plan.name}
-            className={`flex flex-col overflow-hidden rounded-[20px] bg-white ring-1 transition-transform duration-300 hover:-translate-y-1 ${
+            className={`flex flex-col rounded-[20px] bg-white ring-1 transition-transform duration-300 hover-lift [--lift:4px] ${
               plan.featured
                 ? "ring-2 ring-brand shadow-[0_28px_60px_-34px_rgba(255,90,31,0.75)]"
                 : "ring-line shadow-[0_18px_40px_-30px_rgba(23,23,23,0.4)]"
@@ -124,7 +124,7 @@ export default function PricingPlans() {
               </ul>
             </div>
 
-            <div className="border-t border-line bg-[#f5f5f5] px-7 py-4">
+            <div className="rounded-b-[20px] border-t border-line bg-[#f5f5f5] px-7 py-4">
               <p className="text-[14px] font-semibold">15 days free trial</p>
             </div>
           </article>

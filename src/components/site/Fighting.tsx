@@ -39,7 +39,7 @@ export default function Fighting() {
       <div className="mt-14 grid gap-8 md:grid-cols-3">
         {CARDS.map((card, i) => (
           <Reveal key={card.title} delay={i * 120}>
-            <article className="h-full rounded-[27px] bg-white p-7 shadow-glow transition-[transform,box-shadow] duration-300 hover:-translate-y-1.5 hover:shadow-glow-lg">
+            <article className="h-full rounded-[27px] bg-white p-7 shadow-glow transition-[transform,box-shadow] duration-300 hover-lift [--lift:6px] hover:shadow-glow-lg">
               {card.bare ? (
                 <div className="flex size-[66px] items-center justify-center rounded-full bg-brand-bright/30">
                   <Image src={card.icon} alt="" width={41} height={41} />

@@ -58,7 +58,7 @@ export default function Hero() {
           >
             <Link
               href="#cta"
-              className="inline-flex items-center gap-3 bg-[var(--ink)] px-7 py-3.5 text-[15px] font-semibold tracking-[0.02em] text-[var(--paper)] transition-transform duration-200 hover:-translate-y-0.5"
+              className="inline-flex items-center gap-3 bg-[var(--ink)] px-7 py-3.5 text-[15px] font-semibold tracking-[0.02em] text-[var(--paper)] transition-transform duration-200 hover-lift"
             >
               Get early access
               <Arrow className="h-4 w-4" />

@@ -116,7 +116,7 @@ export default function HeaderMegaMenu({
           <Link
             href="/about#updates-title"
             onClick={onNavigate}
-            className="group flex min-h-[210px] flex-col overflow-hidden rounded-[22px] border border-brand bg-white p-3 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-22px_rgba(255,90,31,0.7)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-brand"
+            className="group flex min-h-[210px] flex-col rounded-[22px] border border-brand bg-white p-3 transition-[transform,box-shadow] duration-200 hover-lift hover:shadow-[0_16px_34px_-22px_rgba(255,90,31,0.7)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-brand"
           >
             <span className="text-[11px] font-medium tracking-[0.04em] text-muted uppercase">Read it</span>
             <span className="relative mt-2 min-h-0 flex-1 overflow-hidden rounded-[13px] bg-cream">

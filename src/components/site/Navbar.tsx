@@ -181,7 +181,7 @@ export default function Navbar({
         <div className="flex shrink-0 items-center gap-2.5">
           <Link
             href="#demo"
-            className="hidden items-center justify-center rounded-[10px] bg-brand px-5 py-2 font-poppins text-[15px] font-bold text-white shadow-[0_10px_24px_-14px_rgba(255,90,31,0.9)] transition-transform duration-200 hover:-translate-y-0.5 sm:inline-flex"
+            className="hidden items-center justify-center rounded-[10px] bg-brand px-5 py-2 font-poppins text-[15px] font-bold text-white shadow-[0_10px_24px_-14px_rgba(255,90,31,0.9)] transition-transform duration-200 hover-lift sm:inline-flex"
           >
             See demo
           </Link>

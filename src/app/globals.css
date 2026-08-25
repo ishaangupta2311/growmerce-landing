@@ -56,23 +56,50 @@ body {
   color: #ffffff;
 }
 
+/* Hover lift.
+   Nudging an element upward on hover moves it out from under a pointer that is
+   resting on its bottom edge: the element un-hovers, drops back under the
+   pointer, re-hovers, and the cursor strobes between arrow and hand. The strip
+   below pins the hit area to the resting box so the pointer is never orphaned
+   mid-transition. It sits entirely outside the border box, so it never covers
+   the element's own content — but an ancestor that clips its overflow would
+   clip it away, so anything using this must leave its overflow visible.
+   Override the distance with an arbitrary property, e.g. `[--lift:6px]`. */
+@utility hover-lift {
+  --lift: 2px;
+  position: relative;
+
+  &:hover {
+    transform: translateY(calc(-1 * var(--lift)));
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    height: var(--lift);
+  }
+}
+
 /* Marketing CTAs use one shape and a predictable primary/secondary hierarchy. */
 @utility cta-primary {
-  @apply inline-flex items-center justify-center gap-3 rounded-[10px] bg-brand px-7 py-3.5 font-poppins text-[17px] font-bold text-white shadow-[0_14px_30px_-14px_rgba(255,90,31,0.95)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_38px_-14px_rgba(255,90,31,1)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand;
+  @apply inline-flex items-center justify-center gap-3 rounded-[10px] bg-brand px-7 py-3.5 font-poppins text-[17px] font-bold text-white shadow-[0_14px_30px_-14px_rgba(255,90,31,0.95)] transition-[transform,box-shadow] duration-200 hover-lift hover:shadow-[0_20px_38px_-14px_rgba(255,90,31,1)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand;
 }
 
 /* The bordered variants carry 2px of border, so their padding is 2px
    tighter than the solid ones — that keeps every CTA pair the same box. */
 @utility cta-secondary {
-  @apply inline-flex items-center justify-center gap-3 rounded-[10px] border-2 border-brand bg-white px-[26px] py-3 font-poppins text-[17px] font-bold text-brand transition-[transform,background-color,color] duration-200 hover:-translate-y-0.5 hover:bg-brand hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand;
+  @apply inline-flex items-center justify-center gap-3 rounded-[10px] border-2 border-brand bg-white px-[26px] py-3 font-poppins text-[17px] font-bold text-brand transition-[transform,background-color,color] duration-200 hover-lift hover:bg-brand hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand;
 }
 
 @utility cta-primary-inverse {
-  @apply inline-flex items-center justify-center gap-3 rounded-[10px] bg-white px-7 py-3.5 font-poppins text-[17px] font-bold text-brand shadow-[0_12px_28px_-16px_rgba(23,23,23,0.45)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_34px_-16px_rgba(23,23,23,0.55)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white;
+  @apply inline-flex items-center justify-center gap-3 rounded-[10px] bg-white px-7 py-3.5 font-poppins text-[17px] font-bold text-brand shadow-[0_12px_28px_-16px_rgba(23,23,23,0.45)] transition-[transform,box-shadow] duration-200 hover-lift hover:shadow-[0_18px_34px_-16px_rgba(23,23,23,0.55)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white;
 }
 
 @utility cta-secondary-inverse {
-  @apply inline-flex items-center justify-center gap-3 rounded-[10px] border-2 border-white bg-cream px-[26px] py-3 font-poppins text-[17px] font-bold text-charcoal transition-[transform,background-color,color,border-color] duration-200 hover:-translate-y-0.5 hover:border-charcoal hover:bg-charcoal hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white;
+  @apply inline-flex items-center justify-center gap-3 rounded-[10px] border-2 border-white bg-cream px-[26px] py-3 font-poppins text-[17px] font-bold text-charcoal transition-[transform,background-color,color,border-color] duration-200 hover-lift hover:border-charcoal hover:bg-charcoal hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white;
 }
 
 /* Keep long visual lists from spending paint/layout work on cards that are

@@ -36,7 +36,7 @@ export default function Footer() {
             <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
               <Link
                 href="#"
-                className="inline-flex items-center gap-3 bg-brand px-7 py-3.5 text-[15px] font-semibold text-white transition-transform duration-200 hover:-translate-y-0.5"
+                className="inline-flex items-center gap-3 bg-brand px-7 py-3.5 text-[15px] font-semibold text-white transition-transform duration-200 hover-lift"
               >
                 Get early access
                 <Arrow className="h-4 w-4" />

@@ -81,7 +81,7 @@ export default function ExhibitA() {
             <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3">
               <Link
                 href="#"
-                className="inline-flex items-center gap-3 bg-[var(--ink)] px-7 py-3.5 text-[15px] font-semibold text-[var(--paper)] transition-transform duration-200 hover:-translate-y-0.5"
+                className="inline-flex items-center gap-3 bg-[var(--ink)] px-7 py-3.5 text-[15px] font-semibold text-[var(--paper)] transition-transform duration-200 hover-lift"
               >
                 Explore Growsearch
                 <Arrow className="h-4 w-4" />

@@ -224,7 +224,7 @@ export default function AboutPage() {
           <div className="mt-10 grid gap-6 lg:grid-cols-3">
             {UPDATES.map((post, i) => (
               <Reveal key={post.title} delay={i * 90}>
-                <article className="flex h-full flex-col rounded-[22px] bg-white p-7 ring-1 ring-line transition-transform duration-300 hover:-translate-y-1">
+                <article className="flex h-full flex-col rounded-[22px] bg-white p-7 ring-1 ring-line transition-transform duration-300 hover-lift [--lift:4px]">
                   <span className="w-fit rounded-full bg-peach px-3.5 py-1 text-[11.5px] font-extrabold tracking-[0.12em] text-brand uppercase">
                     {post.tag}
                   </span>

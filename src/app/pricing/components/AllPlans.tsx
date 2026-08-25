@@ -72,7 +72,7 @@ export default function AllPlans() {
                 aria-controls={`plan-group-${i}`}
                 id={`plan-tab-${i}`}
                 onClick={() => setActive(i)}
-                className={`flex w-full items-center gap-3.5 rounded-[14px] px-6 py-4 text-left font-poppins text-[clamp(1.0625rem,1.8vw,1.5rem)] font-bold transition-[background-color,color,transform] duration-200 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+                className={`flex w-full items-center gap-3.5 rounded-[14px] px-6 py-4 text-left font-poppins text-[clamp(1.0625rem,1.8vw,1.5rem)] font-bold transition-[background-color,color,transform] duration-200 hover-lift focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
                   on
                     ? "bg-brand text-white shadow-[0_16px_34px_-18px_rgba(255,90,31,0.9)]"
                     : "border-2 border-brand text-brand"
