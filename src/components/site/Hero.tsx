@@ -88,7 +88,7 @@ const BARS = [
    the composition, or the strip reads as part of it. */
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden pt-10 pb-14 lg:pt-4 lg:pb-16">
+    <section className="relative overflow-hidden pt-10 pb-20 lg:pt-4 lg:pb-28">
       <div className="mx-auto w-full max-w-[1370px] px-6">
         {/* Desktop: an absolutely-composed stage. `@container` makes it the
             reference box for every `cqw` below. */}
