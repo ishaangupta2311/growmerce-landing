@@ -27,7 +27,7 @@ const STEPS = [
 
 export default function InstallSteps() {
   return (
-    <section className="mx-auto max-w-[1370px] px-6 py-24">
+    <section className="mx-auto max-w-[1370px] px-6 pt-12 pb-24">
       <Reveal>
         <span className="inline-flex rounded-full bg-brand px-6 py-1 text-lg font-medium text-white">
           Growsearch AI

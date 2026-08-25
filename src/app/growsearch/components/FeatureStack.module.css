@@ -18,7 +18,7 @@
 
 @media (min-width: 1024px) and (min-height: 700px) {
   .runway[data-pinned="true"] {
-    height: calc(100vh + (var(--card-count) - 1) * 72vh);
+    height: calc(100vh + (var(--card-count) - 1) * 46vh);
   }
 
   .runway[data-pinned="true"] .stage {

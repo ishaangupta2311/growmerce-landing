@@ -162,7 +162,7 @@ export default function FeatureStack() {
   }, []);
 
   return (
-    <section className="mx-auto max-w-[1370px] px-6 py-24">
+    <section className="mx-auto max-w-[1370px] px-6 pt-24 pb-12">
       <Reveal>
         <h2 className="text-[clamp(1.75rem,4vw,3.25rem)] leading-[1.1] font-bold">
           One search bar, doing four jobs at once
@@ -219,14 +219,14 @@ export default function FeatureStack() {
               />
             ))}
           </div>
-        </div>
-      </div>
 
-      <div className="mt-14 flex justify-center">
-        <Link href="/growsearch/features" className="cta-primary">
-          Explore all features
-          <Arrow className="cta-arrow" />
-        </Link>
+          <div className="mt-6 flex justify-center">
+            <Link href="/growsearch/features" className="cta-primary">
+              Explore all features
+              <Arrow className="cta-arrow" />
+            </Link>
+          </div>
+        </div>
       </div>
     </section>
   );
