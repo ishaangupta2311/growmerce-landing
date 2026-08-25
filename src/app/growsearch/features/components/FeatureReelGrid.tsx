@@ -61,11 +61,11 @@ function ReelMedia({ row }: { row: FeatureRowData }) {
 function FeatureReelCard({ row, delay }: { row: FeatureRowData; delay: number }) {
   return (
     <Reveal delay={delay}>
-      <article className="group relative aspect-[9/14] w-full overflow-hidden rounded-[34px] border-2 border-brand bg-peach p-5 shadow-[0_24px_60px_-36px_rgba(255,90,31,0.8)] transition-transform duration-300 hover:-translate-y-1 sm:p-7">
+      <article className="content-auto group relative aspect-[9/14] w-full overflow-hidden rounded-[34px] border-2 border-brand bg-peach p-5 shadow-[0_24px_60px_-36px_rgba(255,90,31,0.8)] transition-transform duration-300 hover:-translate-y-1 sm:p-7">
         <div className="relative h-full w-full overflow-hidden rounded-[26px] border-2 border-brand bg-white">
           <ReelMedia row={row} />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-white via-white/95 to-transparent px-5 pb-5 pt-28 sm:px-7 sm:pb-7 sm:pt-36">
-            <p className="inline-flex items-center gap-2 rounded-full border border-brand/75 bg-peach/80 px-3 py-1.5 text-[11px] font-bold tracking-[0.08em] text-brand uppercase backdrop-blur-sm sm:text-xs">
+            <p className="inline-flex items-center gap-2 rounded-full border border-brand/75 bg-peach/95 px-3 py-1.5 text-[11px] font-bold tracking-[0.08em] text-brand uppercase sm:text-xs">
               <SlidersIcon />
               {row.eyebrow}
             </p>

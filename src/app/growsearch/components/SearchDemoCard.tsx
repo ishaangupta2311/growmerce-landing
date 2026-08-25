@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./SearchDemoCard.module.css";
 
 const QUERIES = [
@@ -43,23 +43,41 @@ function SearchGlyph({ className }: { className?: string }) {
  * brief rather than shipped as a single flattened image.
  */
 export default function SearchDemoCard() {
+  const cardRef = useRef<HTMLDivElement>(null);
   const [queryIndex, setQueryIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const node = cardRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { rootMargin: "120px 0px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const reduce = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    if (reduce) return;
+    if (reduce || !isVisible) return;
 
     const interval = window.setInterval(
       () => setQueryIndex((index) => (index + 1) % QUERIES.length),
       2800,
     );
     return () => window.clearInterval(interval);
-  }, []);
+  }, [isVisible]);
 
   return (
-    <div className="relative mx-auto w-full max-w-[560px]">
+    <div
+      ref={cardRef}
+      data-visible={isVisible}
+      className="relative mx-auto w-full max-w-[560px]"
+    >
       <span
         className={`${styles.driftSlow} absolute -top-4 left-4 z-10 -rotate-6 rounded-full bg-[#FFD23F] px-4 py-1.5 font-poppins text-[13px] font-bold text-charcoal shadow-[0_10px_24px_-8px_rgba(23,23,23,0.35)] sm:-left-5`}
         aria-hidden
@@ -91,6 +109,7 @@ export default function SearchDemoCard() {
             alt="Growsearch results panel showing skincare products matched to the query, with prices and an add-to-cart action"
             width={1536}
             height={1024}
+            sizes="(min-width: 640px) 560px, 100vw"
             className="h-[210px] w-full object-cover object-top sm:h-[250px]"
           />
         </div>

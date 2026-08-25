@@ -87,6 +87,7 @@ export default function Growsearch() {
             alt="Growsearch results page showing top TV matches, recommendations and click-through-rate analytics"
             width={1536}
             height={1024}
+            sizes="(min-width: 1024px) 703px, 100vw"
             className="w-full rounded-[27px]"
           />
         </Reveal>

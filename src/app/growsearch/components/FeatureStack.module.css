@@ -42,13 +42,13 @@
     transition:
       opacity 360ms ease,
       transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: transform, opacity;
   }
 
   .runway[data-pinned="true"] .stackCard[data-state="active"] {
     z-index: 2;
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
+    will-change: transform, opacity;
   }
 
   .runway[data-pinned="true"] .stackCard[data-state="past"] {

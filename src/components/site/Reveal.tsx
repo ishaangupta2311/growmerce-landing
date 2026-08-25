@@ -2,6 +2,48 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
+type RevealCallback = () => void;
+
+let sharedObserver: IntersectionObserver | null = null;
+const revealCallbacks = new Map<Element, RevealCallback>();
+
+function getSharedObserver() {
+  if (sharedObserver) return sharedObserver;
+
+  sharedObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+
+        const callback = revealCallbacks.get(entry.target);
+        if (!callback) continue;
+
+        revealCallbacks.delete(entry.target);
+        sharedObserver?.unobserve(entry.target);
+        callback();
+      }
+    },
+    { threshold: 0.15, rootMargin: "0px 0px -40px 0px" },
+  );
+
+  return sharedObserver;
+}
+
+function observeReveal(node: Element, callback: RevealCallback) {
+  const observer = getSharedObserver();
+  revealCallbacks.set(node, callback);
+  observer.observe(node);
+
+  return () => {
+    revealCallbacks.delete(node);
+    observer.unobserve(node);
+    if (revealCallbacks.size === 0) {
+      observer.disconnect();
+      sharedObserver = null;
+    }
+  };
+}
+
 type RevealProps = {
   children: React.ReactNode;
   className?: string;
@@ -17,17 +59,8 @@ export default function Reveal({ children, className, delay = 0 }: RevealProps) 
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setShown(true);
-          io.disconnect();
-        }
-      },
-      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" },
-    );
-    io.observe(node);
-    return () => io.disconnect();
+
+    return observeReveal(node, () => setShown(true));
   }, []);
 
   return (

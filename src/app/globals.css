@@ -73,6 +73,14 @@ body {
   @apply inline-flex items-center justify-center gap-3 rounded-[10px] border-2 border-white bg-cream px-7 py-3.5 font-poppins text-[17px] font-bold text-charcoal transition-[transform,background-color,color,border-color] duration-200 hover:-translate-y-0.5 hover:border-charcoal hover:bg-charcoal hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white;
 }
 
+/* Keep long visual lists from spending paint/layout work on cards that are
+   still well below the viewport. Each card provides its own aspect-ratio so
+   skipped content does not collapse the page while it is deferred. */
+@utility content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 720px;
+}
+
 .cta-arrow {
   transition: transform 0.3s ease-out;
 }

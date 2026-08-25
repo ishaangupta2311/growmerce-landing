@@ -106,7 +106,7 @@ export default function Navbar() {
           : null;
 
   return (
-    <header className="sticky top-0 z-50 bg-cream/95 font-bricolage shadow-[0_1px_0_rgba(23,23,23,0.07)] backdrop-blur-md">
+    <header className="sticky top-0 z-50 bg-cream font-bricolage shadow-[0_1px_0_rgba(23,23,23,0.07)]">
       <div
         ref={navRef}
         className="relative mx-auto flex h-[84px] w-full max-w-[1440px] items-center justify-between px-5 sm:px-8"

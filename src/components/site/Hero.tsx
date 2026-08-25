@@ -137,7 +137,6 @@ export default function Hero() {
             alt="A shopping trolley of parcels on a desk beside a laptop showing an online store"
             width={1474}
             height={737}
-            priority
             sizes="100vw"
             className="hero-enter-scale mt-8 h-auto w-full rounded-[10px]"
             style={{ animationDelay: "200ms" }}

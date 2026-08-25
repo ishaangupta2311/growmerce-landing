@@ -94,6 +94,7 @@ export default function FeatureStack() {
   const runwayRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const activeIndexRef = useRef(0);
+  const isPinnedRef = useRef(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPinned, setIsPinned] = useState(false);
 
@@ -106,6 +107,7 @@ export default function FeatureStack() {
 
     const updateActiveCard = () => {
       frame = 0;
+      if (!isPinnedRef.current) return;
       const runway = runwayRef.current;
       const stage = stageRef.current;
       if (!runway || !stage) return;
@@ -133,6 +135,7 @@ export default function FeatureStack() {
     };
 
     const requestUpdate = () => {
+      if (!isPinnedRef.current) return;
       if (!frame) frame = window.requestAnimationFrame(updateActiveCard);
     };
 
@@ -142,6 +145,7 @@ export default function FeatureStack() {
         !reducedMotionQuery.matches &&
         window.innerHeight >= 700;
 
+      isPinnedRef.current = shouldPin;
       setIsPinned(shouldPin);
       if (shouldPin) requestUpdate();
     };

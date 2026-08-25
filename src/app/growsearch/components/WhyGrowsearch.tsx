@@ -52,12 +52,26 @@ const tabId = (id: string) => `growsearch-tab-${id}`;
 const PANEL_ID = "growsearch-capability-panel";
 
 export default function WhyGrowsearch() {
+  const sectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [timerReset, setTimerReset] = useState(0);
   const [reducedMotion, setReducedMotion] = useState<boolean | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
   const [progressing, setProgressing] = useState(false);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const activeCapability = CAPABILITIES[activeIndex];
+
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { rootMargin: "160px 0px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -69,17 +83,17 @@ export default function WhyGrowsearch() {
   }, []);
 
   useEffect(() => {
-    if (reducedMotion !== false) return;
+    if (reducedMotion !== false || !isVisible) return;
 
     const timeoutId = window.setTimeout(() => {
       setActiveIndex((currentIndex) => (currentIndex + 1) % CAPABILITIES.length);
     }, activeCapability.durationMs);
 
     return () => window.clearTimeout(timeoutId);
-  }, [activeCapability.durationMs, activeIndex, reducedMotion, timerReset]);
+  }, [activeCapability.durationMs, activeIndex, isVisible, reducedMotion, timerReset]);
 
   useEffect(() => {
-    if (reducedMotion !== false) return;
+    if (reducedMotion !== false || !isVisible) return;
 
     let startFrameId: number | undefined;
     const resetFrameId = window.requestAnimationFrame(() => {
@@ -91,7 +105,7 @@ export default function WhyGrowsearch() {
       window.cancelAnimationFrame(resetFrameId);
       if (startFrameId !== undefined) window.cancelAnimationFrame(startFrameId);
     };
-  }, [activeIndex, reducedMotion, timerReset]);
+  }, [activeIndex, isVisible, reducedMotion, timerReset]);
 
   const selectCapability = (index: number) => {
     setActiveIndex(index);
@@ -122,7 +136,7 @@ export default function WhyGrowsearch() {
   };
 
   return (
-    <section className="bg-peach py-20 lg:py-24">
+    <section ref={sectionRef} className="bg-peach py-20 lg:py-24">
       <div className="mx-auto max-w-[1370px] px-6">
         <Reveal>
           <div className="flex items-center justify-center gap-3 text-center">

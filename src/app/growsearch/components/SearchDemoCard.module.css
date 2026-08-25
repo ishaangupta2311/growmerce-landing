@@ -43,6 +43,11 @@
   animation: growsearch-hero-drift 11s ease-in-out infinite;
 }
 
+[data-visible="false"] .drift,
+[data-visible="false"] .driftSlow {
+  animation-play-state: paused;
+}
+
 @keyframes growsearch-hero-drift {
   0%,
   100% {
