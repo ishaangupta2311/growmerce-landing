@@ -23,6 +23,7 @@
 
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --font-bricolage: var(--font-bricolage-loaded), ui-sans-serif, system-ui, sans-serif;
+  --font-hand: var(--font-caveat-loaded), "Bradley Hand", ui-rounded, cursive;
   /* Legacy utility names remain aliases so existing production typography
      keeps its carefully selected weights and sizes while using one face. */
   --font-poppins: var(--font-bricolage-loaded), ui-sans-serif, system-ui, sans-serif;

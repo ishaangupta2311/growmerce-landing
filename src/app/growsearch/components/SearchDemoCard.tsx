@@ -67,7 +67,13 @@ export default function SearchDemoCard() {
         No Dead ends
       </span>
 
-      <div className="rounded-[32px] border border-line bg-white p-5 shadow-glow-lg sm:p-7">
+      <div className={styles.awningBox}>
+        <div
+          aria-hidden
+          className={`${styles.awning} ${styles.scallop} h-11 rounded-t-[32px] shadow-[0_10px_20px_-16px_rgba(96,44,14,0.9)] sm:h-12`}
+        />
+
+      <div className="rounded-b-[32px] border-x border-b border-line bg-white px-5 pt-8 pb-5 shadow-glow-lg sm:px-7 sm:pt-9 sm:pb-7">
         <div className="flex items-center justify-between">
           <span className="font-poppins text-[12px] font-bold tracking-[0.22em] text-muted uppercase">
             Growsearch
@@ -130,10 +136,11 @@ export default function SearchDemoCard() {
 
         <p
           id="growsearch-demo-note"
-          className="mt-4 -rotate-2 text-center font-poppins text-[13px] text-muted italic"
+          className="mt-4 -rotate-2 text-center font-hand text-[20px] font-medium text-brand"
         >
           matched on meaning, not spelling
         </p>
+      </div>
       </div>
 
       <span

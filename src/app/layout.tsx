@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Manrope } from "next/font/google";
+import { Bricolage_Grotesque, Caveat, Manrope } from "next/font/google";
 import "./globals.css";
 
 // Manrope remains available to the archived /v concepts, which intentionally
@@ -15,6 +15,13 @@ const manrope = Manrope({
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage-loaded",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const caveat = Caveat({
+  variable: "--font-caveat-loaded",
+  subsets: ["latin"],
+  weight: ["500", "600"],
   display: "swap",
 });
 
@@ -48,7 +55,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // The inline script below adds a `js` class before hydration; React must
       // not treat that attribute delta as a mismatch.
       suppressHydrationWarning
-      className={`${manrope.variable} ${bricolage.variable} antialiased`}
+      className={`${manrope.variable} ${bricolage.variable} ${caveat.variable} antialiased`}
     >
       <head>
         {/* Tags the document so scroll-reveal hidden states only apply with JS. */}
