@@ -125,7 +125,7 @@ export default function WhyGrowsearch() {
     <section className="bg-peach py-20 lg:py-24">
       <div className="mx-auto max-w-[1370px] px-6">
         <Reveal>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center gap-3 text-center">
             <Image
               src="/img/icon-search-circle.svg"
               alt=""
@@ -137,10 +137,10 @@ export default function WhyGrowsearch() {
               Why Growsearch?
             </h2>
           </div>
-          <p className="mt-4 text-[clamp(1.25rem,2vw,1.75rem)] font-semibold text-charcoal">
+          <p className="mt-4 text-center text-[clamp(1.25rem,2vw,1.75rem)] font-semibold text-charcoal">
             Search that understands shoppers. Insights that grow revenue.
           </p>
-          <p className="mt-3 max-w-[70ch] text-[17px] leading-relaxed text-body-mute">
+          <p className="mx-auto mt-3 max-w-[70ch] text-center text-[17px] leading-relaxed text-body-mute">
             Growsearch uses AI to understand intent, recover lost searches,
             guide shoppers through conversations, and show merchants exactly
             how search drives sales.
@@ -148,11 +148,11 @@ export default function WhyGrowsearch() {
         </Reveal>
 
         <Reveal className="mt-12">
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-stretch">
+          <div>
             <div
               role="tablist"
               aria-label="Growsearch capabilities"
-              className="flex flex-col"
+              className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
             >
               {CAPABILITIES.map((capability, index) => {
                 const isActive = index === activeIndex;
@@ -172,22 +172,22 @@ export default function WhyGrowsearch() {
                     onClick={() => selectCapability(index)}
                     onKeyDown={(event) => handleTabKeyDown(event, index)}
                     data-active={isActive}
-                    className="group relative flex w-full items-start gap-4 border-b border-brand/20 px-5 py-5 text-left transition-[background-color,border-color,box-shadow] duration-300 first:border-t focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand data-[active=true]:rounded-[18px] data-[active=true]:border-transparent data-[active=true]:bg-white data-[active=true]:shadow-glow"
+                    className="group relative flex min-h-[116px] w-full items-start gap-3 rounded-[18px] border-2 border-brand/15 bg-white/45 px-4 py-4 text-left transition-[background-color,border-color,box-shadow] duration-300 hover:border-brand/45 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand data-[active=true]:border-brand data-[active=true]:bg-white data-[active=true]:shadow-glow"
                   >
-                    <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-brand/12 transition-colors duration-300 group-data-[active=true]:bg-brand/18">
-                      <Image src={capability.icon} alt="" width={26} height={26} />
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand/12 transition-colors duration-300 group-data-[active=true]:bg-brand/18">
+                      <Image src={capability.icon} alt="" width={24} height={24} />
                     </span>
                     <span className="min-w-0">
-                      <span className="block text-xl font-bold text-charcoal">
+                      <span className="block text-base font-bold leading-tight text-charcoal">
                         {capability.title}
                       </span>
-                      <span className="mt-2 block text-[15px] leading-relaxed text-body-mute">
+                      <span className="mt-2 block text-sm leading-snug text-body-mute">
                         {capability.body}
                       </span>
                     </span>
                     <span
                       aria-hidden="true"
-                      className="ml-auto mt-1 shrink-0 text-xl text-brand opacity-0 transition-opacity duration-300 group-data-[active=true]:opacity-100"
+                      className="ml-auto mt-0.5 shrink-0 text-lg text-brand opacity-0 transition-opacity duration-300 group-data-[active=true]:opacity-100"
                     >
                       ↗
                     </span>
@@ -195,13 +195,12 @@ export default function WhyGrowsearch() {
                 );
               })}
             </div>
-
             <div
               id={PANEL_ID}
               role="tabpanel"
               aria-labelledby={tabId(activeCapability.id)}
               tabIndex={0}
-              className="relative isolate min-h-[360px] overflow-hidden rounded-[28px] bg-charcoal p-6 text-white shadow-[0_24px_70px_-32px_rgba(23,23,23,0.75)] outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:min-h-[440px] sm:p-8 lg:min-h-0"
+              className="relative isolate mt-8 min-h-[360px] overflow-hidden rounded-[28px] bg-charcoal p-6 text-white shadow-[0_24px_70px_-32px_rgba(23,23,23,0.75)] outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:aspect-[16/9] sm:min-h-[440px] sm:p-8 xl:aspect-[2.4/1] xl:min-h-[460px]"
             >
               <div
                 aria-hidden="true"
@@ -221,7 +220,7 @@ export default function WhyGrowsearch() {
                   className="object-cover"
                 />
               ) : (
-                <div className="flex h-full min-h-[308px] flex-col justify-between sm:min-h-[376px]">
+                <div className="flex h-full min-h-[308px] flex-col justify-between sm:min-h-0">
                   <span className="inline-flex w-fit items-center gap-2 border border-white/20 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-white/65">
                     <span className="size-1.5 rounded-full bg-brand" />
                     GIF preview placeholder
