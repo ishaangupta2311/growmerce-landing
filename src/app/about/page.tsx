@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
@@ -8,7 +7,7 @@ import Faq from "@/components/site/Faq";
 import ProveItBand from "@/components/site/ProveItBand";
 import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
-import { PLATFORMS } from "@/components/site/PlatformStrip";
+import { PlatformLogos } from "@/components/site/PlatformStrip";
 import { GROWSEARCH_HOME } from "@/lib/site-urls";
 
 export const metadata: Metadata = {
@@ -122,23 +121,12 @@ export default function AboutPage() {
 
         {/* You will find us on */}
         <Reveal className="mx-auto max-w-[1370px] px-6 pb-16">
-          <div className="flex flex-col items-center gap-7 rounded-[22px] border-2 border-brand bg-peach/60 px-8 py-6 lg:flex-row lg:gap-12">
+          <div className="flex flex-col items-center gap-7 rounded-[22px] border-2 border-brand bg-peach/60 px-8 py-6 lg:flex-row lg:justify-center lg:gap-14">
             <p className="shrink-0 font-poppins text-[clamp(1.125rem,1.8vw,1.5rem)] leading-tight font-extrabold text-brand uppercase">
               You will
               <br className="hidden lg:block" /> find us on
             </p>
-            <div className="flex flex-1 flex-wrap items-center justify-center gap-x-12 gap-y-6 lg:justify-between">
-              {PLATFORMS.map((p) => (
-                <Image
-                  key={p.name}
-                  src={p.src}
-                  alt={p.name}
-                  width={p.w}
-                  height={p.h}
-                  className={`w-auto object-contain ${p.cls}`}
-                />
-              ))}
-            </div>
+            <PlatformLogos />
           </div>
         </Reveal>
 

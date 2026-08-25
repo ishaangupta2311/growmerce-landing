@@ -39,16 +39,20 @@ export default function Hero() {
             them (frame 1459x812 below the nav; every value below is that
             frame's own percentage). */}
         <div className="relative hidden aspect-[1459/812] w-full lg:block">
-          {/* The photo is a wide composition that bleeds off the left edge. */}
+          {/* The photo is an L-shaped cut-out whose notch sits under the
+              "AI tools for" block. Left edge lines up with the headline
+              blocks; the width below is chosen so the bottom edge lands on
+              the CTA row's baseline (both scale with the stage, so they stay
+              aligned at every width). */}
           <Image
             src="/img/pages/hero-shopping-desk.png"
             alt="A shopping trolley of parcels on a desk beside a laptop showing an online store"
-            width={1474}
-            height={737}
+            width={714}
+            height={565}
             priority
-            sizes="(min-width: 1024px) 101vw, 100vw"
+            sizes="(min-width: 1024px) 42vw, 100vw"
             className="hero-enter-scale absolute h-auto"
-            style={{ left: "-6.51%", top: "18.74%", width: "101.03%", animationDelay: "150ms" }}
+            style={{ left: "2.19%", top: "34.95%", width: "41.77%", animationDelay: "150ms" }}
           />
 
           {/* Chart card */}
@@ -135,10 +139,10 @@ export default function Hero() {
           <Image
             src="/img/pages/hero-shopping-desk.png"
             alt="A shopping trolley of parcels on a desk beside a laptop showing an online store"
-            width={1474}
-            height={737}
+            width={714}
+            height={565}
             sizes="100vw"
-            className="hero-enter-scale mt-8 h-auto w-full rounded-[10px]"
+            className="hero-enter-scale mt-8 h-auto w-full"
             style={{ animationDelay: "200ms" }}
           />
 

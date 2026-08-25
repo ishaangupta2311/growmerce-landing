@@ -61,8 +61,10 @@ body {
   @apply inline-flex items-center justify-center gap-3 rounded-[10px] bg-brand px-7 py-3.5 font-poppins text-[17px] font-bold text-white shadow-[0_14px_30px_-14px_rgba(255,90,31,0.95)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_38px_-14px_rgba(255,90,31,1)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand;
 }
 
+/* The bordered variants carry 2px of border, so their padding is 2px
+   tighter than the solid ones — that keeps every CTA pair the same box. */
 @utility cta-secondary {
-  @apply inline-flex items-center justify-center gap-3 rounded-[10px] border-2 border-brand bg-white px-7 py-3.5 font-poppins text-[17px] font-bold text-brand transition-[transform,background-color,color] duration-200 hover:-translate-y-0.5 hover:bg-brand hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand;
+  @apply inline-flex items-center justify-center gap-3 rounded-[10px] border-2 border-brand bg-white px-[26px] py-3 font-poppins text-[17px] font-bold text-brand transition-[transform,background-color,color] duration-200 hover:-translate-y-0.5 hover:bg-brand hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand;
 }
 
 @utility cta-primary-inverse {
@@ -70,7 +72,7 @@ body {
 }
 
 @utility cta-secondary-inverse {
-  @apply inline-flex items-center justify-center gap-3 rounded-[10px] border-2 border-white bg-cream px-7 py-3.5 font-poppins text-[17px] font-bold text-charcoal transition-[transform,background-color,color,border-color] duration-200 hover:-translate-y-0.5 hover:border-charcoal hover:bg-charcoal hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white;
+  @apply inline-flex items-center justify-center gap-3 rounded-[10px] border-2 border-white bg-cream px-[26px] py-3 font-poppins text-[17px] font-bold text-charcoal transition-[transform,background-color,color,border-color] duration-200 hover:-translate-y-0.5 hover:border-charcoal hover:bg-charcoal hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white;
 }
 
 /* Keep long visual lists from spending paint/layout work on cards that are

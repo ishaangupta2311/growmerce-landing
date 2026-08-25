@@ -212,7 +212,7 @@ export default function Navbar({
 
       {/* Mobile sheet */}
       {mobile ? (
-        <div className="border-t border-line bg-white px-5 pb-6 lg:hidden">
+        <div className="border-t border-brand/15 bg-cream px-5 pb-6 lg:hidden">
           {NAV.map((entry) => (
             <div key={entry.label} className="border-b border-line py-3 last:border-0">
               {entry.href ? (
@@ -248,7 +248,7 @@ export default function Navbar({
             <Link href="#demo" onClick={() => setMobile(false)} className="flex-1 rounded-[10px] bg-brand py-2.5 text-center font-poppins text-[15px] font-bold text-white">
               See demo
             </Link>
-            <Link href="#login" onClick={() => setMobile(false)} className="flex-1 rounded-[10px] border-2 border-brand bg-white py-2.5 text-center font-poppins text-[15px] font-bold text-brand">
+            <Link href="#login" onClick={() => setMobile(false)} className="flex-1 rounded-[10px] border-2 border-brand bg-white py-[8px] text-center font-poppins text-[15px] font-bold text-brand">
               Login
             </Link>
           </div>
