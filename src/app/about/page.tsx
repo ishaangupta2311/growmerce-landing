@@ -9,6 +9,7 @@ import ProveItBand from "@/components/site/ProveItBand";
 import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
 import { PLATFORMS } from "@/components/site/PlatformStrip";
+import { GROWSEARCH_HOME } from "@/lib/site-urls";
 
 export const metadata: Metadata = {
   title: "What is Growmerce",
@@ -114,7 +115,7 @@ export default function AboutPage() {
           <CtaPair
             className="mt-10 justify-center"
             primaryHref="/pricing"
-            secondaryHref="/growsearch"
+            secondaryHref={GROWSEARCH_HOME}
             secondaryLabel="See all our products"
           />
         </section>

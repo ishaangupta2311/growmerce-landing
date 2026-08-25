@@ -5,6 +5,7 @@ import Footer from "@/components/site/Footer";
 import Faq from "@/components/site/Faq";
 import Reveal from "@/components/site/Reveal";
 import FeaturesHero from "./components/FeaturesHero";
+import { GROWSEARCH_FEATURES } from "@/lib/site-urls";
 import FeatureReelGrid from "./components/FeatureReelGrid";
 import ClosingCta from "./components/ClosingCta";
 import { FEATURE_ROWS } from "./rows-data";
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
   title: "Growsearch features — Everything your search bar should be doing",
   description:
     "Twenty things Growsearch does that default Shopify search doesn't. Ten your shoppers feel, ten you see.",
+  alternates: { canonical: GROWSEARCH_FEATURES },
 };
 
 const FEEL_ROWS = FEATURE_ROWS.filter((r) => r.group === "feel");
@@ -22,7 +24,7 @@ const SEE_ROWS = FEATURE_ROWS.filter((r) => r.group === "see");
 export default function GrowsearchFeaturesPage() {
   return (
     <>
-      <Navbar />
+      <Navbar scope="growsearch" />
       <main className="font-bricolage">
         <FeaturesHero />
 

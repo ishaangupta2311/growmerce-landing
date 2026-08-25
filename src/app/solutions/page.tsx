@@ -7,6 +7,7 @@ import CtaPair from "@/components/site/CtaPair";
 import Faq from "@/components/site/Faq";
 import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
+import { GROWSEARCH_HOME } from "@/lib/site-urls";
 
 export const metadata: Metadata = {
   title: "Solutions",
@@ -110,7 +111,7 @@ export default function SolutionsPage() {
               <CtaPair
                 className="mt-9"
                 primaryHref="/pricing"
-                secondaryHref="/growsearch"
+                secondaryHref={GROWSEARCH_HOME}
                 secondaryLabel="See Growsearch"
               />
             </div>

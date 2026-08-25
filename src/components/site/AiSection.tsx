@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Arrow from "./Arrow";
 import Reveal from "./Reveal";
+import { GROWSEARCH_HOME } from "@/lib/site-urls";
 
 const ITEMS = [
   {
@@ -80,7 +81,7 @@ export default function AiSection() {
           </ul>
 
           <Link
-            href="/growsearch"
+            href={GROWSEARCH_HOME}
             className="cta-primary mt-12"
           >
             See it running in Growsearch

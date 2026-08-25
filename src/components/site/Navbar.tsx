@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import HeaderMegaMenu, { type HeaderMegaMenuVariant } from "./HeaderMegaMenu";
+import { GROWMERCE_HOME, GROWSEARCH_FEATURES, GROWSEARCH_HOME } from "@/lib/site-urls";
 
 type MenuItem = { label: string; href: string; note?: string };
 type NavEntry = { label: string; href?: string; items?: MenuItem[] };
@@ -15,8 +16,8 @@ const NAV: NavEntry[] = [
   {
     label: "Platform",
     items: [
-      { label: "Growsearch", href: "/growsearch", note: "Storefront search that never dead-ends" },
-      { label: "All features", href: "/growsearch/features", note: "Everything Growsearch does" },
+      { label: "Growsearch", href: GROWSEARCH_HOME, note: "Storefront search that never dead-ends" },
+      { label: "All features", href: GROWSEARCH_FEATURES, note: "Everything Growsearch does" },
       { label: "Solutions", href: "/solutions", note: "The revenue your search bar is leaking" },
     ],
   },
@@ -53,7 +54,11 @@ function Caret({ open }: { open: boolean }) {
   );
 }
 
-export default function Navbar() {
+export default function Navbar({
+  scope,
+}: {
+  scope?: "growmerce" | "growsearch";
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);
@@ -94,9 +99,13 @@ export default function Navbar() {
     }, 140);
   };
 
+  const isGrowsearchScope =
+    scope === "growsearch" ||
+    (scope !== "growmerce" && pathname.startsWith("/growsearch"));
+
   const megaMenuVariant: HeaderMegaMenuVariant | null =
     open === "Platform"
-      ? pathname.startsWith("/growsearch")
+      ? isGrowsearchScope
         ? "growsearch"
         : "platform"
       : open === "Resources"
@@ -111,12 +120,12 @@ export default function Navbar() {
         ref={navRef}
         className="relative mx-auto flex h-[84px] w-full max-w-[1440px] items-center justify-between px-5 sm:px-8"
       >
-        <Link href="/" aria-label="Growmerce home" className="shrink-0">
+        <Link href={GROWMERCE_HOME} aria-label="Growmerce home" className="shrink-0">
           <Image
             src="/brand/logo.svg"
             alt="Growmerce"
-            width={305}
-            height={66}
+            width={310}
+            height={67}
             priority
             className="h-10 w-auto sm:h-11"
           />
@@ -178,7 +187,7 @@ export default function Navbar() {
           </Link>
           <Link
             href="#login"
-            className="hidden items-center justify-center rounded-[10px] border-2 border-brand bg-white px-5 py-2 font-poppins text-[15px] font-bold text-brand transition-[background-color,color] duration-200 hover:bg-brand hover:text-white sm:inline-flex"
+            className="hidden items-center justify-center rounded-[10px] border-2 border-brand bg-white px-[18px] py-[6px] font-poppins text-[15px] font-bold text-brand transition-[background-color,color] duration-200 hover:bg-brand hover:text-white sm:inline-flex"
           >
             Login
           </Link>

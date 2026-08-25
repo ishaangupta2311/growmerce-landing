@@ -9,6 +9,7 @@ import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
 import PricingPlans from "@/components/site/PricingPlans";
 import AllPlans from "./components/AllPlans";
+import { GROWSEARCH_FEATURES } from "@/lib/site-urls";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -69,7 +70,7 @@ export default function PricingPage() {
           <CtaPair
             className="mt-10 justify-center"
             primaryHref="#plans"
-            secondaryHref="/growsearch/features"
+            secondaryHref={GROWSEARCH_FEATURES}
             secondaryLabel="Compare with competitors"
           />
         </section>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
+import { GROWSEARCH_FEATURES } from "@/lib/site-urls";
 import styles from "./FeatureStack.module.css";
 
 /* Small CSS-only mock UIs standing in for the per-card screenshots — no new
@@ -225,7 +226,7 @@ export default function FeatureStack() {
           </div>
 
           <div className="mt-6 flex justify-center">
-            <Link href="/growsearch/features" className="cta-primary">
+            <Link href={GROWSEARCH_FEATURES} className="cta-primary">
               Explore all features
               <Arrow className="cta-arrow" />
             </Link>

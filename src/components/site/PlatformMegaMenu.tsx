@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { PLATFORMS } from "./PlatformStrip";
+import { GROWSEARCH_FEATURES, GROWSEARCH_HOME } from "@/lib/site-urls";
 
 type MenuIconType = "question" | "check" | "new" | "price";
 
@@ -29,13 +30,13 @@ const GROWSEARCH_PRIMARY_LINKS = [
   {
     label: "What is Growsearch?",
     note: "Storefront search that never dead-ends",
-    href: "/growsearch",
+    href: GROWSEARCH_HOME,
     icon: "question",
   },
   {
     label: "Growsearch Features",
     note: "Everything Growsearch does",
-    href: "/growsearch/features",
+    href: GROWSEARCH_FEATURES,
     icon: "check",
   },
   {
@@ -121,7 +122,7 @@ export default function PlatformMegaMenuContent({
               key={item.label}
               href={item.href}
               onClick={onNavigate}
-              className="group flex items-start gap-3 rounded-[8px] px-2 py-2 text-charcoal transition-colors hover:bg-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              className="group flex items-start gap-3 rounded-[8px] px-2 py-2 text-charcoal transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             >
               <span className="mt-0.5 shrink-0 text-muted transition-colors group-hover:text-brand">
                 <MenuIcon type={item.icon} />
@@ -140,7 +141,7 @@ export default function PlatformMegaMenuContent({
 
       <div className="flex flex-col justify-start">
           <Link
-            href="/growsearch/features"
+            href={GROWSEARCH_FEATURES}
             onClick={onNavigate}
             className="w-fit text-[clamp(1.1rem,1.4vw,1.3rem)] leading-tight font-semibold underline decoration-brand decoration-2 underline-offset-4 transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
           >
@@ -149,7 +150,7 @@ export default function PlatformMegaMenuContent({
           <div className="mt-4 grid grid-cols-4 gap-3">
             {workflows.map((workflow) => (
               <div key={workflow.name} className="flex min-w-0 flex-col items-center gap-2">
-                <span className="grid size-14 place-items-center rounded-full bg-[#f1f1f1]">
+                <span className="grid size-14 place-items-center rounded-full bg-white">
                   <Image src={workflow.src} alt="" width={workflow.size} height={workflow.size} className="size-auto max-h-11 max-w-11 object-contain" />
                 </span>
                 <span className="text-[11px] font-medium text-muted">{workflow.name}</span>
@@ -162,7 +163,7 @@ export default function PlatformMegaMenuContent({
           </p>
           <div className="mt-3 grid grid-cols-4 gap-3">
             {PLATFORMS.map((platform) => (
-              <span key={platform.name} title={platform.name} className="grid size-14 place-items-center rounded-full bg-[#f1f1f1] p-2.5">
+              <span key={platform.name} title={platform.name} className="grid size-14 place-items-center rounded-full bg-white p-2.5">
                 <Image
                   src={platform.src}
                   alt={platform.name}
@@ -177,12 +178,12 @@ export default function PlatformMegaMenuContent({
       </div>
 
       <Link
-          href="/growsearch"
+          href={GROWSEARCH_HOME}
           onClick={onNavigate}
-          className="group flex min-h-0 flex-col overflow-hidden rounded-[22px] border border-brand bg-[#fffaf7] p-3 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-22px_rgba(255,90,31,0.7)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-brand"
+          className="group flex min-h-0 flex-col overflow-hidden rounded-[22px] border border-brand bg-white p-3 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-22px_rgba(255,90,31,0.7)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-brand"
         >
           <span className="text-[12px] font-medium tracking-[0.04em] text-muted uppercase">Live now</span>
-          <span className="relative mt-2 min-h-0 flex-1 overflow-hidden rounded-[13px] bg-white">
+          <span className="relative mt-2 min-h-0 flex-1 overflow-hidden rounded-[13px] bg-cream">
             <Image
               src="/img/smart-search-mock.png"
               alt="Growsearch storefront results and search analytics"

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { GROWSEARCH_HOME } from "@/lib/site-urls";
 
 type Plan = {
   name: string;
@@ -133,7 +134,7 @@ export default function PricingPlans() {
       <p className="mt-6 text-center text-[15px] text-muted">
         Every plan includes a 15-day free trial. No credit card required, no
         revenue share, cancel whenever you like.{" "}
-        <Link href="/growsearch" className="font-semibold text-brand underline">
+        <Link href={GROWSEARCH_HOME} className="font-semibold text-brand underline">
           See what Growsearch does
         </Link>
         .

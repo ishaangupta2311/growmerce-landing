@@ -3,6 +3,7 @@ import Link from "next/link";
 import Arrow from "./Arrow";
 import Reveal from "./Reveal";
 import { PLATFORMS } from "./PlatformStrip";
+import { GROWSEARCH_HOME } from "@/lib/site-urls";
 
 const CHECKLIST = [
   "Understands natural language and intent.",
@@ -68,7 +69,7 @@ export default function Growsearch() {
           </ul>
 
           <div className="mt-12 flex flex-wrap items-center gap-5">
-            <Link href="/growsearch" className="cta-primary">
+            <Link href={GROWSEARCH_HOME} className="cta-primary">
               Explore Growsearch
               <Arrow className="cta-arrow" />
             </Link>

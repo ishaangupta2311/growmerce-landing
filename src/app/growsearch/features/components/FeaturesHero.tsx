@@ -1,5 +1,6 @@
 import Reveal from "@/components/site/Reveal";
 import CtaPair from "@/components/site/CtaPair";
+import { GROWSEARCH_HOME } from "@/lib/site-urls";
 
 export default function FeaturesHero() {
   return (
@@ -19,7 +20,7 @@ export default function FeaturesHero() {
           className="mt-9"
           primaryHref="/pricing"
           primaryLabel="Get started"
-          secondaryHref="/growsearch"
+          secondaryHref={GROWSEARCH_HOME}
           secondaryLabel="See all our products"
         />
       </Reveal>
