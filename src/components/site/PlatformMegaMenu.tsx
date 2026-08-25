@@ -115,7 +115,7 @@ export default function PlatformMegaMenuContent({
 
   return (
     <div className="grid h-[282px] grid-cols-[minmax(220px,0.95fr)_minmax(340px,1.35fr)_minmax(250px,0.9fr)] gap-6 px-6 py-5">
-        <div className="flex flex-col justify-center border-r border-line pr-6">
+      <div className="flex flex-col justify-start border-r border-line pr-6">
           {primaryLinks.map((item) => (
             <Link
               key={item.label}
@@ -136,9 +136,9 @@ export default function PlatformMegaMenuContent({
               </span>
             </Link>
           ))}
-        </div>
+      </div>
 
-        <div className="flex flex-col justify-center">
+      <div className="flex flex-col justify-start">
           <Link
             href="/growsearch/features"
             onClick={onNavigate}
@@ -174,9 +174,9 @@ export default function PlatformMegaMenuContent({
               </span>
             ))}
           </div>
-        </div>
+      </div>
 
-        <Link
+      <Link
           href="/growsearch"
           onClick={onNavigate}
           className="group flex min-h-0 flex-col overflow-hidden rounded-[22px] border border-brand bg-[#fffaf7] p-3 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-22px_rgba(255,90,31,0.7)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-brand"
@@ -200,7 +200,7 @@ export default function PlatformMegaMenuContent({
               <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </span>
-        </Link>
+      </Link>
     </div>
   );
 }
