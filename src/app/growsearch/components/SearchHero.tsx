@@ -5,7 +5,7 @@ import SearchDemoCard from "./SearchDemoCard";
 
 export default function SearchHero() {
   return (
-    <section className="mx-auto max-w-[1370px] px-6 pt-14 lg:pt-20">
+    <section className="mx-auto max-w-[1370px] px-6 pt-14 pb-20 lg:pt-20 lg:pb-28">
       <div className="grid items-center gap-14 lg:grid-cols-[1fr_minmax(0,560px)] lg:gap-10">
         <Reveal>
           <h1 className="text-[clamp(1.875rem,5vw,4.25rem)] leading-[1.08] font-bold text-charcoal">
