@@ -7,10 +7,11 @@ export const metadata: Metadata = {
     "What Growsearch collects from shoppers and merchants, why, who processes it, and how long it is kept.",
 };
 
-const CONTACT = "ishaangupta1104@gmail.com";
+const CONTACT = "admin@growmerce.ai";
 
 /* Reproduced from the policy published with the Shopify listing. Wording is
-   unchanged apart from naming the app Growsearch on first mention. */
+   unchanged apart from naming the app Growsearch on first mention and routing
+   contact through the Growmerce address rather than a personal one. */
 const SECTIONS: LegalSection[] = [
   {
     id: "shopper-data",

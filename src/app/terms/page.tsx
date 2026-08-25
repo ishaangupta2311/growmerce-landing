@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "The terms you agree to when you install and use Growsearch, including plans, billing, the free trial, acceptable use and cancellation.",
 };
 
-const CONTACT = "ishaangupta1104@gmail.com";
+const CONTACT = "admin@growmerce.ai";
 
 function Mail() {
   return (

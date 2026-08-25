@@ -8,7 +8,7 @@ const COLUMNS = [
     links: [
       { label: "About", href: "/about" },
       { label: "Newsroom", href: "#" },
-      { label: "Contact us", href: "#" },
+      { label: "Contact us", href: "mailto:admin@growmerce.ai" },
     ],
   },
   {
