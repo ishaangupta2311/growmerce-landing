@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import HeaderMegaMenu, { type HeaderMegaMenuVariant } from "./HeaderMegaMenu";
 
@@ -53,6 +54,7 @@ function Caret({ open }: { open: boolean }) {
 }
 
 export default function Navbar() {
+  const pathname = usePathname();
   const [open, setOpen] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
@@ -94,7 +96,9 @@ export default function Navbar() {
 
   const megaMenuVariant: HeaderMegaMenuVariant | null =
     open === "Platform"
-      ? "platform"
+      ? pathname.startsWith("/growsearch")
+        ? "growsearch"
+        : "platform"
       : open === "Resources"
         ? "resources"
         : open === "Why us"

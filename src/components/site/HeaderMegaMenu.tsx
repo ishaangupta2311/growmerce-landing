@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import PlatformMegaMenuContent from "./PlatformMegaMenu";
 
-export type HeaderMegaMenuVariant = "platform" | "resources" | "why-us";
+export type HeaderMegaMenuVariant = "platform" | "growsearch" | "resources" | "why-us";
 
 const RESOURCE_GROUPS = [
   {
@@ -88,7 +88,7 @@ export default function HeaderMegaMenu({
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
 }) {
-  const isPlatform = variant === "platform";
+  const isPlatform = variant === "platform" || variant === "growsearch";
   const isResources = variant === "resources";
   const groups = isResources ? RESOURCE_GROUPS : WHY_US_GROUPS;
   const label = isPlatform ? "Platform" : isResources ? "Resources" : "Why us";
@@ -103,7 +103,10 @@ export default function HeaderMegaMenu({
       className="mega-menu-enter fixed top-[84px] left-1/2 z-60 w-[calc(100vw-64px)] max-w-[1160px] overflow-hidden rounded-b-[38px] border-x border-b border-brand/15 bg-white font-bricolage shadow-[0_28px_64px_-34px_rgba(73,28,8,0.34)]"
     >
       {isPlatform ? (
-        <PlatformMegaMenuContent onNavigate={onNavigate} />
+        <PlatformMegaMenuContent
+          scope={variant === "growsearch" ? "growsearch" : "growmerce"}
+          onNavigate={onNavigate}
+        />
       ) : isResources ? (
         <div className="grid h-[282px] grid-cols-[1fr_1fr_0.95fr] gap-12 px-16 py-7">
           {groups.map((group) => (

@@ -2,7 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { PLATFORMS } from "./PlatformStrip";
 
-const PRIMARY_LINKS = [
+type MenuIconType = "question" | "check" | "new" | "price";
+
+const GROWMERCE_PRIMARY_LINKS = [
   {
     label: "What is Growmerce?",
     note: "The complete platform overview",
@@ -23,14 +25,42 @@ const PRIMARY_LINKS = [
   },
 ] as const;
 
-const WORKFLOWS = [
+const GROWSEARCH_PRIMARY_LINKS = [
+  {
+    label: "What is Growsearch?",
+    note: "Storefront search that never dead-ends",
+    href: "/growsearch",
+    icon: "question",
+  },
+  {
+    label: "Growsearch Features",
+    note: "Everything Growsearch does",
+    href: "/growsearch/features",
+    icon: "check",
+  },
+  {
+    label: "Pricing & Plans",
+    note: "Choose the right search volume",
+    href: "/pricing",
+    icon: "price",
+  },
+] as const;
+
+const GROWMERCE_WORKFLOWS = [
   { name: "Search", src: "/img/icon-search-circle.svg", size: 42 },
   { name: "Growth", src: "/img/icon-growth.svg", size: 40 },
   { name: "Automation", src: "/img/icon-workflow.svg", size: 36 },
   { name: "Revenue", src: "/img/icon-wallet.svg", size: 36 },
 ] as const;
 
-function MenuIcon({ type }: { type: (typeof PRIMARY_LINKS)[number]["icon"] }) {
+const GROWSEARCH_WORKFLOWS = [
+  { name: "Intent search", src: "/img/icon-search-circle.svg", size: 42 },
+  { name: "Recovery", src: "/img/icon-workflow.svg", size: 36 },
+  { name: "Conversation", src: "/img/icon-sparkle.svg", size: 34 },
+  { name: "Analytics", src: "/img/icon-growth.svg", size: 40 },
+] as const;
+
+function MenuIcon({ type }: { type: MenuIconType }) {
   if (type === "question") {
     return (
       <svg viewBox="0 0 32 32" fill="none" aria-hidden className="size-7">
@@ -49,6 +79,18 @@ function MenuIcon({ type }: { type: (typeof PRIMARY_LINKS)[number]["icon"] }) {
     );
   }
 
+  if (type === "price") {
+    return (
+      <Image
+        src="/img/icon-wallet.svg"
+        alt=""
+        width={28}
+        height={28}
+        className="size-7 object-contain"
+      />
+    );
+  }
+
   return (
     <span aria-hidden className="grid h-6 min-w-9 place-items-center rounded-[3px] border-2 border-current px-1 text-[9px] leading-none font-extrabold tracking-[-0.03em]">
       NEW
@@ -57,14 +99,24 @@ function MenuIcon({ type }: { type: (typeof PRIMARY_LINKS)[number]["icon"] }) {
 }
 
 export default function PlatformMegaMenuContent({
+  scope,
   onNavigate,
 }: {
+  scope: "growmerce" | "growsearch";
   onNavigate: () => void;
 }) {
+  const isGrowsearch = scope === "growsearch";
+  const primaryLinks = isGrowsearch
+    ? GROWSEARCH_PRIMARY_LINKS
+    : GROWMERCE_PRIMARY_LINKS;
+  const workflows = isGrowsearch
+    ? GROWSEARCH_WORKFLOWS
+    : GROWMERCE_WORKFLOWS;
+
   return (
     <div className="grid h-[282px] grid-cols-[minmax(220px,0.95fr)_minmax(340px,1.35fr)_minmax(250px,0.9fr)] gap-6 px-6 py-5">
         <div className="flex flex-col justify-center border-r border-line pr-6">
-          {PRIMARY_LINKS.map((item) => (
+          {primaryLinks.map((item) => (
             <Link
               key={item.label}
               href={item.href}
@@ -92,10 +144,10 @@ export default function PlatformMegaMenuContent({
             onClick={onNavigate}
             className="w-fit text-[clamp(1.1rem,1.4vw,1.3rem)] leading-tight font-semibold underline decoration-brand decoration-2 underline-offset-4 transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
           >
-            The workflows we build
+            {isGrowsearch ? "What Growsearch does" : "The workflows we build"}
           </Link>
           <div className="mt-4 grid grid-cols-4 gap-3">
-            {WORKFLOWS.map((workflow) => (
+            {workflows.map((workflow) => (
               <div key={workflow.name} className="flex min-w-0 flex-col items-center gap-2">
                 <span className="grid size-14 place-items-center rounded-full bg-[#f1f1f1]">
                   <Image src={workflow.src} alt="" width={workflow.size} height={workflow.size} className="size-auto max-h-11 max-w-11 object-contain" />
