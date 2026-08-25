@@ -45,13 +45,14 @@ export default function Faq({
       aria-labelledby="faq-title"
       className={`mx-auto max-w-[1370px] scroll-mt-28 px-6 py-20 lg:py-28 ${className ?? ""}`}
     >
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
+      <div className="grid gap-10 lg:items-stretch lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
         <h2
           id="faq-title"
-          className="text-[clamp(3rem,6vw,6.75rem)] leading-[1.05] font-semibold tracking-tight"
+          className="text-[clamp(3rem,6vw,6.75rem)] leading-[1.05] font-semibold tracking-tight lg:flex lg:h-full lg:flex-col lg:justify-between"
         >
-          Frequently asked{" "}
-          <span className="mt-2 inline-block rounded-[18px] bg-brand px-5 pb-1 text-white">
+          <span className="block">Frequently</span>
+          <span className="block">asked</span>
+          <span className="block w-fit rounded-[18px] bg-brand px-5 pb-1 text-white">
             Questions
           </span>
         </h2>
@@ -71,7 +72,7 @@ export default function Faq({
                   onClick={() => setOpen(isOpen ? -1 : i)}
                   className="flex w-full items-center justify-between gap-5 px-6 py-5 text-left transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                 >
-                  <span className="text-[clamp(1.125rem,2.1vw,2rem)] leading-snug font-semibold">
+                  <span className="text-[clamp(1.125rem,2.1vw,1.5rem)] leading-snug font-semibold">
                     {item.q}
                   </span>
                   <svg
