@@ -48,7 +48,7 @@ export default function Faq({
       <div className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
         <h2
           id="faq-title"
-          className="text-[clamp(2.5rem,5.5vw,5rem)] leading-[1.05] font-semibold tracking-tight"
+          className="text-[clamp(3rem,6vw,6rem)] leading-[1.05] font-semibold tracking-tight"
         >
           Frequently asked{" "}
           <span className="mt-2 inline-block rounded-[18px] bg-brand px-5 pb-1 text-white">
