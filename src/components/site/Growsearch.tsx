@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Arrow from "./Arrow";
 import Reveal from "./Reveal";
-import { PLATFORMS, PlatformStatus } from "./PlatformStrip";
+import { PLATFORMS, PlatformMark, ComingSoon } from "./PlatformStrip";
 import { GROWSEARCH_HOME } from "@/lib/site-urls";
 
 const CHECKLIST = [
@@ -111,18 +111,12 @@ export default function Growsearch() {
         {PLATFORMS.map((p, i) => (
           <Reveal key={p.name} delay={i * 100}>
             <div className="flex h-[142px] flex-col items-center justify-center gap-3.5 rounded-[26px] bg-white px-6 shadow-[0_12px_40px_rgba(0,0,0,0.10)] transition-transform duration-300 hover-lift [--lift:6px]">
-              {/* Fixed band so the status lines agree across the four cards
-                  rather than stepping with each mark's height. */}
+              {/* Fixed band so the marks agree across the four cards rather
+                  than stepping with each one's height. */}
               <span className="flex h-11 items-center">
-                <Image
-                  src={p.src}
-                  alt={p.name}
-                  width={p.w}
-                  height={p.h}
-                  className={`w-auto max-w-full object-contain ${p.cls} ${p.live ? "" : "opacity-45 grayscale"}`}
-                />
+                <PlatformMark platform={p} className={`w-auto max-w-full ${p.cls}`} />
               </span>
-              <PlatformStatus live={p.live} />
+              {!p.live && <ComingSoon />}
             </div>
           </Reveal>
         ))}

@@ -2,8 +2,7 @@ import Image from "next/image";
 
 /* Only the Shopify app has shipped. The rest stay on the page as a roadmap,
    but nothing here should read as somewhere a merchant can install today, so
-   `live` drives both the grey treatment and a status line everywhere the
-   platform marks appear. */
+   `live` drives the treatment everywhere the platform marks appear. */
 const PLATFORMS = [
   { name: "Shopify", src: "/img/logos/logo-shopify.svg", w: 261, h: 75, cls: "h-8 sm:h-10", live: true },
   { name: "BigCommerce", src: "/img/logos/logo-bigcommerce.svg", w: 81, h: 81, cls: "h-9 sm:h-11", live: false },
@@ -13,15 +12,43 @@ const PLATFORMS = [
   { name: "WooCommerce", src: "/img/logos/logo-woocommerce.png", w: 777, h: 158, cls: "h-6 sm:h-8", live: false },
 ];
 
+type Platform = (typeof PLATFORMS)[number];
+
+/* Every rendering of a platform logo goes through this, so how an unshipped
+   one looks is decided in one place. `dim` is the one thing worth varying:
+   the thinner wordmarks disappear at the row's opacity once they are down to
+   menu size. */
+function PlatformMark({
+  platform,
+  className,
+  dim = "opacity-45",
+}: {
+  platform: Platform;
+  className?: string;
+  dim?: string;
+}) {
+  return (
+    <Image
+      src={platform.src}
+      alt={platform.name}
+      width={platform.w}
+      height={platform.h}
+      className={`object-contain ${className ?? ""} ${platform.live ? "" : `${dim} grayscale`}`}
+    />
+  );
+}
+
 /* Greying a mark tells a sighted reader it is not ready; this says the same
-   thing in text, so the distinction survives without colour. */
-function PlatformStatus({ live, className }: { live: boolean; className?: string }) {
+   thing in text, so the distinction survives without colour. Shipped
+   platforms get no counterpart label — the section heading already says the
+   product is available on them. */
+function ComingSoon({ className }: { className?: string }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 font-poppins text-[10px] font-semibold tracking-[0.1em] uppercase ${live ? "text-brand" : "text-charcoal/45"} ${className ?? ""}`}
+      className={`inline-flex items-center gap-1.5 font-poppins text-[10px] font-semibold tracking-[0.1em] text-charcoal/45 uppercase ${className ?? ""}`}
     >
-      <span aria-hidden className={`size-1.5 shrink-0 rounded-full ${live ? "bg-brand" : "bg-charcoal/30"}`} />
-      {live ? "Live" : "Coming soon"}
+      <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-charcoal/30" />
+      Coming soon
     </span>
   );
 }
@@ -37,18 +64,12 @@ function PlatformLogos({ className }: { className?: string }) {
     >
       {PLATFORMS.map((p) => (
         <div key={p.name} className="flex flex-col items-center gap-2.5">
-          {/* The marks are different heights; a common band keeps the status
-              lines on one baseline instead of stepping with each logo. */}
+          {/* The marks are different heights; a common band keeps them on one
+              baseline instead of stepping, and keeps the labels level too. */}
           <span className="flex h-9 items-center sm:h-11">
-            <Image
-              src={p.src}
-              alt={p.name}
-              width={p.w}
-              height={p.h}
-              className={`w-auto object-contain ${p.cls} ${p.live ? "" : "opacity-45 grayscale"}`}
-            />
+            <PlatformMark platform={p} className={`w-auto ${p.cls}`} />
           </span>
-          <PlatformStatus live={p.live} />
+          {!p.live && <ComingSoon />}
         </div>
       ))}
     </div>
@@ -78,4 +99,5 @@ export default function PlatformStrip({
   );
 }
 
-export { PLATFORMS, PlatformLogos, PlatformStatus };
+export { PLATFORMS, PlatformLogos, PlatformMark, ComingSoon };
+export type { Platform };
