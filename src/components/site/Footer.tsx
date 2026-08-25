@@ -81,13 +81,19 @@ export default function Footer() {
               </Link>
             ))}
           </div>
-          <div className="flex items-center gap-8 text-[16px]">
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-[16px]">
             <span className="font-semibold">@2026 Growmerce</span>
             <Link
-              href="#"
-              className="text-body-mute transition-colors hover:text-brand"
+              href="/terms"
+              className="text-body-mute transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             >
-              Terms &amp; Privacy
+              Terms &amp; Conditions
+            </Link>
+            <Link
+              href="/privacy"
+              className="text-body-mute transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            >
+              Privacy Policy
             </Link>
           </div>
         </div>

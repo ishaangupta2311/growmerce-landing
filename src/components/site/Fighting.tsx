@@ -55,22 +55,23 @@ export default function Fighting() {
         ))}
       </div>
 
-      {/* Proof banner */}
+      {/* Proof banner — a closing line on the three cards, not a second
+          headline, so it sits a step below them in scale. */}
       <Reveal delay={100}>
-        <div className="mt-14 flex flex-col items-center gap-8 rounded-[17px] bg-brand-bright/[0.14] px-8 py-8 sm:flex-row">
+        <div className="mt-10 flex flex-col items-start gap-4 rounded-[18px] bg-brand-bright/[0.1] px-6 py-5 sm:flex-row sm:items-center sm:gap-5 sm:px-7">
           <Image
             src="/img/icon-growth-circle.svg"
             alt=""
             width={154}
             height={150}
-            className="size-[120px] shrink-0 lg:size-[150px]"
+            className="h-11 w-auto shrink-0"
           />
-          <div className="hidden h-[110px] w-px bg-body-mute/40 sm:block" />
+          <div className="hidden h-10 w-px bg-body-mute/25 sm:block" />
           <div>
-            <p className="text-[clamp(1.375rem,2.2vw,2rem)] font-bold">
+            <p className="font-poppins text-[12px] font-semibold tracking-[0.14em] text-charcoal/55 uppercase">
               Growmerce doesn&apos;t sell a platform
             </p>
-            <p className="mt-1 text-[clamp(1.5rem,2.6vw,2.375rem)] font-bold leading-[1.15]">
+            <p className="mt-1 text-[clamp(1.0625rem,1.5vw,1.375rem)] leading-snug font-bold">
               It sells proof — shipped into your workflow,{" "}
               <span className="text-brand-bright">this week.</span>
             </p>
