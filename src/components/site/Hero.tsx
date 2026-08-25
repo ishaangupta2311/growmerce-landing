@@ -83,7 +83,9 @@ export default function Hero() {
           {/* Subtext + CTAs */}
           <p
             className="hero-enter absolute text-[clamp(1rem,1.65vw,1.5rem)] leading-snug text-body-mute"
-            style={{ left: "46.76%", top: "70.94%", width: "51.19%", animationDelay: "300ms" }}
+            // Figma butts this straight against the "ecommerce." block; drop it
+            // so it breathes between the block and the CTAs instead.
+            style={{ left: "46.76%", top: "74.2%", width: "51.19%", animationDelay: "300ms" }}
           >
             Growmerce turns search into sales by understanding what shoppers
             actually ask for.
