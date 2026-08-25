@@ -83,9 +83,12 @@ const BARS = [
   { text: "ecommerce.", left: 47.8, width: 49.6, radius: "0 1.3cqw 1.3cqw 1.3cqw", delay: 180 },
 ];
 
+/* The stage ends flush with the photo and the buttons, so the gap down to the
+   platform strip is all padding. Keep it clearly wider than the gutter inside
+   the composition, or the strip reads as part of it. */
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden pt-10 pb-10 lg:pt-4 lg:pb-6">
+    <section className="relative overflow-hidden pt-10 pb-14 lg:pt-4 lg:pb-16">
       <div className="mx-auto w-full max-w-[1370px] px-6">
         {/* Desktop: an absolutely-composed stage. `@container` makes it the
             reference box for every `cqw` below. */}
