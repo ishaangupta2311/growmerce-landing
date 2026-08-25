@@ -52,7 +52,7 @@ function Caret({ open }: { open: boolean }) {
   );
 }
 
-export default function Navbar({ homepage = false }: { homepage?: boolean }) {
+export default function Navbar() {
   const [open, setOpen] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
@@ -93,7 +93,7 @@ export default function Navbar({ homepage = false }: { homepage?: boolean }) {
   };
 
   const megaMenuVariant: HeaderMegaMenuVariant | null =
-    homepage && open === "Platform"
+    open === "Platform"
       ? "platform"
       : open === "Resources"
         ? "resources"
@@ -132,11 +132,7 @@ export default function Navbar({ homepage = false }: { homepage?: boolean }) {
                   type="button"
                   aria-expanded={open === entry.label}
                   aria-haspopup="true"
-                  aria-controls={
-                    (homepage && entry.label === "Platform") || entry.label === "Resources" || entry.label === "Why us"
-                      ? "header-mega-menu"
-                      : undefined
-                  }
+                  aria-controls="header-mega-menu"
                   onClick={() => setOpen(entry.label)}
                   onFocus={() => hoverOpen(entry.label)}
                   className="flex items-center gap-1.5 rounded-md py-2 transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
@@ -145,35 +141,6 @@ export default function Navbar({ homepage = false }: { homepage?: boolean }) {
                   <Caret open={open === entry.label} />
                 </button>
 
-                {(homepage && entry.label === "Platform") || entry.label === "Resources" || entry.label === "Why us" ? null : (
-                  <div
-                    className={`absolute top-full left-1/2 w-[290px] -translate-x-1/2 pt-3 transition-[opacity,transform] duration-200 ${
-                      open === entry.label
-                        ? "pointer-events-auto opacity-100"
-                        : "pointer-events-none -translate-y-1 opacity-0"
-                    }`}
-                  >
-                    <div className="overflow-hidden rounded-2xl border border-line bg-white p-2 shadow-[0_24px_60px_-24px_rgba(23,23,23,0.28)]">
-                      {entry.items.map((item) => (
-                        <Link
-                          key={item.label}
-                          href={item.href}
-                          onClick={() => setOpen(null)}
-                          className="block rounded-xl px-3.5 py-2.5 transition-colors hover:bg-cream focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                        >
-                          <span className="block text-[15px] font-semibold text-charcoal">
-                            {item.label}
-                          </span>
-                          {item.note ? (
-                            <span className="mt-0.5 block text-[13px] leading-snug text-muted">
-                              {item.note}
-                            </span>
-                          ) : null}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             ) : (
               <Link

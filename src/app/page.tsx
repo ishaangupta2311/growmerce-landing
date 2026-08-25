@@ -11,7 +11,7 @@ import Footer from "@/components/site/Footer";
 export default function Home() {
   return (
     <>
-      <Navbar homepage />
+      <Navbar />
       <main className="font-bricolage">
         <Hero />
         <PlatformStrip />
