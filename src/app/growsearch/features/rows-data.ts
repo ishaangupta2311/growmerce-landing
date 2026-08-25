@@ -3,6 +3,8 @@ export type FeatureRowData = {
   title: string;
   bullets: string[];
   group: "feel" | "see";
+  /** Reserved for the product demo GIFs that will replace these placeholders. */
+  mediaSrc?: string | null;
 };
 
 /*

@@ -5,7 +5,7 @@ import Footer from "@/components/site/Footer";
 import Faq from "@/components/site/Faq";
 import Reveal from "@/components/site/Reveal";
 import FeaturesHero from "./components/FeaturesHero";
-import FeatureRow from "./components/FeatureRow";
+import FeatureReelGrid from "./components/FeatureReelGrid";
 import ClosingCta from "./components/ClosingCta";
 import { FEATURE_ROWS } from "./rows-data";
 import { FEATURES_FAQ } from "./faq-data";
@@ -38,24 +38,23 @@ export default function GrowsearchFeaturesPage() {
           </figure>
         </Reveal>
 
-        <section className="mx-auto max-w-[1370px] px-6 py-20">
+        <section className="mx-auto max-w-[1200px] px-6 py-20">
+          <div aria-hidden className="mb-8 h-px bg-line" />
           <Reveal>
             <h2 className="text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-charcoal">
-              What shoppers feel
+              What your shoppers get
             </h2>
             <p className="mt-2 max-w-[60ch] text-body-mute">
-              The half of Growsearch that shows up directly in the storefront
-              experience.
+              They never see the technology. They just stop hitting dead ends.
             </p>
           </Reveal>
-          <div className="mt-4 divide-y divide-line">
-            {FEEL_ROWS.map((row, i) => (
-              <FeatureRow key={row.title} row={row} index={i} />
-            ))}
+          <div className="mt-12">
+            <FeatureReelGrid rows={FEEL_ROWS} />
           </div>
         </section>
 
-        <section className="mx-auto max-w-[1370px] px-6 pb-20">
+        <section className="mx-auto max-w-[1200px] px-6 pb-20">
+          <div aria-hidden className="mb-8 h-px bg-line" />
           <Reveal>
             <h2 className="text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-charcoal">
               What you see
@@ -65,10 +64,8 @@ export default function GrowsearchFeaturesPage() {
               dashboard.
             </p>
           </Reveal>
-          <div className="mt-4 divide-y divide-line">
-            {SEE_ROWS.map((row, i) => (
-              <FeatureRow key={row.title} row={row} index={FEEL_ROWS.length + i} />
-            ))}
+          <div className="mt-12">
+            <FeatureReelGrid rows={SEE_ROWS} />
           </div>
         </section>
 
