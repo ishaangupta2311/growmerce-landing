@@ -76,7 +76,7 @@ export default function Growsearch() {
               href="#demo"
               className="cta-secondary"
             >
-              Get a demo
+              See demo
             </Link>
           </div>
         </Reveal>
@@ -134,7 +134,7 @@ export default function Growsearch() {
             </p>
           </div>
           <Link href="#demo" className="cta-primary">
-            Book a demo session
+            See demo
             <Arrow className="cta-arrow" />
           </Link>
         </div>

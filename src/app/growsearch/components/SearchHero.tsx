@@ -28,7 +28,7 @@ export default function SearchHero() {
               href="#demo"
               className="cta-secondary"
             >
-              Book a demo
+              See demo
             </Link>
           </div>
         </Reveal>

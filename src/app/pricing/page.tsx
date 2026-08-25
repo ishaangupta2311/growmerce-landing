@@ -138,7 +138,7 @@ export default function PricingPage() {
                     <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" stroke="currentColor" strokeWidth="1.8" />
                     <path d="M3.5 9.5h17M8 3.5V6M16 3.5V6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
                   </svg>
-                  Book a demo
+                  See demo
                 </Link>
               </div>
             </div>

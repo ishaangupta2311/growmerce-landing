@@ -30,7 +30,7 @@ export default function TrialBand() {
               href="#demo"
               className="cta-secondary-inverse"
             >
-              Book a demo
+              See demo
             </Link>
           </div>
           <p className="relative mt-6 text-sm text-white/80">
