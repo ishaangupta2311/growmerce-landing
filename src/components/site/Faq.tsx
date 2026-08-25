@@ -48,7 +48,7 @@ export default function Faq({
       <div className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
         <h2
           id="faq-title"
-          className="text-[clamp(3rem,6vw,6rem)] leading-[1.05] font-semibold tracking-tight"
+          className="text-[clamp(3rem,6vw,6.75rem)] leading-[1.05] font-semibold tracking-tight"
         >
           Frequently asked{" "}
           <span className="mt-2 inline-block rounded-[18px] bg-brand px-5 pb-1 text-white">
@@ -71,7 +71,7 @@ export default function Faq({
                   onClick={() => setOpen(isOpen ? -1 : i)}
                   className="flex w-full items-center justify-between gap-5 px-6 py-5 text-left transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                 >
-                  <span className="text-[clamp(1.0625rem,1.7vw,1.5rem)] leading-snug font-semibold">
+                  <span className="text-[clamp(1.125rem,2.1vw,2rem)] leading-snug font-semibold">
                     {item.q}
                   </span>
                   <svg
