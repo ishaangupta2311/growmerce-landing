@@ -163,16 +163,23 @@ export default function PlatformMegaMenuContent({
           </p>
           <div className="mt-3 grid grid-cols-4 gap-3">
             {PLATFORMS.map((platform) => (
-              <span key={platform.name} title={platform.name} className="grid size-14 place-items-center rounded-full bg-white p-2.5">
-                <Image
-                  src={platform.src}
-                  alt={platform.name}
-                  width={platform.w}
-                  height={platform.h}
-                  sizes="56px"
-                  className="h-auto max-h-9 w-full object-contain"
-                />
-              </span>
+              <div key={platform.name} className="flex min-w-0 flex-col items-center gap-2">
+                <span title={platform.name} className="grid size-14 place-items-center rounded-full bg-white p-2.5">
+                  <Image
+                    src={platform.src}
+                    alt={platform.name}
+                    width={platform.w}
+                    height={platform.h}
+                    sizes="56px"
+                    // Lighter dimming than the full-size marks carry: at 36px the thinner
+                    // wordmarks all but disappear at the same opacity.
+                    className={`h-auto max-h-9 w-full object-contain ${platform.live ? "" : "opacity-65 grayscale"}`}
+                  />
+                </span>
+                <span className={`text-[11px] font-medium ${platform.live ? "text-brand" : "text-muted"}`}>
+                  {platform.live ? "Live" : "Soon"}
+                </span>
+              </div>
             ))}
           </div>
       </div>

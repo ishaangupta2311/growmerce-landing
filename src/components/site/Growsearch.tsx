@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Arrow from "./Arrow";
 import Reveal from "./Reveal";
-import { PLATFORMS } from "./PlatformStrip";
+import { PLATFORMS, PlatformStatus } from "./PlatformStrip";
 import { GROWSEARCH_HOME } from "@/lib/site-urls";
 
 const CHECKLIST = [
@@ -110,14 +110,19 @@ export default function Growsearch() {
       <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-4 lg:gap-10 lg:px-24">
         {PLATFORMS.map((p, i) => (
           <Reveal key={p.name} delay={i * 100}>
-            <div className="grid h-[142px] place-items-center rounded-[26px] bg-white px-6 shadow-[0_12px_40px_rgba(0,0,0,0.10)] transition-transform duration-300 hover-lift [--lift:6px]">
-              <Image
-                src={p.src}
-                alt={p.name}
-                width={p.w}
-                height={p.h}
-                className={`w-auto max-w-full object-contain ${p.cls}`}
-              />
+            <div className="flex h-[142px] flex-col items-center justify-center gap-3.5 rounded-[26px] bg-white px-6 shadow-[0_12px_40px_rgba(0,0,0,0.10)] transition-transform duration-300 hover-lift [--lift:6px]">
+              {/* Fixed band so the status lines agree across the four cards
+                  rather than stepping with each mark's height. */}
+              <span className="flex h-11 items-center">
+                <Image
+                  src={p.src}
+                  alt={p.name}
+                  width={p.w}
+                  height={p.h}
+                  className={`w-auto max-w-full object-contain ${p.cls} ${p.live ? "" : "opacity-45 grayscale"}`}
+                />
+              </span>
+              <PlatformStatus live={p.live} />
             </div>
           </Reveal>
         ))}
