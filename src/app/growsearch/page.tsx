@@ -7,7 +7,7 @@ import WhyGrowsearch from "./components/WhyGrowsearch";
 import FeatureStack from "./components/FeatureStack";
 import InstallSteps from "./components/InstallSteps";
 import TrialBand from "./components/TrialBand";
-import PricingPreview from "./components/PricingPreview";
+import PricingPlans from "@/components/site/PricingPlans";
 import { GROWSEARCH_FAQ } from "./faq-data";
 
 export const metadata: Metadata = {
@@ -26,7 +26,9 @@ export default function GrowsearchPage() {
         <FeatureStack />
         <InstallSteps />
         <TrialBand />
-        <PricingPreview />
+        <div id="growsearch-plans" className="scroll-mt-28">
+          <PricingPlans />
+        </div>
         <Faq items={GROWSEARCH_FAQ} />
       </main>
       <Footer />

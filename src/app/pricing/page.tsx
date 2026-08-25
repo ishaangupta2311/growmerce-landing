@@ -7,7 +7,7 @@ import CtaPair from "@/components/site/CtaPair";
 import Faq from "@/components/site/Faq";
 import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
-import Plans from "./components/Plans";
+import PricingPlans from "@/components/site/PricingPlans";
 import AllPlans from "./components/AllPlans";
 
 export const metadata: Metadata = {
@@ -77,7 +77,7 @@ export default function PricingPage() {
         <PlatformStrip />
 
         <div id="plans" className="scroll-mt-28">
-          <Plans />
+          <PricingPlans />
         </div>
 
         {/* Enterprise */}

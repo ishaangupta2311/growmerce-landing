@@ -35,7 +35,7 @@ function Tick() {
   );
 }
 
-export default function Plans() {
+export default function PricingPlans() {
   const [yearly, setYearly] = useState(false);
 
   return (
