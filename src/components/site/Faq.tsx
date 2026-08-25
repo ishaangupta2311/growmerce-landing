@@ -45,10 +45,10 @@ export default function Faq({
       aria-labelledby="faq-title"
       className={`mx-auto max-w-[1370px] scroll-mt-28 px-6 py-20 lg:py-28 ${className ?? ""}`}
     >
-      <div className="grid gap-10 lg:items-stretch lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
+      <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
         <h2
           id="faq-title"
-          className="text-[clamp(3rem,6vw,6.75rem)] leading-[1.05] font-semibold tracking-tight lg:flex lg:h-full lg:flex-col lg:justify-between"
+          className="font-bricolage text-[clamp(3rem,6vw,6.75rem)] leading-[0.95] font-semibold tracking-tight lg:text-[clamp(4rem,7vw,7.25rem)]"
         >
           <span className="block">Frequently</span>
           <span className="block">asked</span>
