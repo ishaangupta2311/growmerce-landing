@@ -28,7 +28,7 @@
     min-height: 360px;
     height: calc(100vh - 8.5rem);
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .runway[data-pinned="true"] .deck {
