@@ -1,80 +1,95 @@
-/*
- * Scroll-stacking feature cards (Figma: "stack animation design for
- * features", nodes 273:284 / 273:295 / 273:343).
- *
- * Each .stackItem is a tall spacer; the .stackCard inside it is `sticky`
- * with an incremental `top` and a slight scale step per card, so later
- * cards visually pile on top of earlier ones as the page scrolls. No JS
- * scroll listener — position: sticky does the work.
- *
- * Degrades to a plain stacked list (no stickiness, no scale) on small
- * screens and under prefers-reduced-motion, per the brief.
- */
+.runway {
+  --card-count: 3;
+}
 
-.stack {
+.deck {
   display: flex;
   flex-direction: column;
-}
-
-.stackItem {
-  min-height: 64vh;
-  display: flex;
-  align-items: flex-start;
-}
-
-.stackItem + .stackItem {
-  margin-top: -22vh;
+  gap: 1.5rem;
 }
 
 .stackCard {
-  position: sticky;
   width: 100%;
-  transition: transform 0.3s ease;
 }
 
-.stackItem:nth-child(1) .stackCard {
-  top: 6.5rem;
-  transform: scale(1);
+.progress {
+  display: none;
 }
 
-.stackItem:nth-child(2) .stackCard {
-  top: 8rem;
-  transform: scale(0.98);
-}
-
-.stackItem:nth-child(3) .stackCard {
-  top: 9.5rem;
-  transform: scale(0.96);
-}
-
-.stackItem:nth-child(4) .stackCard {
-  top: 11rem;
-  transform: scale(0.94);
-}
-
-@media (max-width: 1023px) {
-  .stackItem {
-    min-height: auto;
+@media (min-width: 1024px) and (min-height: 700px) {
+  .runway[data-pinned="true"] {
+    height: calc(100vh + (var(--card-count) - 1) * 72vh);
   }
-  .stackItem + .stackItem {
-    margin-top: 1.5rem;
+
+  .runway[data-pinned="true"] .stage {
+    position: sticky;
+    top: 6.75rem;
+    display: flex;
+    min-height: 360px;
+    height: calc(100vh - 8.5rem);
+    flex-direction: column;
+    justify-content: center;
   }
-  .stackCard {
-    position: static;
-    transform: none !important;
+
+  .runway[data-pinned="true"] .deck {
+    display: grid;
+    gap: 0;
+    isolation: isolate;
+  }
+
+  .runway[data-pinned="true"] .stackCard {
+    grid-area: 1 / 1;
+    transition:
+      opacity 360ms ease,
+      transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform, opacity;
+  }
+
+  .runway[data-pinned="true"] .stackCard[data-state="active"] {
+    z-index: 2;
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  .runway[data-pinned="true"] .stackCard[data-state="past"] {
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate3d(0, -44px, 0) scale(0.975);
+  }
+
+  .runway[data-pinned="true"] .stackCard[data-state="future"] {
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate3d(0, 52px, 0) scale(0.985);
+  }
+
+  .runway[data-pinned="true"] .progress {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+  }
+
+  .progressDot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-brand) 20%, transparent);
+    transition:
+      width 300ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 300ms ease;
+  }
+
+  .progressDot[data-active="true"] {
+    width: 1.75rem;
+    background: var(--color-brand);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stackItem {
-    min-height: auto;
-  }
-  .stackItem + .stackItem {
-    margin-top: 1.5rem;
-  }
   .stackCard {
-    position: static;
-    transform: none !important;
-    transition: none;
+    transition: none !important;
   }
 }

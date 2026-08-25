@@ -26,7 +26,7 @@ const CARDS = [
 
 export default function WhyGrowsearch() {
   return (
-    <section className="mt-24 bg-peach py-20 lg:py-24">
+    <section className="bg-peach py-20 lg:py-24">
       <div className="mx-auto max-w-[1370px] px-6">
         <Reveal>
           <div className="flex items-center gap-3">

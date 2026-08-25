@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
 import styles from "./FeatureStack.module.css";
@@ -88,6 +91,76 @@ const ITEMS = [
 ];
 
 export default function FeatureStack() {
+  const runwayRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const activeIndexRef = useRef(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPinned, setIsPinned] = useState(false);
+
+  useEffect(() => {
+    const desktopQuery = window.matchMedia("(min-width: 1024px)");
+    const reducedMotionQuery = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    );
+    let frame = 0;
+
+    const updateActiveCard = () => {
+      frame = 0;
+      const runway = runwayRef.current;
+      const stage = stageRef.current;
+      if (!runway || !stage) return;
+
+      const runwayRect = runway.getBoundingClientRect();
+      const stickyTop = 108;
+      const scrollableDistance = Math.max(
+        runwayRect.height - stage.offsetHeight,
+        1,
+      );
+      const travelled = Math.min(
+        Math.max(stickyTop - runwayRect.top, 0),
+        scrollableDistance,
+      );
+      const progress = travelled / scrollableDistance;
+      const nextIndex = Math.min(
+        ITEMS.length - 1,
+        Math.floor(progress * ITEMS.length),
+      );
+
+      if (activeIndexRef.current !== nextIndex) {
+        activeIndexRef.current = nextIndex;
+        setActiveIndex(nextIndex);
+      }
+    };
+
+    const requestUpdate = () => {
+      if (!frame) frame = window.requestAnimationFrame(updateActiveCard);
+    };
+
+    const syncMode = () => {
+      const shouldPin =
+        desktopQuery.matches &&
+        !reducedMotionQuery.matches &&
+        window.innerHeight >= 700;
+
+      setIsPinned(shouldPin);
+      if (shouldPin) requestUpdate();
+    };
+
+    syncMode();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", syncMode);
+    desktopQuery.addEventListener("change", syncMode);
+    reducedMotionQuery.addEventListener("change", syncMode);
+
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", syncMode);
+      desktopQuery.removeEventListener("change", syncMode);
+      reducedMotionQuery.removeEventListener("change", syncMode);
+    };
+  }, []);
+
   return (
     <section className="mx-auto max-w-[1370px] px-6 py-24">
       <Reveal>
@@ -100,31 +173,57 @@ export default function FeatureStack() {
         </p>
       </Reveal>
 
-      <div className={`mt-16 ${styles.stack}`}>
-        {ITEMS.map(({ title, body, Visual }) => (
-          <div key={title} className={styles.stackItem}>
-            <article
-              className={`${styles.stackCard} grid gap-8 rounded-[32px] border border-line bg-white p-8 shadow-glow-lg sm:grid-cols-[1fr_auto] sm:items-center sm:p-10`}
-            >
-              <div>
-                <h3 className="text-2xl font-bold text-charcoal sm:text-[1.75rem]">
-                  {title}
-                </h3>
-                <p className="mt-3 max-w-[46ch] text-[15px] leading-relaxed text-body-mute">
-                  {body}
-                </p>
-              </div>
-              <Visual />
-            </article>
+      <div
+        ref={runwayRef}
+        data-pinned={isPinned}
+        className={`mt-12 ${styles.runway}`}
+        style={{ "--card-count": ITEMS.length } as CSSProperties}
+      >
+        <div ref={stageRef} className={styles.stage}>
+          <div className={styles.deck}>
+            {ITEMS.map(({ title, body, Visual }, index) => {
+              const cardState =
+                index < activeIndex
+                  ? "past"
+                  : index === activeIndex
+                    ? "active"
+                    : "future";
+
+              return (
+                <article
+                  key={title}
+                  data-state={cardState}
+                  aria-hidden={isPinned && index !== activeIndex}
+                  className={`${styles.stackCard} grid gap-8 rounded-[32px] border border-line bg-white p-8 shadow-glow-lg sm:grid-cols-[1fr_auto] sm:items-center sm:p-10`}
+                >
+                  <div>
+                    <h3 className="text-2xl font-bold text-charcoal sm:text-[1.75rem]">
+                      {title}
+                    </h3>
+                    <p className="mt-3 max-w-[46ch] text-[15px] leading-relaxed text-body-mute">
+                      {body}
+                    </p>
+                  </div>
+                  <Visual />
+                </article>
+              );
+            })}
           </div>
-        ))}
+
+          <div className={styles.progress} aria-hidden="true">
+            {ITEMS.map((item, index) => (
+              <span
+                key={item.title}
+                data-active={index === activeIndex}
+                className={styles.progressDot}
+              />
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="mt-14 flex justify-center">
-        <Link
-          href="/growsearch/features"
-          className="cta-primary"
-        >
+        <Link href="/growsearch/features" className="cta-primary">
           Explore all features
           <Arrow className="cta-arrow" />
         </Link>
