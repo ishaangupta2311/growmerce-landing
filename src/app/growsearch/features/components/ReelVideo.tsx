@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 
 /* A demo clip inside a reel card.
    ------------------------------------------------------------------
+   Clips are produced by `scripts/encode-demo-video.sh`; the settings and the
+   reasoning behind them are in `docs/demo-video-encoding.md`.
    Ten of these will end up on this page, so nothing is fetched until the card
    is nearly in view and playback stops again once it leaves — otherwise every
    clip decodes at once and the page costs a phone its battery to scroll.
