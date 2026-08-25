@@ -3,8 +3,12 @@ export type FeatureRowData = {
   title: string;
   bullets: string[];
   group: "feel" | "see";
-  /** Reserved for the product demo GIFs that will replace these placeholders. */
-  mediaSrc?: string | null;
+  /**
+   * Base path of this row's demo clip. One value names all three files the
+   * encode produces: `<base>.av1.mp4`, the `<base>.mp4` fallback, and the
+   * `<base>.jpg` poster. Rows without one show a placeholder.
+   */
+  videoSrc?: string;
 };
 
 /*
@@ -78,6 +82,7 @@ export const FEATURE_ROWS: FeatureRowData[] = [
       "Works on top of any existing search",
     ],
     group: "feel",
+    videoSrc: "/video/assistant-narrowing",
   },
   {
     eyebrow: "MERCHANT INSIGHTS",

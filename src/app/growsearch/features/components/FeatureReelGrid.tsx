@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Reveal from "@/components/site/Reveal";
 import type { FeatureRowData } from "../rows-data";
+import ReelVideo from "./ReelVideo";
 
 function SlidersIcon() {
   return (
@@ -24,17 +24,8 @@ function SlidersIcon() {
 }
 
 function ReelMedia({ row }: { row: FeatureRowData }) {
-  if (row.mediaSrc) {
-    return (
-      <Image
-        src={row.mediaSrc}
-        alt={`${row.title} product demonstration`}
-        fill
-        unoptimized
-        sizes="(min-width: 1024px) 42vw, 92vw"
-        className="object-cover"
-      />
-    );
+  if (row.videoSrc) {
+    return <ReelVideo src={row.videoSrc} title={row.title} />;
   }
 
   return (
@@ -51,7 +42,7 @@ function ReelMedia({ row }: { row: FeatureRowData }) {
           </svg>
         </span>
         <span className="px-5 text-[11px] font-bold tracking-[0.18em] uppercase">
-          GIF demo placeholder
+          Demo placeholder
         </span>
       </div>
     </div>
