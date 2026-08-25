@@ -1,4 +1,16 @@
+"use client";
+
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import styles from "./SearchDemoCard.module.css";
+
+const QUERIES = [
+  "skincare under $10",
+  "something warm for a rainy commute",
+  "gift for someone who has everything",
+  "kava drinks",
+  "linen shirt but not white",
+];
 
 /* Inline magnifying-glass glyph, matching the hand-drawn style of the other
    shared icon components (Arrow, the Growsearch CircleTick) rather than
@@ -31,10 +43,25 @@ function SearchGlyph({ className }: { className?: string }) {
  * brief rather than shipped as a single flattened image.
  */
 export default function SearchDemoCard() {
+  const [queryIndex, setQueryIndex] = useState(0);
+
+  useEffect(() => {
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (reduce) return;
+
+    const interval = window.setInterval(
+      () => setQueryIndex((index) => (index + 1) % QUERIES.length),
+      2800,
+    );
+    return () => window.clearInterval(interval);
+  }, []);
+
   return (
     <div className="relative mx-auto w-full max-w-[560px]">
       <span
-        className="absolute -top-4 left-4 z-10 -rotate-6 rounded-full bg-[#FFD23F] px-4 py-1.5 font-poppins text-[13px] font-bold text-charcoal shadow-[0_10px_24px_-8px_rgba(23,23,23,0.35)] sm:-left-5"
+        className={`${styles.driftSlow} absolute -top-4 left-4 z-10 -rotate-6 rounded-full bg-[#FFD23F] px-4 py-1.5 font-poppins text-[13px] font-bold text-charcoal shadow-[0_10px_24px_-8px_rgba(23,23,23,0.35)] sm:-left-5`}
         aria-hidden
       >
         No Dead ends
@@ -62,19 +89,35 @@ export default function SearchDemoCard() {
           />
         </div>
 
-        <div className="mt-5 flex items-center gap-3 rounded-full border border-line bg-white py-2 pr-2 pl-4 transition-colors focus-within:border-brand">
+        <p className="sr-only">
+          Illustration: a storefront search bar cycling through shopper
+          questions such as “skincare under $10”.
+        </p>
+        <div
+          aria-hidden
+          className="mt-5 flex items-center gap-3 rounded-full border border-line bg-white py-2 pr-2 pl-4"
+        >
           <SearchGlyph className="shrink-0 text-muted" />
-          <label htmlFor="growsearch-demo-query" className="sr-only">
-            Example Growsearch query
-          </label>
-          <input
-            id="growsearch-demo-query"
-            type="text"
-            readOnly
-            value="Skincare under $20"
-            aria-describedby="growsearch-demo-note"
-            className="flex-1 bg-transparent font-medium text-charcoal outline-none"
-          />
+          <span className="relative flex min-w-0 flex-1 items-center overflow-hidden">
+            <span className="grid min-w-0 flex-1">
+              {QUERIES.map((query, index) => (
+                <span
+                  key={query}
+                  className="col-start-1 row-start-1 truncate text-[15px] font-medium text-body-mute transition-all duration-500 ease-out sm:text-base"
+                  style={{
+                    opacity: index === queryIndex ? 1 : 0,
+                    transform:
+                      index === queryIndex
+                        ? "translateY(0)"
+                        : "translateY(9px)",
+                  }}
+                >
+                  {query}
+                </span>
+              ))}
+            </span>
+            <span className="ml-1 h-[18px] w-[2px] shrink-0 animate-caret bg-brand" />
+          </span>
           <button
             type="button"
             tabIndex={-1}
@@ -93,7 +136,10 @@ export default function SearchDemoCard() {
         </p>
       </div>
 
-      <span className="absolute right-2 -bottom-4 z-10 max-w-[calc(100%-1rem)] rounded-full bg-charcoal px-4 py-2 font-poppins text-[12px] font-semibold whitespace-nowrap text-white shadow-[0_10px_24px_-8px_rgba(23,23,23,0.5)] sm:right-3 sm:text-[13px] lg:-right-4">
+      <span
+        className={`${styles.drift} absolute right-2 -bottom-4 z-10 max-w-[calc(100%-1rem)] rounded-full bg-charcoal px-4 py-2 font-poppins text-[12px] font-semibold whitespace-nowrap text-white shadow-[0_10px_24px_-8px_rgba(23,23,23,0.5)] sm:right-3 sm:text-[13px] lg:-right-4`}
+        style={{ animationDelay: "1.4s" }}
+      >
         Search → Checkout
       </span>
     </div>

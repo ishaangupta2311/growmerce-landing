@@ -1,0 +1,24 @@
+.drift {
+  animation: growsearch-hero-drift 7s ease-in-out infinite;
+}
+
+.driftSlow {
+  animation: growsearch-hero-drift 11s ease-in-out infinite;
+}
+
+@keyframes growsearch-hero-drift {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(-1.5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drift,
+  .driftSlow {
+    animation: none !important;
+  }
+}
