@@ -32,6 +32,7 @@ export const FEATURE_ROWS: FeatureRowData[] = [
       "Filters combine, adjust, or reset instantly",
     ],
     group: "feel",
+    videoSrc: "/video/plain-language",
   },
   {
     eyebrow: "SMART FILTERING",

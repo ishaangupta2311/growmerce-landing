@@ -28,9 +28,12 @@ Encoded so far, none showing visible loss at the size the card renders:
 | `assistant-narrowing` | 92.7 MB | 0.86 MB | 0.9960 |
 | `close-enough` | 101.2 MB | 0.71 MB | 0.9964 |
 | `endless-refinement` | 76.2 MB | 0.69 MB | 0.9959 |
+| `plain-language` | 182.3 MB | 0.99 MB | 0.9960 |
 
-Three sources off the same recorder took the same settings unchanged, which
-is the case for treating them as defaults rather than starting points.
+Four sources off the same recorder took the same settings unchanged, which
+is the case for treating them as defaults rather than starting points. Output
+size tracks clip length and motion, not input size: the 182 MB source is the
+longest at 33s, not the most detailed.
 
 ## Decisions
 
@@ -160,9 +163,19 @@ window. 1080 wide covers that from 1.5x to 3.5x.
 `object-cover` fills the well from a 9:16 source, so the shorter the window,
 the more is trimmed off the top and bottom.
 
-The caption — gradient, eyebrow, title, bullets — covers the bottom **35-50%**
-of the well on a normal desktop window, and up to ~62% on a short one with the
-wordiest row. It is sized in `cqw` against the well so it holds its fraction
+**The chat input will be hidden.** It is pinned to the bottom of the recorded
+UI, which puts it at 73-83% down the frame, while the caption's text begins at
+about 64%. Roughly 52 points of frame are clear above the caption, but the
+span from the first assistant message to the input is about 64 points, so the
+conversation and the cursor cannot both be visible. Shifting or zooming the
+clip only trades one for the other. If a clip needs its typing to read, the
+fix is in the recording: size the assistant panel so the input sits just under
+the last message instead of leaving ~35 points of empty white between them.
+
+The eyebrow pill sits **above** the card, not in the caption — over a clip it
+was one more thing covering a demo already short of room. The caption —
+gradient, title, rule, bullets — covers the bottom **32-46%** of the well on a
+normal desktop window, and up to ~59% on a short one with the wordiest row. It is sized in `cqw` against the well so it holds its fraction
 as the card shrinks, but the type has floors, and below roughly a 650px-tall
 window those floors win and the caption starts to gain. Only the top half is
 reliably seen, so the moment that sells the feature belongs there. The first
