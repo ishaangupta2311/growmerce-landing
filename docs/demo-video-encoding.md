@@ -21,8 +21,16 @@ prints the line to add to `rows-data.ts`.
 | GOP | 300 frames |
 | Poster | a frame showing the feature working, **not** frame 0 |
 
-First clip: 92.7 MB in, 0.86 MB out. Second: 101.2 MB in, 0.71 MB out.
-Neither shows visible loss at the size it renders.
+Encoded so far, none showing visible loss at the size the card renders:
+
+| clip | in | AV1 out | SSIM |
+|---|---|---|---|
+| `assistant-narrowing` | 92.7 MB | 0.86 MB | 0.9960 |
+| `close-enough` | 101.2 MB | 0.71 MB | 0.9964 |
+| `endless-refinement` | 76.2 MB | 0.69 MB | 0.9959 |
+
+Three sources off the same recorder took the same settings unchanged, which
+is the case for treating them as defaults rather than starting points.
 
 ## Decisions
 
