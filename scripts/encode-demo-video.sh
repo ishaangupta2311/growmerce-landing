@@ -23,7 +23,8 @@ NAME=${ARGS[1]:?usage: encode-demo-video.sh <source> <name> [poster-seconds] [--
 POSTER_AT=${ARGS[2]:-}
 
 # Overridable, but only change these with a measurement in hand.
-WIDTH=${WIDTH:-1080}     # the reel card's media well is ~492 CSS px; this covers 2x
+WIDTH=${WIDTH:-1080}     # the card's media well is ~490 CSS px on desktop, ~720 on a
+                         # portrait tablet; 1080 covers both. See docs/, Card framing.
 FPS=${FPS:-30}
 AV1_CRF=${AV1_CRF:-52}
 H264_CRF=${H264_CRF:-30}

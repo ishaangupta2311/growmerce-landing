@@ -21,7 +21,8 @@ prints the line to add to `rows-data.ts`.
 | GOP | 300 frames |
 | Poster | a frame showing the feature working, **not** frame 0 |
 
-First clip: 92.7 MB in, 0.86 MB out, no visible loss at the size it renders.
+First clip: 92.7 MB in, 0.86 MB out. Second: 101.2 MB in, 0.71 MB out.
+Neither shows visible loss at the size it renders.
 
 ## Decisions
 
@@ -138,8 +139,30 @@ Rows without one render the placeholder.
 
 ## Card framing
 
-Worth knowing before recording, not after. The caption block — gradient,
-eyebrow, title, bullets — covers roughly the **bottom 46%** of the card, and
-`object-cover` trims a little off the top and bottom of a 9:16 source. Only
-the top half is reliably seen, so the moment that sells the feature belongs
-there. The first clip put its typing interaction underneath the caption.
+Worth knowing before recording, not after.
+
+The card is capped against the viewport (`FeatureReelGrid.tsx`): its height
+cannot exceed `100svh - 9rem`, and its width cannot exceed 3/4 of that, so one
+card is always visible whole and always portrait. Its natural 9/14 only
+survives on a tall window. The consequence for a clip is that **the media well
+has no fixed size** — roughly 490 CSS px wide in the desktop two-column
+layout, up to ~720 on a portrait tablet, down to ~310 on a short laptop
+window. 1080 wide covers that from 1.5x to 3.5x.
+
+`object-cover` fills the well from a 9:16 source, so the shorter the window,
+the more is trimmed off the top and bottom.
+
+The caption — gradient, eyebrow, title, bullets — covers the bottom **35-50%**
+of the well on a normal desktop window, and up to ~62% on a short one with the
+wordiest row. It is sized in `cqw` against the well so it holds its fraction
+as the card shrinks, but the type has floors, and below roughly a 650px-tall
+window those floors win and the caption starts to gain. Only the top half is
+reliably seen, so the moment that sells the feature belongs there. The first
+clip put its typing interaction underneath the caption; the second happened to
+put its result panel at the top of frame, which is what to aim for.
+
+To check a candidate frame against the real crop without building anything,
+scale to the well width and centre-crop to the well height:
+
+    ffmpeg -ss <t> -i <clip>.mp4 -frames:v 1 \
+      -vf "scale=492:-1,crop=492:673" /tmp/frame.png

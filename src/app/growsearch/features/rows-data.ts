@@ -42,6 +42,7 @@ export const FEATURE_ROWS: FeatureRowData[] = [
       "Works on top of your existing catalogue — nothing to rebuild",
     ],
     group: "feel",
+    videoSrc: "/video/endless-refinement",
   },
   {
     eyebrow: "SHOPPER EXPERIENCE",

@@ -6,7 +6,8 @@ function SlidersIcon() {
   return (
     <svg
       aria-hidden="true"
-      className="size-4 shrink-0"
+      // Tracks the eyebrow's own size, which is set in cqw off the card.
+      className="size-[1.35em] shrink-0"
       viewBox="0 0 24 24"
       fill="none"
     >
@@ -49,24 +50,43 @@ function ReelMedia({ row }: { row: FeatureRowData }) {
   );
 }
 
+/* How tall a card is allowed to be: the viewport less the sticky header and a
+   margin, so one card is always visible whole. Two columns of the 1200px
+   container make a 9/14 card ~859px tall, which overflows every laptop. */
+const MAX_H = "calc(100svh - 9rem)";
+
 function FeatureReelCard({ row, delay }: { row: FeatureRowData; delay: number }) {
   return (
     <Reveal delay={delay}>
-      <article className="content-auto group relative aspect-[9/14] w-full rounded-[34px] border-2 border-brand bg-peach p-5 shadow-[0_24px_60px_-36px_rgba(255,90,31,0.8)] transition-transform duration-300 hover-lift [--lift:4px] sm:p-7">
-        <div className="relative h-full w-full overflow-hidden rounded-[26px] border-2 border-brand bg-white">
+      {/* Height is capped against the viewport and the width against 3/4 of
+          that cap, which keeps the card portrait however short the window
+          gets — a cap on height alone lets it go landscape, and the clip and
+          the caption both stop working at that shape. With room to spare
+          neither bound bites and the card keeps its natural 9/14. */}
+      <article
+        className="content-auto group relative mx-auto aspect-[9/14] rounded-[34px] border-2 border-brand bg-peach p-5 shadow-[0_24px_60px_-36px_rgba(255,90,31,0.8)] transition-transform duration-300 hover-lift [--lift:4px] sm:p-7"
+        style={{ maxHeight: MAX_H, width: `min(100%, calc(${MAX_H} * 3 / 4))` }}
+      >
+        <div className="@container relative h-full w-full overflow-hidden rounded-[26px] border-2 border-brand bg-white">
           <ReelMedia row={row} />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-white via-white/95 to-transparent px-5 pb-5 pt-28 sm:px-7 sm:pb-7 sm:pt-36">
-            <p className="inline-flex items-center gap-2 rounded-full border border-brand/75 bg-peach/95 px-3 py-1.5 text-[11px] font-bold tracking-[0.08em] text-brand uppercase sm:text-xs">
+          {/* Sized in cqw against the well rather than the viewport, so the
+              caption stays the same fraction of the card at every size — in
+              px it keeps its height as the card shrinks and swallows the
+              clip. The wash only has to carry the text, not hide what is
+              behind it: transparent until just above the eyebrow, and not
+              fully opaque until it reaches the bullets. */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-white via-white/90 to-transparent px-[5.7cqw] pt-[19cqw] pb-[5.7cqw]">
+            <p className="inline-flex items-center gap-[1.6cqw] rounded-full border border-brand/75 bg-peach/95 px-[2.4cqw] py-[0.8cqw] text-[clamp(0.5625rem,2.25cqw,0.7rem)] font-bold tracking-[0.08em] text-brand uppercase">
               <SlidersIcon />
               {row.eyebrow}
             </p>
-            <h3 className="mt-3 max-w-[18ch] text-[clamp(1.35rem,2.4vw,2rem)] leading-[1.05] font-bold text-charcoal">
+            <h3 className="mt-[2cqw] max-w-[18ch] text-[clamp(1rem,5.3cqw,1.75rem)] leading-[1.05] font-bold text-charcoal">
               {row.title}
             </h3>
-            <span className="mt-3 block h-1 w-14 bg-brand" />
-            <ul className="mt-3 space-y-1.5 text-[13px] leading-[1.3] text-body-mute sm:text-[14px]">
+            <span className="mt-[2cqw] block h-[0.8cqw] w-[9.8cqw] bg-brand" />
+            <ul className="mt-[2cqw] space-y-[1.2cqw] text-[clamp(0.6875rem,2.65cqw,0.85rem)] leading-[1.35] text-body-mute">
               {row.bullets.map((bullet) => (
-                <li key={bullet} className="flex gap-2">
+                <li key={bullet} className="flex gap-[1.6cqw]">
                   <span aria-hidden="true">•</span>
                   <span>{bullet}</span>
                 </li>
