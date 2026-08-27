@@ -30,8 +30,9 @@ Encoded so far, none showing visible loss at the size the card renders:
 | `endless-refinement` | 76.2 MB | 0.69 MB | 0.9959 |
 | `plain-language` | 182.3 MB | 0.99 MB | 0.9960 |
 | `never-a-dead-end` | 71.2 MB | 0.70 MB | 0.9962 |
+| `fast-first` | 137.4 MB | 0.81 MB | 0.9966 |
 
-Five sources off the same recorder took the same settings unchanged, which
+Six sources off the same recorder took the same settings unchanged, which
 is the case for treating them as defaults rather than starting points. Output
 size tracks clip length and motion, not input size: the 182 MB source is the
 longest at 33s, not the most detailed.
@@ -119,6 +120,12 @@ working.
 
 Better still, trim dead lead-in from the source: it fixes the poster, tightens
 the loop, and drops the file size at the same time.
+
+Prefer a frame that is *distinct* from the other cards' posters. Five of these
+clips resolve to a recommendations panel, so five near-identical posters say
+less as a set than five different ones. `fast-first` deliberately posters on
+its quick-matches state instead, which is the only thing in any clip that
+shows the native-before-AI behaviour its card claims.
 
 ## Playback
 

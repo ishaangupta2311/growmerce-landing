@@ -76,6 +76,7 @@ export const FEATURE_ROWS: FeatureRowData[] = [
       "No spinner while a model makes up its mind",
     ],
     group: "feel",
+    videoSrc: "/video/fast-first",
   },
   {
     eyebrow: "SMART FILTERING",
