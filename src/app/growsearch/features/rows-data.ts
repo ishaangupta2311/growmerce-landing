@@ -54,6 +54,7 @@ export const FEATURE_ROWS: FeatureRowData[] = [
       "Suggests close alternatives",
     ],
     group: "feel",
+    videoSrc: "/video/never-a-dead-end",
   },
   {
     eyebrow: "BUYER EXPERIENCE",

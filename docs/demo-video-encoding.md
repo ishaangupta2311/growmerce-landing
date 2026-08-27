@@ -29,8 +29,9 @@ Encoded so far, none showing visible loss at the size the card renders:
 | `close-enough` | 101.2 MB | 0.71 MB | 0.9964 |
 | `endless-refinement` | 76.2 MB | 0.69 MB | 0.9959 |
 | `plain-language` | 182.3 MB | 0.99 MB | 0.9960 |
+| `never-a-dead-end` | 71.2 MB | 0.70 MB | 0.9962 |
 
-Four sources off the same recorder took the same settings unchanged, which
+Five sources off the same recorder took the same settings unchanged, which
 is the case for treating them as defaults rather than starting points. Output
 size tracks clip length and motion, not input size: the 182 MB source is the
 longest at 33s, not the most detailed.
