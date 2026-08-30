@@ -1,36 +1,88 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 import Reveal from "@/components/site/Reveal";
-import { CAPABILITIES } from "./combines/content";
-import {
-  ConvergeVariant,
-  PipelineVariant,
-  QueryVariant,
-  SonarVariant,
-  WipeVariant,
-} from "./combines/variants";
+import { CAPABILITIES, SAMPLE_QUERIES } from "./combines/content";
 
 /**
- * "One bar instead of the whole pile" — five candidate treatments behind a
- * cycle button, so they can be compared in place rather than described.
+ * "One bar instead of the whole pile" — a sentence types itself into the bar
+ * and the bolt-ons it replaces resolve underneath, struck through.
  *
- * TEMPORARY: the switcher is a selection aid. Once one wins, keep that
- * variant, delete the rest of ./combines, and drop the cmb- keyframes from
- * globals.css — they are prefixed so they come out together.
+ * The rows are real text, not a decorative echo of a legend: each one names a
+ * capability, what it does, and the app a store would otherwise pay for.
  */
 
-const VARIANTS = [
-  { id: "wipe", name: "Wipe", note: "A divider sweeps the pile away, one bar behind it" },
-  { id: "converge", name: "Converge", note: "The bolt-ons collapse into one bar" },
-  { id: "pipeline", name: "Pipeline", note: "A query rides the rail through every stage" },
-  { id: "sonar", name: "Sonar", note: "A sweep crosses the catalogue, matches light up" },
-  { id: "query", name: "Query", note: "A sentence types itself, the stack resolves under it" },
-] as const;
+function SearchGlyph() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className="shrink-0 text-brand"
+    >
+      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+      <path
+        d="m20 20-3.8-3.8"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+/* Keyed by query so each sentence gets a fresh mount — that resets the typed
+   text without a synchronous setState in the effect body. */
+function Typewriter({
+  query,
+  onSettled,
+}: {
+  query: string;
+  onSettled: () => void;
+}) {
+  const [typed, setTyped] = useState("");
+
+  useEffect(() => {
+    let char = 0;
+    const typing = window.setInterval(() => {
+      char += 1;
+      setTyped(query.slice(0, char));
+      if (char >= query.length) {
+        window.clearInterval(typing);
+        onSettled();
+      }
+    }, 55);
+    return () => window.clearInterval(typing);
+  }, [query, onSettled]);
+
+  return (
+    <>
+      {typed}
+      <span className="animate-caret ml-0.5 inline-block h-[1.05em] w-px translate-y-[0.16em] bg-brand" />
+    </>
+  );
+}
 
 export default function CombinesItAll() {
-  const [variant, setVariant] = useState(0);
-  const active = VARIANTS[variant];
+  const [queryIndex, setQueryIndex] = useState(0);
+  /* Latches on the first completed sentence: the rows settle in once and then
+     stay put while later queries type, rather than flashing on every cycle. */
+  const [revealed, setRevealed] = useState(false);
+  const query = SAMPLE_QUERIES[queryIndex];
+
+  /* Stable, so a parent re-render does not restart the sentence. */
+  const handleSettled = useCallback(() => setRevealed(true), []);
+
+  useEffect(() => {
+    const next = window.setTimeout(
+      () => setQueryIndex((i) => (i + 1) % SAMPLE_QUERIES.length),
+      query.length * 55 + 3400,
+    );
+    return () => window.clearTimeout(next);
+  }, [query]);
 
   return (
     <Reveal className="mx-auto mt-16 max-w-[1370px] px-6">
@@ -38,67 +90,68 @@ export default function CombinesItAll() {
         aria-labelledby="combines-title"
         className="overflow-hidden rounded-[27px] bg-gradient-to-br from-cream via-white to-peach/40 px-7 py-12 sm:px-12 sm:py-14"
       >
-        <div className="flex flex-wrap items-start justify-between gap-6">
-          <div>
-            <h2
-              id="combines-title"
-              className="text-[clamp(1.5rem,3vw,2.25rem)] font-semibold tracking-tight text-charcoal"
-            >
-              One bar instead of the whole pile.
-            </h2>
-            <p className="mt-2 max-w-[54ch] text-[15px] leading-relaxed text-body-mute sm:text-base">
-              The apps, lists and spreadsheets a store bolts on to make search
-              work. Growsearch is all of them.
-            </p>
-          </div>
-
-          {/* Selection aid, not final furniture. */}
-          <button
-            type="button"
-            onClick={() => setVariant((i) => (i + 1) % VARIANTS.length)}
-            className="group shrink-0 rounded-full border-2 border-brand bg-white px-5 py-2.5 text-left transition-colors duration-200 hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        <div className="mx-auto max-w-[620px] text-center">
+          <h2
+            id="combines-title"
+            className="text-[clamp(1.5rem,3vw,2.25rem)] font-semibold tracking-tight text-charcoal"
           >
-            <span className="block font-poppins text-[11px] font-bold tracking-[0.16em] text-brand uppercase group-hover:text-white">
-              {variant + 1} / {VARIANTS.length} &middot; {active.name}
-            </span>
-            <span className="mt-0.5 block text-[12px] text-body-mute group-hover:text-white/85">
-              {active.note} &mdash; click to cycle
-            </span>
-          </button>
+            One bar instead of the whole pile.
+          </h2>
+          <p className="mx-auto mt-2 max-w-[54ch] text-[15px] leading-relaxed text-body-mute sm:text-base">
+            The apps, lists and spreadsheets a store bolts on to make search
+            work. Growsearch is all of them.
+          </p>
         </div>
 
-        <div className="mt-6 grid items-center gap-8 lg:grid-cols-[1fr_340px] lg:gap-6">
-          <div className="hidden lg:block">
-            {active.id === "wipe" && <WipeVariant />}
-            {active.id === "converge" && <ConvergeVariant />}
-            {active.id === "pipeline" && <PipelineVariant />}
-            {active.id === "sonar" && <SonarVariant />}
-            {active.id === "query" && <QueryVariant />}
-          </div>
+        <div className="mx-auto mt-10 max-w-[620px]">
+          <p
+            aria-hidden
+            className="flex items-center gap-3 rounded-full border-2 border-brand bg-white px-6 py-4 text-[15px] font-medium text-charcoal shadow-[0_24px_50px_-30px_rgba(255,90,31,0.8)]"
+          >
+            <SearchGlyph />
+            <span className="min-w-0 truncate">
+              <Typewriter
+                key={queryIndex}
+                query={query}
+                onSettled={handleSettled}
+              />
+            </span>
+          </p>
 
-          {/* The accessible form of every variant, and the legend for the
-              stack. Real text, in the order a reader scans. */}
-          <ul className="flex flex-col gap-1">
-            {[...CAPABILITIES].reverse().map((cap) => (
-              <li key={cap.id}>
-                <div className="flex w-full items-start gap-3 rounded-[14px] px-3 py-2.5">
-                  <span
-                    aria-hidden
-                    className="mt-1 size-3 shrink-0 rounded-[4px] ring-1 ring-charcoal/10"
-                    style={{ background: cap.face }}
-                  />
-                  <span>
-                    <span className="block font-poppins text-[12px] font-bold tracking-[0.14em] text-charcoal uppercase">
-                      {cap.label}
-                    </span>
-                    <span className="mt-0.5 block text-[14px] leading-snug text-body-mute">
-                      {cap.detail}
-                    </span>
-                    <span className="mt-0.5 block text-[12px] text-muted">
-                      instead of {cap.replaces.toLowerCase()}
-                    </span>
+          <ul className="mt-6 space-y-2">
+            {CAPABILITIES.map((cap, i) => (
+              <li
+                key={cap.id}
+                className={`flex items-start gap-3 rounded-[14px] bg-white/80 px-4 py-3 sm:items-center ${
+                  revealed ? "cmb-result" : "opacity-0"
+                }`}
+                style={{ "--d": `${i * 110}ms` } as CSSProperties}
+              >
+                <span
+                  aria-hidden
+                  className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-brand text-white sm:mt-0"
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="m4 12.5 5.5 5.5L20 6.5"
+                      stroke="currentColor"
+                      strokeWidth="3.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[14px] font-semibold text-charcoal">
+                    {cap.label}
                   </span>
-                </div>
+                  <span className="mt-0.5 block text-[13px] leading-snug text-body-mute">
+                    {cap.detail}
+                  </span>
+                </span>
+                <span className="shrink-0 text-[12px] text-muted line-through sm:text-[13px]">
+                  {cap.replaces}
+                </span>
               </li>
             ))}
           </ul>

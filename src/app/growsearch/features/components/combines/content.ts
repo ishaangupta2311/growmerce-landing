@@ -13,9 +13,6 @@ export type Capability = {
   replaces: string;
   label: string;
   detail: string;
-  /** Face and extruded edge, cool at the base of the stack, brand at the top. */
-  face: string;
-  edge: string;
 };
 
 export const CAPABILITIES: Capability[] = [
@@ -24,44 +21,34 @@ export const CAPABILITIES: Capability[] = [
     replaces: "Keyword search",
     label: "Natural language",
     detail: "Reads the sentence, not the keywords",
-    face: "#e8e8ee",
-    edge: "#cfcfda",
   },
   {
     id: "recovery",
     replaces: "Synonym lists",
     label: "Typos and synonyms",
     detail: "Corrected before results render",
-    face: "#f4ebe4",
-    edge: "#dbcabd",
   },
   {
     id: "filters",
     replaces: "Filter apps",
     label: "Conversational filters",
     detail: "Narrowing read out of the question",
-    face: "#ffe4d6",
-    edge: "#efbfa6",
   },
   {
     id: "alternatives",
     replaces: "Recommendation apps",
     label: "Close alternatives",
     detail: "Ranked down when stock runs out, never hidden",
-    face: "#ffb188",
-    edge: "#e88a59",
   },
   {
     id: "analytics",
     replaces: "Search analytics add-ons",
     label: "Search analytics",
     detail: "Search-attributed checkouts, tracked to the product",
-    face: "#ff5a1f",
-    edge: "#d4400c",
   },
 ];
 
-/** Queries the demo variants type out. All appear elsewhere on the site. */
+/** Queries the bar types out. All appear elsewhere on the site. */
 export const SAMPLE_QUERIES = [
   "linen shirt but not white",
   "something warm for a rainy commute",

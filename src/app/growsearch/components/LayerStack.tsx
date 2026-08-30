@@ -1,11 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type CSSProperties } from "react";
 import Reveal from "@/components/site/Reveal";
+import Arrow from "@/components/site/Arrow";
+import { GROWSEARCH_FEATURES } from "@/lib/site-urls";
 
 /**
- * The five layers between a supplier's raw files and what a shopper sees,
- * drawn as an isometric stack that builds bottom-up.
+ * The four jobs one search bar does, drawn as an isometric stack that builds
+ * bottom-up: the catalogue goes in at the base, a sale comes out at the top.
  *
  * Built in CSS 3D rather than shipped as a GIF: sharp at any size, the labels
  * stay real text, and it weighs nothing. Hovering or focusing a legend row
@@ -21,50 +24,54 @@ type Layer = {
   edge: string;
 };
 
-/* Bottom of the stack first — the order things arrive in. Cool and unsorted at
+/* What the bar reads from. Not a job — it is what the jobs are done to. */
+const BASE: Layer = {
+  id: "catalogue",
+  label: "Your catalogue",
+  detail: "Every product, attribute and photo you already have",
+  face: "#e8e8ee",
+  edge: "#cfcfda",
+};
+
+/* Bottom of the stack first — the order a single query passes through. Cool at
    the base, brand orange by the time it reaches the shopper. */
-const LAYERS: Layer[] = [
+const JOBS: Layer[] = [
   {
-    id: "raw",
-    label: "Raw data",
-    detail: "Spreadsheets, PDFs, supplier photos",
-    face: "#e8e8ee",
-    edge: "#cfcfda",
-  },
-  {
-    id: "ingestion",
-    label: "Ingestion",
-    detail: "Supplier feeds, any format",
+    id: "intent",
+    label: "Understands intent",
+    detail: "Vague, misspelled or oddly worded — it still finds the right shelf",
     face: "#f4ebe4",
     edge: "#dbcabd",
   },
   {
-    id: "structure",
-    label: "Structure",
-    detail: "Attributes and taxonomy, normalised",
+    id: "conversation",
+    label: "Refines in conversation",
+    detail: "Narrowing, switching and filtering, read out of the question",
     face: "#ffe4d6",
     edge: "#efbfa6",
   },
   {
-    id: "workflows",
-    label: "Workflows",
-    detail: "Descriptions, QA, triage, reporting",
+    id: "recovery",
+    label: "Never dead-ends",
+    detail: "Typos fixed, close alternatives ranked in, no empty result page",
     face: "#ffb188",
     edge: "#e88a59",
   },
   {
-    id: "storefront",
-    label: "Storefront",
-    detail: "Search, PDPs, what shoppers actually see",
+    id: "analytics",
+    label: "Proves the revenue",
+    detail: "Every search, click and cart add, attributed to the product",
     face: "#ff5a1f",
     edge: "#d4400c",
   },
 ];
 
+const LAYERS = [BASE, ...JOBS];
+
 const SLAB = 300;
 const GAP = 30;
 
-/* The loose files that have not been through the stack yet. */
+/* Products still loose around the catalogue, waiting to be searched. */
 const CUBES = [
   { x: -235, y: 20, s: 30, d: 0 },
   { x: -160, y: 140, s: 22, d: 700 },
@@ -83,24 +90,61 @@ const extrude = (edge: string, depth: number) =>
 export default function LayerStack() {
   const [lifted, setLifted] = useState<string | null>(null);
 
-  return (
-    <Reveal className="mx-auto mt-4 max-w-[1370px] px-6">
-      <section
-        aria-labelledby="layer-stack-title"
-        className="overflow-hidden rounded-[27px] bg-gradient-to-br from-cream via-white to-peach/40 px-7 py-12 sm:px-12 sm:py-14"
+  const legendRow = (layer: Layer, muted: boolean) => (
+    <li key={layer.id}>
+      <button
+        type="button"
+        onMouseEnter={() => setLifted(layer.id)}
+        onMouseLeave={() => setLifted(null)}
+        onFocus={() => setLifted(layer.id)}
+        onBlur={() => setLifted(null)}
+        className="flex w-full items-start gap-3 rounded-[14px] px-3 py-2.5 text-left transition-colors duration-200 hover:bg-white/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
       >
+        <span
+          aria-hidden
+          className="mt-1 size-3 shrink-0 rounded-[4px] ring-1 ring-charcoal/10"
+          style={{ background: layer.face }}
+        />
+        <span>
+          <span
+            className={`block font-poppins text-[12px] font-bold tracking-[0.14em] uppercase ${
+              muted ? "text-body-mute" : "text-charcoal"
+            }`}
+          >
+            {layer.label}
+          </span>
+          <span
+            className={`mt-0.5 block text-[14px] leading-snug ${
+              muted ? "text-muted" : "text-body-mute"
+            }`}
+          >
+            {layer.detail}
+          </span>
+        </span>
+      </button>
+    </li>
+  );
+
+  return (
+    /* Full-bleed: the gradient starts on the peach the section above ends on,
+       so the two read as one surface, and lands on white for the next one. */
+    <section
+      aria-labelledby="layer-stack-title"
+      className="bg-gradient-to-b from-peach via-cream to-white pt-16 pb-20 lg:pt-20 lg:pb-24"
+    >
+      <Reveal className="mx-auto max-w-[1370px] px-6">
         <h2
           id="layer-stack-title"
-          className="text-[clamp(1.5rem,3vw,2.25rem)] font-semibold tracking-tight text-charcoal"
+          className="text-[clamp(1.75rem,4vw,3.25rem)] leading-[1.1] font-bold tracking-tight text-charcoal"
         >
-          Growmerce combines it all.
+          One search bar, doing four jobs at once
         </h2>
-        <p className="mt-2 max-w-[54ch] text-[15px] leading-relaxed text-body-mute sm:text-base">
-          Every job your team does by hand between the supplier and the
-          storefront &mdash; one layer at a time. Growsearch is the top of it.
+        <p className="mt-4 max-w-[62ch] text-[17px] leading-relaxed text-body-mute">
+          Every Growsearch capability keeps working after the first keystroke.
+          Your catalogue goes in at the bottom, and a sale comes out of the top.
         </p>
 
-        <div className="mt-6 grid items-center gap-8 lg:grid-cols-[1fr_340px] lg:gap-4">
+        <div className="mt-8 grid items-center gap-8 lg:grid-cols-[1fr_380px] lg:gap-4">
           {/* Hidden under lg: the isometric footprint needs width it does not
               have there, and the legend already says everything. */}
           <div
@@ -168,37 +212,28 @@ export default function LayerStack() {
           </div>
 
           {/* Legend, and the accessible form of the graphic: top layer first,
-              which is the order a reader scans. */}
-          <ul className="flex flex-col gap-1">
-            {[...LAYERS].reverse().map((layer) => (
-              <li key={layer.id}>
-                <button
-                  type="button"
-                  onMouseEnter={() => setLifted(layer.id)}
-                  onMouseLeave={() => setLifted(null)}
-                  onFocus={() => setLifted(layer.id)}
-                  onBlur={() => setLifted(null)}
-                  className="flex w-full items-start gap-3 rounded-[14px] px-3 py-2.5 text-left transition-colors duration-200 hover:bg-white/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                >
-                  <span
-                    aria-hidden
-                    className="mt-1 size-3 shrink-0 rounded-[4px] ring-1 ring-charcoal/10"
-                    style={{ background: layer.face }}
-                  />
-                  <span>
-                    <span className="block font-poppins text-[12px] font-bold tracking-[0.14em] text-charcoal uppercase">
-                      {layer.label}
-                    </span>
-                    <span className="mt-0.5 block text-[14px] leading-snug text-body-mute">
-                      {layer.detail}
-                    </span>
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
+              which is the order a reader scans. The catalogue sits below the
+              rule because it is what the four jobs are done to, not a fifth. */}
+          <div>
+            <p className="px-3 font-poppins text-[11px] font-bold tracking-[0.16em] text-brand uppercase">
+              The four jobs, top down
+            </p>
+            <ul className="mt-2 flex flex-col gap-1">
+              {[...JOBS].reverse().map((layer) => legendRow(layer, false))}
+            </ul>
+            <ul className="mt-3 flex flex-col gap-1 border-t border-charcoal/10 pt-3">
+              {legendRow(BASE, true)}
+            </ul>
+          </div>
         </div>
-      </section>
-    </Reveal>
+
+        <div className="mt-10 flex justify-center lg:justify-start">
+          <Link href={GROWSEARCH_FEATURES} className="cta-primary">
+            Explore all features
+            <Arrow className="cta-arrow" />
+          </Link>
+        </div>
+      </Reveal>
+    </section>
   );
 }

@@ -9,6 +9,7 @@ import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
 import { PlatformLogos } from "@/components/site/PlatformStrip";
 import { GROWSEARCH_HOME } from "@/lib/site-urls";
+import ToolDock from "./components/ToolDock";
 
 export const metadata: Metadata = {
   title: "What is Growmerce",
@@ -133,8 +134,9 @@ export default function AboutPage() {
         {/* Orange convictions band */}
         <section aria-labelledby="convictions-title" className="bg-brand py-16 text-white lg:py-24">
           <div className="mx-auto grid max-w-[1370px] items-center gap-12 px-6 lg:grid-cols-2 lg:gap-16">
-            {/* Left half stays open for imagery the founder is supplying. */}
-            <div aria-hidden className="hidden lg:block" />
+            <div className="hidden justify-center lg:flex">
+              <ToolDock />
+            </div>
             <div>
               <h2
                 id="convictions-title"

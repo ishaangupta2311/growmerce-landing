@@ -6,7 +6,6 @@ import SearchHero from "./components/SearchHero";
 import { GROWSEARCH_HOME } from "@/lib/site-urls";
 import WhyGrowsearch from "./components/WhyGrowsearch";
 import LayerStack from "./components/LayerStack";
-import FeatureStack from "./components/FeatureStack";
 import InstallSteps from "./components/InstallSteps";
 import TrialBand from "./components/TrialBand";
 import PricingPlans from "@/components/site/PricingPlans";
@@ -27,7 +26,6 @@ export default function GrowsearchPage() {
         <SearchHero />
         <WhyGrowsearch />
         <LayerStack />
-        <FeatureStack />
         <InstallSteps />
         <TrialBand />
         <div id="growsearch-plans" className="scroll-mt-28">
