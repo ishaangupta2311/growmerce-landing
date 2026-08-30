@@ -8,6 +8,7 @@ import Faq from "@/components/site/Faq";
 import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
 import { GROWSEARCH_HOME } from "@/lib/site-urls";
+import StorefrontReveal from "./components/StorefrontReveal";
 
 export const metadata: Metadata = {
   title: "Solutions",
@@ -257,16 +258,7 @@ export default function SolutionsPage() {
         </section>
 
         {/* Unit opens */}
-        <Reveal className="mx-auto max-w-[1370px] px-6 pb-8">
-          <Image
-            src="/img/pages/unit-opens.png"
-            alt="Growsearch turning a shopper's question into matching products"
-            width={1653}
-            height={1072}
-            sizes="100vw"
-            className="h-auto w-full rounded-[24px]"
-          />
-        </Reveal>
+        <StorefrontReveal />
 
         {/* Closing CTA */}
         <Reveal className="mx-auto max-w-[1370px] px-6 py-16">

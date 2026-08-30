@@ -1,0 +1,145 @@
+/* --------------------------------------------------------------------------
+   Unit 01 — a storefront whose shutter is raised by the page scroll.
+
+   The runway is the scroll distance; the stage pins inside it and reads its
+   own progress out of --p. Nothing here runs on a timer, so the shutter only
+   ever moves as fast as the reader does.
+-------------------------------------------------------------------------- */
+
+.runway {
+  position: relative;
+}
+
+.runway[data-pinned="true"] {
+  /* Roughly two extra screens of scroll to raise the shutter and settle the
+     interior. Shorter than this and the reveal feels like a jump cut. */
+  height: 260vh;
+}
+
+/* No fixed height: the stage is as tall as the storefront needs to be, so the
+   facts panel can never be clipped by a viewport that is shorter than the
+   number someone guessed. The pin threshold below keeps it on screen. */
+.runway[data-pinned="true"] .stage {
+  position: sticky;
+  top: 80px;
+}
+
+/* --------------------------------------------------------------------------
+   Awning
+-------------------------------------------------------------------------- */
+
+.valance {
+  filter: drop-shadow(0 10px 14px rgba(96, 44, 14, 0.18));
+}
+
+/* --------------------------------------------------------------------------
+   Shutter — pressed slats with a seam every 14px, and a heavier bottom rail.
+-------------------------------------------------------------------------- */
+
+.shutter {
+  background-image: repeating-linear-gradient(
+    180deg,
+    #fdf4ef 0 2px,
+    #f3ded2 2px 11px,
+    #dcbfae 11px 14px
+  );
+  /* Barrel shading, so the slats read as metal rather than as stripes. */
+  box-shadow:
+    inset 0 0 60px rgba(96, 44, 14, 0.12),
+    inset 22px 0 40px -30px rgba(96, 44, 14, 0.5),
+    inset -22px 0 40px -30px rgba(96, 44, 14, 0.5);
+  transform: translateY(calc(var(--open, 0) * -101%));
+}
+
+.rail {
+  background-image: linear-gradient(180deg, #e6cbbb, #cda891 70%, #b98f76);
+}
+
+/* --------------------------------------------------------------------------
+   The box on the shelf — same isometric trick as the shelf on /v/5, restyled
+   to the brand: soft shadows, rounded corners, brand orange on cream.
+-------------------------------------------------------------------------- */
+
+.boxScene {
+  perspective: 1400px;
+  perspective-origin: 60% 40%;
+}
+
+.box3d {
+  transform-style: preserve-3d;
+  transform: rotateX(3deg) rotateY(-11deg);
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.boxScene:hover .box3d,
+.boxScene:focus-within .box3d {
+  transform: rotateX(5deg) rotateY(-17deg) translateZ(16px);
+}
+
+/* Right-hand panel, hinged on the front face's right edge. */
+.boxSide {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  height: 100%;
+  width: 46px;
+  transform-origin: 0 50%;
+  transform: rotateY(90deg);
+  backface-visibility: hidden;
+}
+
+/* Top panel, hinged on the front face's top edge. */
+.boxTop {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  width: 100%;
+  height: 46px;
+  transform-origin: 50% 100%;
+  transform: rotateX(90deg);
+  backface-visibility: hidden;
+}
+
+.starburst {
+  clip-path: polygon(
+    50% 0%,
+    59% 12%,
+    72% 5%,
+    74% 20%,
+    89% 18%,
+    84% 32%,
+    99% 36%,
+    88% 47%,
+    100% 58%,
+    85% 63%,
+    92% 77%,
+    77% 76%,
+    76% 91%,
+    63% 84%,
+    56% 98%,
+    47% 86%,
+    35% 96%,
+    31% 81%,
+    17% 86%,
+    19% 71%,
+    4% 69%,
+    13% 57%,
+    0% 47%,
+    14% 40%,
+    6% 27%,
+    21% 26%,
+    18% 11%,
+    32% 17%,
+    37% 3%,
+    47% 13%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .box3d,
+  .boxScene:hover .box3d,
+  .boxScene:focus-within .box3d {
+    transform: none;
+    transition: none;
+  }
+}
