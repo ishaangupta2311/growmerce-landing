@@ -21,7 +21,7 @@ const ENTERPRISE = [
   "Advanced & custom feature support",
   "Custom AI training",
   "Custom integration",
-  "24x7 Priority Support",
+  "24x7 priority support",
   "Advanced analytics for improvement",
 ];
 
@@ -115,12 +115,16 @@ export default function PricingPage() {
             </ul>
 
             <div className="mt-10 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+              {/* Sits where the other tiers show their price, so it answers
+                  how the number is arrived at. The heading above already says
+                  it is custom; repeating that here said nothing twice. */}
               <div>
                 <p className="text-[clamp(1.5rem,2.6vw,2.25rem)] font-extrabold">
-                  Custom pricing
+                  From 100,000 searches a month
                 </p>
-                <p className="mt-1 text-[16px] text-body-mute">
-                  Tailored for your business needs and goals.
+                <p className="mt-1 max-w-[44ch] text-[16px] text-body-mute">
+                  Priced on your volume and catalogue &mdash; never per seat,
+                  never a share of revenue.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-4">
