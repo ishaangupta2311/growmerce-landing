@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import Faq from "@/components/site/Faq";
 import Reveal from "@/components/site/Reveal";
 import FeaturesHero from "./components/FeaturesHero";
 import { GROWSEARCH_FEATURES } from "@/lib/site-urls";
+import CombinesItAll from "./components/CombinesItAll";
 import FeatureReelGrid from "./components/FeatureReelGrid";
 import ClosingCta from "./components/ClosingCta";
 import { FEATURE_ROWS } from "./rows-data";
@@ -28,17 +28,7 @@ export default function GrowsearchFeaturesPage() {
       <main className="font-bricolage">
         <FeaturesHero />
 
-        <Reveal className="mx-auto mt-16 max-w-[1370px] px-6">
-          <figure>
-            <Image
-              src="/img/pages/combines-it-all.png"
-              alt="Growsearch combining search, filtering, recommendations and analytics into one storefront experience"
-              width={800}
-              height={450}
-              className="h-auto w-full rounded-[27px] object-cover"
-            />
-          </figure>
-        </Reveal>
+        <CombinesItAll />
 
         <section className="mx-auto max-w-[1200px] px-6 py-20">
           <div aria-hidden className="mb-8 h-px bg-line" />

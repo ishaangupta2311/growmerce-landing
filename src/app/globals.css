@@ -231,6 +231,62 @@ body {
   transform: scaleX(1);
 }
 
+/* "Combines it all" — an isometric stack. The layers fly up the stack axis in
+   order, bottom first, so the build reads as raw supplier chaos resolving into
+   the storefront. Everything below rides inside one preserve-3d chain. */
+@keyframes slab-rise {
+  from {
+    opacity: 0;
+    transform: translateZ(-70px);
+  }
+  to {
+    opacity: 1;
+    transform: translateZ(0);
+  }
+}
+
+@keyframes stack-bob {
+  0%,
+  100% {
+    transform: translateZ(0);
+  }
+  50% {
+    transform: translateZ(9px);
+  }
+}
+
+@keyframes cube-float {
+  0%,
+  100% {
+    transform: translateZ(0);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translateZ(16px);
+    opacity: 1;
+  }
+}
+
+.js .reveal .stack-slab {
+  opacity: 0;
+}
+
+.js .reveal[data-shown="true"] .stack-slab {
+  animation: slab-rise 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--slab-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stack-bob {
+    animation: stack-bob 7s ease-in-out infinite;
+  }
+
+  .stack-cube {
+    animation: cube-float var(--cube-dur, 5s) ease-in-out infinite;
+    animation-delay: var(--cube-delay, 0ms);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
