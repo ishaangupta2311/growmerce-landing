@@ -120,11 +120,13 @@ export default function SolutionsPage() {
               className="hero-enter-scale relative overflow-hidden rounded-[20px] bg-peach/50 p-4"
               style={{ animationDelay: "150ms" }}
             >
+              {/* “kava drinks” on purpose: the comparison table below opens
+                  with it as the query native search returns nothing for. */}
               <Image
-                src="/img/smart-search-mock.png"
-                alt="Growsearch results for a natural-language query, with match scores and a search-performance chart"
-                width={1536}
-                height={1024}
+                src="/img/demos/kava-drinks.webp"
+                alt="A search for “kava drinks” returning six kava products, the query the comparison below names as one native search finds nothing for"
+                width={1386}
+                height={1135}
                 priority
                 sizes="(min-width: 1024px) 46vw, 100vw"
                 className="h-auto w-full rounded-[12px]"

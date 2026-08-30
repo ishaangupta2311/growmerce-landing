@@ -4,13 +4,27 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import styles from "./SearchDemoCard.module.css";
 
-const QUERIES = [
-  "skincare under $10",
-  "something warm for a rainy commute",
-  "gift for someone who has everything",
-  "kava drinks",
-  "linen shirt but not white",
+/* Each query is paired with the result panel it actually produces, so the
+   panel above the field always answers the question inside it. The panel
+   crops are taken below the mock's own search bar — otherwise the card shows
+   two search bars, its own and the screenshot's. */
+const DEMOS = [
+  {
+    query: "something warm for a rainy commute",
+    src: "/img/demos/rainy-commute-panel.webp",
+  },
+  {
+    query: "gift for someone who has everything",
+    src: "/img/demos/gifts-panel.webp",
+  },
+  { query: "kava drinks", src: "/img/demos/kava-drinks-panel.webp" },
+  {
+    query: "linen shirt but not white",
+    src: "/img/demos/linen-shirt-panel.webp",
+  },
 ];
+
+const QUERIES = DEMOS.map((demo) => demo.query);
 
 /* Inline magnifying-glass glyph, matching the hand-drawn style of the other
    shared icon components (Arrow, the Growsearch CircleTick) rather than
@@ -103,20 +117,30 @@ export default function SearchDemoCard() {
           </div>
         </div>
 
-        <div className="relative mt-4 overflow-hidden rounded-[20px] bg-peach">
-          <Image
-            src="/img/smart-search-mock.png"
-            alt="Growsearch results panel showing skincare products matched to the query, with prices and an add-to-cart action"
-            width={1536}
-            height={1024}
-            sizes="(min-width: 640px) 560px, 100vw"
-            className="h-[210px] w-full object-cover object-top sm:h-[250px]"
-          />
+        {/* Stacked and cross-faded rather than swapped, so the panel never
+            blanks between queries. Decorative: the sr-only note below is the
+            accessible description, and four alt texts read out at once would
+            not be. */}
+        <div className="relative mt-4 grid overflow-hidden rounded-[20px] bg-peach">
+          {DEMOS.map((demo, index) => (
+            <Image
+              key={demo.src}
+              src={demo.src}
+              alt=""
+              width={1386}
+              height={863}
+              priority={index === 0}
+              sizes="(min-width: 640px) 560px, 100vw"
+              className="col-start-1 row-start-1 h-[210px] w-full object-cover object-top transition-opacity duration-500 ease-out sm:h-[250px]"
+              style={{ opacity: index === queryIndex ? 1 : 0 }}
+            />
+          ))}
         </div>
 
         <p className="sr-only">
           Illustration: a storefront search bar cycling through shopper
-          questions such as “skincare under $10”.
+          questions such as “something warm for a rainy commute”, each shown
+          with the products Growsearch returns for it.
         </p>
         <div
           aria-hidden

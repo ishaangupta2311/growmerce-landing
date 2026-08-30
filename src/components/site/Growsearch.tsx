@@ -84,10 +84,10 @@ export default function Growsearch() {
 
         <Reveal delay={150}>
           <Image
-            src="/img/smart-search-mock.png"
-            alt="Growsearch results page showing top TV matches, recommendations and click-through-rate analytics"
-            width={1536}
-            height={1024}
+            src="/img/demos/linen-shirt.webp"
+            alt="A shopper searches “linen shirt but not white” and Growsearch returns six linen shirts, none of them white"
+            width={1387}
+            height={1134}
             sizes="(min-width: 1024px) 703px, 100vw"
             className="w-full rounded-[27px]"
           />

@@ -180,8 +180,8 @@ export default function PlatformMegaMenuContent({
           <span className="text-[12px] font-medium tracking-[0.04em] text-muted uppercase">Live now</span>
           <span className="relative mt-2 min-h-0 flex-1 overflow-hidden rounded-[13px] bg-cream">
             <Image
-              src="/img/smart-search-mock.png"
-              alt="Growsearch storefront results and search analytics"
+              src="/img/demos/tech-suggestions.webp"
+              alt="The Growsearch panel on a storefront, suggesting searches and products"
               fill
               sizes="(min-width: 1280px) 360px, 290px"
               className="object-contain p-2 transition-transform duration-300 group-hover:scale-[1.025]"

@@ -19,7 +19,7 @@ const CAPABILITIES: Capability[] = [
     icon: "/img/icon-search-circle.svg",
     title: "Intent based search",
     body: "Natural language, vague queries, prices, discounts, and product attributes work automatically.",
-    mediaSrc: null,
+    mediaSrc: "/img/demos/rainy-commute.webp",
     durationMs: 5200,
   },
   {
@@ -27,7 +27,7 @@ const CAPABILITIES: Capability[] = [
     icon: "/img/icon-workflow.svg",
     title: "Zero-result recovery",
     body: "Fix typos, show alternatives, and never leave shoppers with an empty search page.",
-    mediaSrc: null,
+    mediaSrc: "/img/demos/kava-drinks.webp",
     durationMs: 5800,
   },
   {
@@ -35,7 +35,7 @@ const CAPABILITIES: Capability[] = [
     icon: "/img/icon-sparkle.svg",
     title: "Conversational shopping",
     body: "Refine results, switch products, and filter through a simple AI conversation.",
-    mediaSrc: null,
+    mediaSrc: "/img/demos/gifts.webp",
     durationMs: 5600,
   },
   {
@@ -43,7 +43,7 @@ const CAPABILITIES: Capability[] = [
     icon: "/img/icon-growth-circle.svg",
     title: "Smart suggestion",
     body: "Track searches, clicks, cart adds, purchases, and AI-assisted conversions in real time.",
-    mediaSrc: null,
+    mediaSrc: "/img/demos/beauty-suggestions.webp",
     durationMs: 6200,
   },
 ];
@@ -226,12 +226,16 @@ export default function WhyGrowsearch() {
                 }}
               />
               {activeCapability.mediaSrc ? (
+                /* Anchored to the top: the panel is far wider than the mock,
+                   so cover trims the bottom. That end is the cart/footer bar,
+                   which is the part worth losing — the query and the results
+                   it produced stay in frame. */
                 <Image
                   src={activeCapability.mediaSrc}
                   alt={`${activeCapability.title} preview`}
                   fill
-                  unoptimized
-                  className="object-cover"
+                  sizes="(min-width: 1280px) 1150px, (min-width: 640px) 90vw, 100vw"
+                  className="object-cover object-top"
                 />
               ) : (
                 <div className="flex h-full min-h-[308px] flex-col justify-between sm:min-h-0">
