@@ -38,7 +38,7 @@ export default function PricingBand() {
             Choose the perfect plan for your business
           </h2>
           <div className="mt-8">
-            <Link href="#demo" className="cta-primary-inverse">
+            <Link href="/pricing" className="cta-primary-inverse">
               Get my custom plan
               <Arrow className="cta-arrow" />
             </Link>

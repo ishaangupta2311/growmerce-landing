@@ -129,14 +129,14 @@ export default function PricingPage() {
               </div>
               <div className="flex flex-wrap items-center gap-4">
                 <Link
-                  href="#demo"
+                  href="mailto:admin@growmerce.ai"
                   className="cta-primary"
                 >
                   Talk to sales
                   <Arrow className="size-5" />
                 </Link>
                 <Link
-                  href="#demo"
+                  href={GROWSEARCH_FEATURES}
                   className="cta-secondary"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>

@@ -180,7 +180,7 @@ export default function Navbar({
 
         <div className="flex shrink-0 items-center gap-2.5">
           <Link
-            href="#demo"
+            href={GROWSEARCH_FEATURES}
             className="hidden items-center justify-center rounded-[10px] bg-brand px-5 py-2 font-poppins text-[15px] font-bold text-white shadow-[0_10px_24px_-14px_rgba(255,90,31,0.9)] transition-transform duration-200 hover-lift sm:inline-flex"
           >
             See demo
@@ -245,7 +245,7 @@ export default function Navbar({
             </div>
           ))}
           <div className="mt-5 flex gap-3">
-            <Link href="#demo" onClick={() => setMobile(false)} className="flex-1 rounded-[10px] bg-brand py-2.5 text-center font-poppins text-[15px] font-bold text-white">
+            <Link href={GROWSEARCH_FEATURES} onClick={() => setMobile(false)} className="flex-1 rounded-[10px] bg-brand py-2.5 text-center font-poppins text-[15px] font-bold text-white">
               See demo
             </Link>
             <Link href="#login" onClick={() => setMobile(false)} className="flex-1 rounded-[10px] border-2 border-brand bg-white py-[8px] text-center font-poppins text-[15px] font-bold text-brand">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
+import { GROWSEARCH_FEATURES } from "@/lib/site-urls";
 
 export default function TrialBand() {
   return (
@@ -27,7 +28,7 @@ export default function TrialBand() {
               <Arrow className="cta-arrow" />
             </Link>
             <Link
-              href="#demo"
+              href={GROWSEARCH_FEATURES}
               className="cta-secondary-inverse"
             >
               See demo

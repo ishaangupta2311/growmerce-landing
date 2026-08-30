@@ -57,7 +57,6 @@ export default function WhyGrowsearch() {
   const [timerReset, setTimerReset] = useState(0);
   const [reducedMotion, setReducedMotion] = useState<boolean | null>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [progressing, setProgressing] = useState(false);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const activeCapability = CAPABILITIES[activeIndex];
 
@@ -91,21 +90,6 @@ export default function WhyGrowsearch() {
 
     return () => window.clearTimeout(timeoutId);
   }, [activeCapability.durationMs, activeIndex, isVisible, reducedMotion, timerReset]);
-
-  useEffect(() => {
-    if (reducedMotion !== false || !isVisible) return;
-
-    let startFrameId: number | undefined;
-    const resetFrameId = window.requestAnimationFrame(() => {
-      setProgressing(false);
-      startFrameId = window.requestAnimationFrame(() => setProgressing(true));
-    });
-
-    return () => {
-      window.cancelAnimationFrame(resetFrameId);
-      if (startFrameId !== undefined) window.cancelAnimationFrame(startFrameId);
-    };
-  }, [activeIndex, isVisible, reducedMotion, timerReset]);
 
   const selectCapability = (index: number) => {
     setActiveIndex(index);
@@ -209,38 +193,27 @@ export default function WhyGrowsearch() {
                 );
               })}
             </div>
+            {/* The frame is capped to the mock's own width rather than run to
+                the container, so there is nothing to letterbox: no bars, and
+                the screenshot stays the size it was drawn at. */}
             <div
               id={PANEL_ID}
               role="tabpanel"
               aria-labelledby={tabId(activeCapability.id)}
               tabIndex={0}
-              /* 16/9 all the way up rather than widening to 2.4/1 at xl: the
-                 mocks are nearly square, and the wider the panel the more of
-                 one is left to letterbox. */
-              className="relative isolate mt-8 min-h-[360px] overflow-hidden rounded-[28px] bg-charcoal p-6 text-white shadow-[0_24px_70px_-32px_rgba(23,23,23,0.75)] outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:aspect-[16/9] sm:min-h-[440px] sm:p-8 xl:min-h-[460px]"
+              className="mx-auto mt-10 max-w-[880px] rounded-[26px] bg-white p-3 shadow-[0_30px_80px_-50px_rgba(23,23,23,0.6)] outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:p-4"
             >
-              <div
-                aria-hidden="true"
-                className="absolute inset-0 -z-10 opacity-70"
-                style={{
-                  backgroundImage:
-                    "radial-gradient(circle at 18% 20%, rgba(255,90,31,0.34), transparent 31%), linear-gradient(135deg, rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(45deg, rgba(255,255,255,0.05) 1px, transparent 1px)",
-                  backgroundSize: "auto, 32px 32px, 32px 32px",
-                }}
-              />
               {activeCapability.mediaSrc ? (
-                /* Contained, not covered. These are screenshots — cropping one
-                   to fill a wide panel cuts the results it is meant to show.
-                   It sits on the dark panel as a mat instead. */
                 <Image
                   src={activeCapability.mediaSrc}
                   alt={`${activeCapability.title} preview`}
-                  fill
-                  sizes="(min-width: 1280px) 800px, (min-width: 640px) 80vw, 100vw"
-                  className="rounded-[16px] object-contain"
+                  width={1386}
+                  height={1135}
+                  sizes="(min-width: 940px) 880px, 92vw"
+                  className="h-auto w-full rounded-[18px]"
                 />
               ) : (
-                <div className="flex h-full min-h-[308px] flex-col justify-between sm:min-h-0">
+                <div className="flex min-h-[320px] flex-col justify-between rounded-[18px] bg-charcoal p-6 text-white sm:min-h-[420px] sm:p-8">
                   <span className="inline-flex w-fit items-center gap-2 border border-white/20 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-white/65">
                     <span className="size-1.5 rounded-full bg-brand" />
                     GIF preview placeholder
@@ -255,15 +228,6 @@ export default function WhyGrowsearch() {
                   </div>
                 </div>
               )}
-              <div
-                aria-hidden="true"
-                className="absolute inset-x-6 bottom-6 h-1 overflow-hidden rounded-full bg-white/15 sm:inset-x-8 sm:bottom-8"
-              >
-                <span
-                  className={`block h-full origin-left rounded-full bg-brand transition-transform ease-linear ${progressing ? "scale-x-100" : reducedMotion === true ? "scale-x-100" : "scale-x-0"}`}
-                  style={{ transitionDuration: `${activeCapability.durationMs}ms` }}
-                />
-              </div>
             </div>
           </div>
         </Reveal>
