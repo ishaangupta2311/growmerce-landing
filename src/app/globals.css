@@ -287,6 +287,210 @@ body {
   }
 }
 
+/* ---------------------------------------------------------------------------
+   "Combines it all" — five candidate treatments for the same section.
+   Prefixed cmb- so they can be deleted together once one is chosen.
+--------------------------------------------------------------------------- */
+
+/* A. Wipe: a divider sweeps across, pile on one side, one bar on the other. */
+@keyframes cmb-wipe {
+  0%,
+  6% {
+    clip-path: inset(0 100% 0 0);
+  }
+  44%,
+  64% {
+    clip-path: inset(0 0% 0 0);
+  }
+  94%,
+  100% {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+@keyframes cmb-wipe-edge {
+  0%,
+  6% {
+    left: 0%;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  44%,
+  64% {
+    left: 100%;
+    opacity: 1;
+  }
+  94%,
+  100% {
+    left: 0%;
+    opacity: 0;
+  }
+}
+
+/* B. Converge: scattered tools slide in and collapse into one bar. */
+@keyframes cmb-converge {
+  0% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(0.92);
+  }
+  14%,
+  46% {
+    opacity: 1;
+    transform: translate(var(--dx), var(--dy)) scale(1);
+  }
+  70% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.82);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.82);
+  }
+}
+
+@keyframes cmb-bar-in {
+  0%,
+  62% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  76%,
+  94% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* C. Pipeline: a query rides the rail, stations light as it passes. */
+@keyframes cmb-travel {
+  0% {
+    left: 0%;
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes cmb-station {
+  0%,
+  100% {
+    background: #ffffff;
+    border-color: rgba(23, 23, 23, 0.14);
+    transform: scale(1);
+  }
+  8%,
+  26% {
+    background: var(--color-brand);
+    border-color: var(--color-brand);
+    transform: scale(1.28);
+  }
+}
+
+@keyframes cmb-rail-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* D. Sonar: a sweep crosses the catalogue, matches light up behind it. */
+@keyframes cmb-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes cmb-hit {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: scale(1);
+  }
+  6% {
+    opacity: 1;
+    transform: scale(1.9);
+  }
+  40% {
+    opacity: 0.85;
+    transform: scale(1.2);
+  }
+}
+
+/* E. Query: results settle in under a typed sentence. */
+@keyframes cmb-result-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cmb-wipe-panel {
+    animation: cmb-wipe 6.5s ease-in-out infinite;
+  }
+
+  .cmb-wipe-edge {
+    animation: cmb-wipe-edge 6.5s ease-in-out infinite;
+  }
+
+  .cmb-converge {
+    animation: cmb-converge 6.5s ease-in-out infinite;
+    animation-delay: var(--d, 0ms);
+  }
+
+  .cmb-bar {
+    animation: cmb-bar-in 6.5s ease-in-out infinite;
+  }
+
+  .cmb-travel {
+    animation: cmb-travel 6s linear infinite;
+  }
+
+  .cmb-station {
+    animation: cmb-station 6s linear infinite;
+    animation-delay: var(--d, 0ms);
+  }
+
+  .cmb-rail-fill {
+    animation: cmb-rail-fill 6s linear infinite;
+    transform-origin: left;
+  }
+
+  .cmb-sweep {
+    animation: cmb-sweep 4.5s linear infinite;
+  }
+
+  .cmb-hit {
+    animation: cmb-hit 4.5s linear infinite;
+    animation-delay: var(--d, 0ms);
+  }
+}
+
+.cmb-result {
+  animation: cmb-result-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -5,6 +5,7 @@ import Faq from "@/components/site/Faq";
 import SearchHero from "./components/SearchHero";
 import { GROWSEARCH_HOME } from "@/lib/site-urls";
 import WhyGrowsearch from "./components/WhyGrowsearch";
+import LayerStack from "./components/LayerStack";
 import FeatureStack from "./components/FeatureStack";
 import InstallSteps from "./components/InstallSteps";
 import TrialBand from "./components/TrialBand";
@@ -25,6 +26,7 @@ export default function GrowsearchPage() {
       <main className="font-bricolage">
         <SearchHero />
         <WhyGrowsearch />
+        <LayerStack />
         <FeatureStack />
         <InstallSteps />
         <TrialBand />
