@@ -214,7 +214,10 @@ export default function WhyGrowsearch() {
               role="tabpanel"
               aria-labelledby={tabId(activeCapability.id)}
               tabIndex={0}
-              className="relative isolate mt-8 min-h-[360px] overflow-hidden rounded-[28px] bg-charcoal p-6 text-white shadow-[0_24px_70px_-32px_rgba(23,23,23,0.75)] outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:aspect-[16/9] sm:min-h-[440px] sm:p-8 xl:aspect-[2.4/1] xl:min-h-[460px]"
+              /* 16/9 all the way up rather than widening to 2.4/1 at xl: the
+                 mocks are nearly square, and the wider the panel the more of
+                 one is left to letterbox. */
+              className="relative isolate mt-8 min-h-[360px] overflow-hidden rounded-[28px] bg-charcoal p-6 text-white shadow-[0_24px_70px_-32px_rgba(23,23,23,0.75)] outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:aspect-[16/9] sm:min-h-[440px] sm:p-8 xl:min-h-[460px]"
             >
               <div
                 aria-hidden="true"
@@ -226,16 +229,15 @@ export default function WhyGrowsearch() {
                 }}
               />
               {activeCapability.mediaSrc ? (
-                /* Anchored to the top: the panel is far wider than the mock,
-                   so cover trims the bottom. That end is the cart/footer bar,
-                   which is the part worth losing — the query and the results
-                   it produced stay in frame. */
+                /* Contained, not covered. These are screenshots — cropping one
+                   to fill a wide panel cuts the results it is meant to show.
+                   It sits on the dark panel as a mat instead. */
                 <Image
                   src={activeCapability.mediaSrc}
                   alt={`${activeCapability.title} preview`}
                   fill
-                  sizes="(min-width: 1280px) 1150px, (min-width: 640px) 90vw, 100vw"
-                  className="object-cover object-top"
+                  sizes="(min-width: 1280px) 800px, (min-width: 640px) 80vw, 100vw"
+                  className="rounded-[16px] object-contain"
                 />
               ) : (
                 <div className="flex h-full min-h-[308px] flex-col justify-between sm:min-h-0">

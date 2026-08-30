@@ -1,43 +1,72 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import Arrow from "./Arrow";
 import Reveal from "./Reveal";
 import { GROWSEARCH_HOME } from "@/lib/site-urls";
 
+/* Each conviction carries the mock that demonstrates it, so the empty half of
+   the card does some work. The examples in the copy are the same queries the
+   demos on this site actually run. */
 const ITEMS = [
   {
     title: "Intent, not keywords",
     body:
-      "A shopper types a sentence, not a search term. \u201CSkincare under $10\u201D, \u201Cwarm but not bulky\u201D, \u201Cgift, arrives Friday\u201D \u2014 price, attribute, timing and intent get read straight out of the sentence. No filter menus to dig through, no keyword archaeology, and no teaching your customer how to talk to your store.",
+      "Shoppers type sentences, not search terms. \u201CSomething warm for a rainy commute\u201D, \u201Clinen shirt but not white\u201D \u2014 price, attribute and intent get read straight out of the sentence. No filter menus to dig through, and no teaching your customer how to talk to your store.",
+    media: "/img/demos/rainy-commute.webp",
+    alt: "A search for \u201Csomething warm for the rainy commute\u201D returning scarves, beanies and an umbrella",
   },
   {
-    title: "It only ever talks about products you actually stock",
+    title: "It only talks about what you actually stock",
     body:
-      "The model never invents a product, a price or a promise. Every answer is grounded in your live catalogue \u2014 real SKUs, real stock, real prices, synced from Shopify as they change \u2014 so there is nothing for it to be confidently wrong about. If we can\u2019t ground a claim in your data, the AI doesn\u2019t make it.",
+      "The model never invents a product, a price or a promise. Every answer is grounded in your live catalogue \u2014 real SKUs, real stock, real prices, synced from Shopify as they change \u2014 so there is nothing for it to be confidently wrong about.",
+    media: "/img/demos/tech-suggestions.webp",
+    alt: "Storefront results showing live stock and pricing, including a sold-out product and reduced prices",
   },
   {
     title: "Speed is part of the answer",
     body:
       "An assistant that thinks for four seconds has already lost the sale. Your native results appear instantly, then AI ranking and semantic matches layer in on top of them. The shopper never sits watching a spinner while a model makes up its mind.",
+    media: "/img/demos/beauty-suggestions.webp",
+    alt: "A storefront search panel already showing suggestions and products before anything has been typed",
   },
   {
     title: "If it doesn\u2019t sell, it\u2019s decoration",
     body:
       "Every AI decision is tied back to a checkout. Search-attributed revenue, add-to-cart rate, zero-result rate, and the questions shoppers actually asked \u2014 all measured in the open, so you can judge the AI on money rather than on vibes.",
+    media: "/img/demos/linen-shirt.webp",
+    alt: "Search results with an add-to-cart on every product, the step the analytics attribute back to the query",
   },
 ];
 
 export default function AiSection() {
   const [open, setOpen] = useState(0);
+  /* Tracked separately from `open` so collapsing every row leaves the last
+     image up rather than emptying half the card. */
+  const [shown, setShown] = useState(0);
 
   return (
     <section id="service" className="mx-auto max-w-[1440px] px-6 py-24">
       <Reveal>
-      <div className="grid rounded-[40px] bg-white px-8 py-14 shadow-glow-lg sm:px-14 lg:min-h-[616px] lg:grid-cols-2 lg:rounded-[63px]">
-        {/* Left half is open space in the design — reserved for imagery. */}
-        <div className="hidden lg:block" />
+      <div className="grid items-center gap-10 rounded-[40px] bg-white px-8 py-14 shadow-glow-lg sm:px-14 lg:min-h-[616px] lg:grid-cols-2 lg:rounded-[63px]">
+        {/* The half the design left open, now carrying the mock for whichever
+            conviction is expanded. Stacked and cross-faded so the space never
+            blanks mid-swap. */}
+        <div className="relative -mx-2 mb-10 aspect-[1386/1135] overflow-hidden rounded-[24px] bg-peach/40 lg:mx-0 lg:mb-0 lg:mr-10">
+          {ITEMS.map((item, i) => (
+            <Image
+              key={item.media}
+              src={item.media}
+              alt={i === shown ? item.alt : ""}
+              fill
+              sizes="(min-width: 1024px) 44vw, 92vw"
+              className="object-cover transition-opacity duration-500 ease-out"
+              style={{ opacity: i === shown ? 1 : 0 }}
+            />
+          ))}
+        </div>
 
         <div>
           <h2 className="text-[clamp(1.875rem,3vw,2.5rem)] font-semibold">
@@ -53,7 +82,10 @@ export default function AiSection() {
               <li key={item.title} className="border-b border-black/10">
                 <button
                   type="button"
-                  onClick={() => setOpen(open === i ? -1 : i)}
+                  onClick={() => {
+                    setOpen(open === i ? -1 : i);
+                    setShown(i);
+                  }}
                   aria-expanded={open === i}
                   className="flex w-full items-center justify-between py-4 text-left text-xl transition-colors hover:text-brand"
                 >

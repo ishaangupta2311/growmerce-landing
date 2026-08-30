@@ -179,12 +179,16 @@ export default function PlatformMegaMenuContent({
         >
           <span className="text-[12px] font-medium tracking-[0.04em] text-muted uppercase">Live now</span>
           <span className="relative mt-2 min-h-0 flex-1 overflow-hidden rounded-[13px] bg-cream">
+            {/* Cropped to the slot's own 1.91 ratio and filled rather than
+                contained. A whole mock letterboxed into 273x143 is unreadable
+                at any zoom; this keeps the search bar and one row of results
+                edge to edge, which is the shape that reads at thumbnail size. */}
             <Image
-              src="/img/demos/tech-suggestions.webp"
-              alt="The Growsearch panel on a storefront, suggesting searches and products"
+              src="/img/demos/gifts-thumb.webp"
+              alt="A storefront search for “gift for someone who has everything”, returning gift products"
               fill
               sizes="(min-width: 1280px) 360px, 290px"
-              className="object-contain p-2 transition-transform duration-300 group-hover:scale-[1.025]"
+              className="object-cover object-top transition-transform duration-300 group-hover:scale-[1.025]"
             />
           </span>
           <span className="mt-2 flex items-center justify-between gap-3">
