@@ -94,10 +94,11 @@ export const FEATURE_ROWS: FeatureRowData[] = [
     title: "Watch every search, step by step.",
     bullets: [
       "See exactly what shoppers searched, what the AI said, and what they clicked — end to end",
-      "Full query-to-purchase journey replay",
+      "Replays the exact sequence of queries, AI responses and product actions, timestamped",
       "AI responses shown alongside",
     ],
     group: "see",
+    videoSrc: "/video/visitor-journeys",
   },
   {
     eyebrow: "MERCHANT INSIGHTS",

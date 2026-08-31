@@ -29,6 +29,9 @@ FPS=${FPS:-30}
 AV1_CRF=${AV1_CRF:-52}
 H264_CRF=${H264_CRF:-30}
 KEYINT=${KEYINT:-300}    # a loop is never seeked, so keyframes are pure overhead
+START=${START:-}         # seconds to drop off the front. A capture usually opens on
+                         # whatever was already on screen, and on this page that is
+                         # often the panel a neighbouring card is already showing.
 DECLARED_CODEC=${DECLARED_CODEC:-av01.0.08M.08}  # must match ReelVideo.tsx
 
 OUT=public/video
@@ -44,15 +47,24 @@ fi
 
 VF="scale=${WIDTH}:-2,fps=${FPS}"
 
+# -ss ahead of -i so the decoder starts there instead of decoding and throwing
+# frames away. Expanded as ${SEEK[@]+...} because an empty array under `set -u`
+# is an unbound variable in bash 3.2, which is what macOS ships.
+SEEK=()
+if [ -n "$START" ]; then
+  SEEK=(-ss "$START")
+  echo "note: dropping the first ${START}s; poster time is measured from the new start"
+fi
+
 echo "== encoding ================================================"
 # Primary. Smaller *and* cleaner than H.264 on flat UI capture.
-ffmpeg -v error -y -i "$SRC" -an -vf "$VF" \
+ffmpeg -v error -y ${SEEK[@]+"${SEEK[@]}"} -i "$SRC" -an -vf "$VF" \
   -c:v libsvtav1 -crf "$AV1_CRF" -preset 4 -svtav1-params "keyint=${KEYINT}" \
   -pix_fmt yuv420p -movflags +faststart "$OUT/$NAME.av1.mp4" \
   2> >(grep -v '^Svt\[info\]' >&2)
 
 # Fallback. What Safari downloads on hardware without AV1 decode.
-ffmpeg -v error -y -i "$SRC" -an -vf "$VF" \
+ffmpeg -v error -y ${SEEK[@]+"${SEEK[@]}"} -i "$SRC" -an -vf "$VF" \
   -c:v libx264 -crf "$H264_CRF" -preset veryslow -g "$KEYINT" \
   -pix_fmt yuv420p -movflags +faststart "$OUT/$NAME.mp4"
 
@@ -85,7 +97,7 @@ done
 if [ "$CHECK" = yes ]; then
   echo "== quality ================================================="
   REF=$(mktemp -t reelref).mp4
-  ffmpeg -v error -y -i "$SRC" -an -vf "$VF" -c:v libx264 -qp 0 -preset ultrafast "$REF"
+  ffmpeg -v error -y ${SEEK[@]+"${SEEK[@]}"} -i "$SRC" -an -vf "$VF" -c:v libx264 -qp 0 -preset ultrafast "$REF"
   for f in "$OUT/$NAME.av1.mp4" "$OUT/$NAME.mp4"; do
     STATS=$(mktemp)
     printf "  %-28s " "$(basename "$f")"

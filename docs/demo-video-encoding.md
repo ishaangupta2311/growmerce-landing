@@ -20,6 +20,7 @@ prints the line to add to `rows-data.ts`.
 | CRF | AV1 52, H.264 30 — for flat UI screen capture |
 | GOP | 300 frames |
 | Poster | a frame showing the feature working, **not** frame 0 |
+| `START` | seconds to drop off the front, when the capture opens on someone else's panel |
 
 Encoded so far, none showing visible loss at the size the card renders:
 
@@ -34,16 +35,24 @@ Encoded so far, none showing visible loss at the size the card renders:
 | `what-shoppers-want` | 14.0 MB | 0.11 MB | 0.9994 |
 | `search-opportunities` | 20.9 MB | 0.25 MB | 0.9987 |
 | `top-searches` | 7.7 MB | 0.12 MB | 0.9992 |
+| `visitor-journeys` | 53.3 MB | 0.40 MB | 0.9991 |
 
-Nine sources off the same recorder took the same settings unchanged, which
+Ten sources off the same recorder took the same settings unchanged, which
 is the case for treating them as defaults rather than starting points. Output
 size tracks clip length and motion, not input size: the 182 MB source is the
 longest at 33s, not the most detailed.
 
-The three merchant-dashboard clips are outliers in both directions — a fraction of
+The four merchant-dashboard clips are outliers in both directions — a fraction of
 the size at a higher SSIM — because they pan over flat white panels rather than
 scrolling a storefront full of photographs. Their sources arrived already
-compressed, at 8 to 21 MB, for the same reason. Do not read those numbers as a
+compressed, at 8 to 53 MB, for the same reason.
+
+`visitor-journeys` is encoded with `START=9.2`. Its capture spends nine seconds
+scrolling past the top-searches table and the opportunities panel before it
+reaches the journeys list — and both of those are the subject of neighbouring
+cards on the same page, so a third of the loop would have shown three cards
+playing the same footage at once. Check a capture against its neighbours, not
+just against its own caption. Do not read those numbers as a
 new baseline; a clip full of product imagery will not reach them.
 
 ## Decisions
