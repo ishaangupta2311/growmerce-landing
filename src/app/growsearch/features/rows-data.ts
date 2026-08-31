@@ -114,11 +114,12 @@ export const FEATURE_ROWS: FeatureRowData[] = [
     eyebrow: "MERCHANT INSIGHTS",
     title: "Trends from real behavior, not guesses.",
     bullets: [
-      "Trending search terms updated continuously, not on a monthly report",
-      "Spot demand shifts before they show up in sales",
-      "Nothing to export or stitch together yourself",
+      "Every query ranked by volume, with visitors, zero-results, click rate, carts and purchases beside it",
+      "Sixty terms deep, including the questions shoppers put to the assistant",
+      "Filter to the searches that returned nothing, across 7, 30 or 90 days",
     ],
     group: "see",
+    videoSrc: "/video/top-searches",
   },
   {
     eyebrow: "MERCHANT INSIGHTS",
