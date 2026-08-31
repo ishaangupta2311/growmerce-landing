@@ -17,7 +17,7 @@ export type FeatureRowData = {
  * empty in Figma and are written here from the real feature set (natural-
  * language + conversational filtering, instant add-to-cart, native-then-AI
  * result layering, the analytics Growsearch actually tracks, trending
- * terms, and assistant-question insights).
+ * terms, and the ranked opportunities panel).
  *
  * Rows are grouped to back up the hero's "ten your shoppers feel / ten you
  * see" split: six shopper-facing rows, four merchant-facing ones.
@@ -122,12 +122,13 @@ export const FEATURE_ROWS: FeatureRowData[] = [
   },
   {
     eyebrow: "MERCHANT INSIGHTS",
-    title: "Understand what shoppers are really asking.",
+    title: "It tells you what to fix first.",
     bullets: [
-      "Insights drawn straight from the questions shoppers ask the assistant",
-      "See where the AI's answers helped — and where they didn't",
-      "Turn recurring questions into new collections or FAQ content",
+      "Missing products, skipped results and slow queries surfaced as ranked opportunities",
+      "“strip” has no exact match, 2 searches — consider adding the product",
+      "Sorted into fix first and worth checking, from the last 30 days of search activity",
     ],
     group: "see",
+    videoSrc: "/video/search-opportunities",
   },
 ];
