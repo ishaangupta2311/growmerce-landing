@@ -30,7 +30,10 @@ export default function GrowsearchFeaturesPage() {
 
         <CombinesItAll />
 
-        <section className="mx-auto max-w-[1200px] px-6 py-20">
+        <section
+          id="demo"
+          className="mx-auto max-w-[1200px] scroll-mt-28 px-6 py-20"
+        >
           <div aria-hidden className="mb-8 h-px bg-line" />
           <Reveal>
             <h2 className="text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-charcoal">

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import PlatformMegaMenuContent from "./PlatformMegaMenu";
-import { GROWSEARCH_FEATURES, GROWSEARCH_HOME } from "@/lib/site-urls";
+import { GROWSEARCH_DEMO, GROWSEARCH_HOME } from "@/lib/site-urls";
 
 export type HeaderMegaMenuVariant = "platform" | "growsearch" | "resources" | "why-us";
 
@@ -19,7 +19,7 @@ const RESOURCE_GROUPS = [
     links: [
       { label: "Getting Started", href: GROWSEARCH_HOME },
       { label: "Blogs", href: "/solutions" },
-      { label: "Videos", href: GROWSEARCH_FEATURES },
+      { label: "Videos", href: GROWSEARCH_DEMO },
       { label: "Community", href: "/about" },
     ],
   },

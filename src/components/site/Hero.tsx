@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { GROWSEARCH_FEATURES } from "@/lib/site-urls";
+import { GROWSEARCH_DEMO } from "@/lib/site-urls";
 
 /* Decorative market chart from the Figma hero card, drawn as SVG so it stays
    crisp. Candles alternate charcoal/orange over peach gridlines. */
@@ -186,7 +186,7 @@ export default function Hero() {
               className="hero-enter flex items-center gap-4"
               style={{ animationDelay: "380ms" }}
             >
-              <Link href={GROWSEARCH_FEATURES} className="cta-primary">
+              <Link href={GROWSEARCH_DEMO} className="cta-primary">
                 See demo
               </Link>
               <Link href="#trial" className="cta-secondary">
@@ -216,7 +216,7 @@ export default function Hero() {
           </p>
 
           <div className="hero-enter mt-6 flex flex-wrap gap-3" style={{ animationDelay: "360ms" }}>
-            <Link href={GROWSEARCH_FEATURES} className="cta-primary">
+            <Link href={GROWSEARCH_DEMO} className="cta-primary">
               See demo
             </Link>
             <Link href="#trial" className="cta-secondary">

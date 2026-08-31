@@ -9,7 +9,7 @@ import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
 import PricingPlans from "@/components/site/PricingPlans";
 import AllPlans from "./components/AllPlans";
-import { GROWSEARCH_FEATURES } from "@/lib/site-urls";
+import { GROWSEARCH_DEMO, GROWSEARCH_FEATURES } from "@/lib/site-urls";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -136,7 +136,7 @@ export default function PricingPage() {
                   <Arrow className="size-5" />
                 </Link>
                 <Link
-                  href={GROWSEARCH_FEATURES}
+                  href={GROWSEARCH_DEMO}
                   className="cta-secondary"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>

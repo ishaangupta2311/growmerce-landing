@@ -3,7 +3,7 @@ import Link from "next/link";
 import Arrow from "./Arrow";
 import Reveal from "./Reveal";
 import { PLATFORMS, PlatformMark, ComingSoon } from "./PlatformStrip";
-import { GROWSEARCH_FEATURES, GROWSEARCH_HOME } from "@/lib/site-urls";
+import { GROWSEARCH_DEMO, GROWSEARCH_HOME } from "@/lib/site-urls";
 
 const CHECKLIST = [
   "Understands natural language and intent.",
@@ -74,7 +74,7 @@ export default function Growsearch() {
               <Arrow className="cta-arrow" />
             </Link>
             <Link
-              href={GROWSEARCH_FEATURES}
+              href={GROWSEARCH_DEMO}
               className="cta-secondary"
             >
               See demo
@@ -134,7 +134,7 @@ export default function Growsearch() {
               Power your entire commerce journey with AI.
             </p>
           </div>
-          <Link href={GROWSEARCH_FEATURES} className="cta-primary">
+          <Link href={GROWSEARCH_DEMO} className="cta-primary">
             See demo
             <Arrow className="cta-arrow" />
           </Link>
