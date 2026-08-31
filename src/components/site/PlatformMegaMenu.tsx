@@ -47,18 +47,21 @@ const GROWSEARCH_PRIMARY_LINKS = [
   },
 ] as const;
 
+/* `size` is the height to draw at; w/h are the mark's own dimensions, which are
+   not all square. Passing the display size as both makes the computed height
+   disagree with the attribute, and Next warns about the squashed ratio. */
 const GROWMERCE_WORKFLOWS = [
-  { name: "Search", src: "/img/icon-search-circle.svg", size: 42 },
-  { name: "Growth", src: "/img/icon-growth.svg", size: 40 },
-  { name: "Automation", src: "/img/icon-workflow.svg", size: 36 },
-  { name: "Revenue", src: "/img/icon-wallet.svg", size: 36 },
+  { name: "Search", src: "/img/icon-search-circle.svg", size: 42, w: 66, h: 63 },
+  { name: "Growth", src: "/img/icon-growth.svg", size: 40, w: 104, h: 104 },
+  { name: "Automation", src: "/img/icon-workflow.svg", size: 36, w: 41, h: 41 },
+  { name: "Revenue", src: "/img/icon-wallet.svg", size: 36, w: 41, h: 41 },
 ] as const;
 
 const GROWSEARCH_WORKFLOWS = [
-  { name: "Intent search", src: "/img/icon-search-circle.svg", size: 42 },
-  { name: "Recovery", src: "/img/icon-workflow.svg", size: 36 },
-  { name: "Conversation", src: "/img/icon-sparkle.svg", size: 34 },
-  { name: "Analytics", src: "/img/icon-growth.svg", size: 40 },
+  { name: "Intent search", src: "/img/icon-search-circle.svg", size: 42, w: 66, h: 63 },
+  { name: "Recovery", src: "/img/icon-workflow.svg", size: 36, w: 41, h: 41 },
+  { name: "Conversation", src: "/img/icon-sparkle.svg", size: 34, w: 23, h: 23 },
+  { name: "Analytics", src: "/img/icon-growth.svg", size: 40, w: 104, h: 104 },
 ] as const;
 
 function MenuIcon({ type }: { type: MenuIconType }) {
@@ -151,7 +154,14 @@ export default function PlatformMegaMenuContent({
             {workflows.map((workflow) => (
               <div key={workflow.name} className="flex min-w-0 flex-col items-center gap-2">
                 <span className="grid size-14 place-items-center rounded-full bg-white">
-                  <Image src={workflow.src} alt="" width={workflow.size} height={workflow.size} className="size-auto max-h-11 max-w-11 object-contain" />
+                  <Image
+                    src={workflow.src}
+                    alt=""
+                    width={workflow.w}
+                    height={workflow.h}
+                    style={{ height: workflow.size, width: "auto" }}
+                    className="max-w-11 object-contain"
+                  />
                 </span>
                 <span className="text-[11px] font-medium text-muted">{workflow.name}</span>
               </div>

@@ -7,6 +7,10 @@ import Reveal from "@/components/site/Reveal";
 type Capability = {
   id: string;
   icon: string;
+  /* The mark's intrinsic size. Declaring a square for a 66x63 icon makes the
+     browser's computed height disagree with the attribute, which Next flags. */
+  iconW: number;
+  iconH: number;
   title: string;
   body: string;
   mediaSrc: string | null;
@@ -17,6 +21,8 @@ const CAPABILITIES: Capability[] = [
   {
     id: "intent-based-search",
     icon: "/img/icon-search-circle.svg",
+    iconW: 66,
+    iconH: 63,
     title: "Intent based search",
     body: "Natural language, vague queries, prices, discounts, and product attributes work automatically.",
     mediaSrc: "/img/demos/rainy-commute.webp",
@@ -25,6 +31,8 @@ const CAPABILITIES: Capability[] = [
   {
     id: "zero-result-recovery",
     icon: "/img/icon-workflow.svg",
+    iconW: 41,
+    iconH: 41,
     title: "Zero-result recovery",
     body: "Fix typos, show alternatives, and never leave shoppers with an empty search page.",
     mediaSrc: "/img/demos/kava-drinks.webp",
@@ -33,6 +41,8 @@ const CAPABILITIES: Capability[] = [
   {
     id: "conversational-shopping",
     icon: "/img/icon-sparkle.svg",
+    iconW: 23,
+    iconH: 23,
     title: "Conversational shopping",
     body: "Refine results, switch products, and filter through a simple AI conversation.",
     mediaSrc: "/img/demos/gifts.webp",
@@ -41,6 +51,8 @@ const CAPABILITIES: Capability[] = [
   {
     id: "smart-suggestion",
     icon: "/img/icon-growth-circle.svg",
+    iconW: 154,
+    iconH: 150,
     title: "Smart suggestion",
     body: "Track searches, clicks, cart adds, purchases, and AI-assisted conversions in real time.",
     mediaSrc: "/img/demos/beauty-suggestions.webp",
@@ -127,9 +139,9 @@ export default function WhyGrowsearch() {
             <Image
               src="/img/icon-search-circle.svg"
               alt=""
-              width={44}
-              height={44}
-              className="shrink-0"
+              width={66}
+              height={63}
+              className="h-11 w-auto shrink-0"
             />
             <h2 className="text-[clamp(1.75rem,4vw,3.25rem)] leading-[1.1] font-bold text-brand">
               Why Growsearch?
@@ -173,7 +185,13 @@ export default function WhyGrowsearch() {
                     className="group relative flex min-h-[116px] w-full items-start gap-3 rounded-[18px] border-2 border-brand/15 bg-white/45 px-4 py-4 text-left transition-[background-color,border-color,box-shadow] duration-300 hover:border-brand/45 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand data-[active=true]:border-brand data-[active=true]:bg-white data-[active=true]:shadow-glow"
                   >
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand/12 transition-colors duration-300 group-data-[active=true]:bg-brand/18">
-                      <Image src={capability.icon} alt="" width={24} height={24} />
+                      <Image
+                        src={capability.icon}
+                        alt=""
+                        width={capability.iconW}
+                        height={capability.iconH}
+                        className="h-6 w-auto"
+                      />
                     </span>
                     <span className="min-w-0">
                       <span className="block text-base font-bold leading-tight text-charcoal">

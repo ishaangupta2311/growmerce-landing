@@ -35,10 +35,12 @@ const COLUMNS = [
   },
 ];
 
+/* Intrinsic sizes, not the display size: these marks are not square, and
+   declaring them as such makes the computed height contradict the attribute. */
 const SOCIALS = [
-  { name: "LinkedIn", icon: "/img/icon-linkedin.svg" },
-  { name: "Instagram", icon: "/img/icon-instagram.svg" },
-  { name: "X", icon: "/img/icon-x.svg" },
+  { name: "LinkedIn", icon: "/img/icon-linkedin.svg", w: 32, h: 30 },
+  { name: "Instagram", icon: "/img/icon-instagram.svg", w: 34, h: 33 },
+  { name: "X", icon: "/img/icon-x.svg", w: 32, h: 30 },
 ];
 
 export default function Footer() {
@@ -74,9 +76,9 @@ export default function Footer() {
                 <Image
                   src={s.icon}
                   alt=""
-                  width={28}
-                  height={28}
-                  className="transition-opacity hover:opacity-65"
+                  width={s.w}
+                  height={s.h}
+                  className="h-7 w-auto transition-opacity hover:opacity-65"
                 />
               </Link>
             ))}
