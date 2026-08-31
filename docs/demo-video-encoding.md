@@ -31,11 +31,18 @@ Encoded so far, none showing visible loss at the size the card renders:
 | `plain-language` | 182.3 MB | 0.99 MB | 0.9960 |
 | `never-a-dead-end` | 71.2 MB | 0.70 MB | 0.9962 |
 | `fast-first` | 137.4 MB | 0.81 MB | 0.9966 |
+| `what-shoppers-want` | 14.0 MB | 0.11 MB | 0.9994 |
 
-Six sources off the same recorder took the same settings unchanged, which
+Seven sources off the same recorder took the same settings unchanged, which
 is the case for treating them as defaults rather than starting points. Output
 size tracks clip length and motion, not input size: the 182 MB source is the
 longest at 33s, not the most detailed.
+
+`what-shoppers-want` is the outlier in both directions — an eighth the size at a
+noticeably higher SSIM — because it is a merchant dashboard panning slowly over
+flat white panels, rather than a storefront scrolling through photographs. Its
+source arrived already compressed at 14 MB for the same reason. Do not read its
+numbers as a new baseline; a clip full of product imagery will not reach them.
 
 ## Decisions
 

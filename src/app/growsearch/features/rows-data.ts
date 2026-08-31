@@ -108,6 +108,7 @@ export const FEATURE_ROWS: FeatureRowData[] = [
       "Zero-result rate and average response time surfaced by default",
     ],
     group: "see",
+    videoSrc: "/video/what-shoppers-want",
   },
   {
     eyebrow: "MERCHANT INSIGHTS",
