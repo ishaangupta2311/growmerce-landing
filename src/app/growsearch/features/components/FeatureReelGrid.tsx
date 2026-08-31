@@ -116,14 +116,18 @@ export default function FeatureReelGrid({ rows }: { rows: FeatureRowData[] }) {
   const left = rows.filter((_, index) => index % 2 === 0);
   const right = rows.filter((_, index) => index % 2 === 1);
 
+  /* min-w-0 on the columns: a grid item's automatic minimum is its content's
+     min-content width, and a 9/14 card capped at `MAX_H` reports that cap
+     times 9/14 — about 420px, wider than a phone. Without this the column
+     refuses to shrink and the whole page scrolls sideways. */
   return (
     <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-      <div className="space-y-8 lg:space-y-12">
+      <div className="min-w-0 space-y-8 lg:space-y-12">
         {left.map((row, index) => (
           <FeatureReelCard key={row.title} row={row} delay={index * 70} />
         ))}
       </div>
-      <div className="space-y-8 lg:space-y-12 lg:pt-28">
+      <div className="min-w-0 space-y-8 lg:space-y-12 lg:pt-28">
         {right.map((row, index) => (
           <FeatureReelCard key={row.title} row={row} delay={index * 70 + 120} />
         ))}

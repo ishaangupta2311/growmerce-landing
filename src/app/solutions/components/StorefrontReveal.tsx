@@ -209,7 +209,9 @@ export default function StorefrontReveal() {
                         <div className="relative rounded-[6px] bg-white shadow-[0_30px_60px_-34px_rgba(96,44,14,0.85)] ring-1 ring-brand/15">
                           <div className="flex items-center justify-between rounded-t-[6px] bg-brand px-4 py-2 font-poppins text-[10px] font-bold tracking-[0.22em] text-white uppercase">
                             <span>Growmerce</span>
-                            <span>Aisle 01</span>
+                            {/* Sits under the starburst once the box is
+                                narrow enough, so it only shows from sm up. */}
+                            <span className="hidden sm:inline">Aisle 01</span>
                           </div>
 
                           <div className="px-5 pt-4 pb-4">
@@ -251,14 +253,17 @@ export default function StorefrontReveal() {
                           </div>
                         </div>
 
-                        {/* Shelf flash. */}
+                        {/* Shelf flash. It hangs off the box's corner, and the
+                            window it hangs in clips its overflow — so below sm,
+                            where the box is only as wide as a phone allows, it
+                            pulls in inside the window's own 20px padding. */}
                         <span
                           aria-hidden
-                          className={`${styles.starburst} absolute -top-9 -right-11 z-[4] grid size-[78px] place-items-center bg-brand text-center`}
+                          className={`${styles.starburst} absolute -top-6 -right-4 z-[4] grid size-[70px] place-items-center bg-brand text-center sm:-top-9 sm:-right-11 sm:size-[78px]`}
                         >
-                          <span className="font-poppins text-[15px] leading-none font-extrabold text-white">
+                          <span className="font-poppins text-[13px] leading-none font-extrabold text-white sm:text-[15px]">
                             New!
-                            <span className="mt-0.5 block text-[7px] tracking-[0.14em]">
+                            <span className="mt-0.5 block text-[6px] tracking-[0.08em] sm:text-[7px] sm:tracking-[0.14em]">
                               On shelves
                             </span>
                           </span>

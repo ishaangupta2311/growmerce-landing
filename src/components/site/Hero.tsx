@@ -3,29 +3,38 @@ import Image from "next/image";
 import Link from "next/link";
 import { GROWSEARCH_DEMO } from "@/lib/site-urls";
 
+const CANDLES = [
+  { x: 16, open: 112, close: 150, low: 158, high: 96, up: false },
+  { x: 52, open: 84, close: 128, low: 140, high: 70, up: false },
+  { x: 88, open: 82, close: 126, low: 138, high: 68, up: false },
+  { x: 124, open: 44, close: 92, low: 104, high: 30, up: true },
+  { x: 160, open: 24, close: 66, low: 78, high: 12, up: false },
+  { x: 196, open: 62, close: 104, low: 116, high: 50, up: false },
+  { x: 232, open: 34, close: 74, low: 86, high: 22, up: true },
+  { x: 268, open: 70, close: 118, low: 130, high: 58, up: true },
+  { x: 304, open: 30, close: 78, low: 92, high: 18, up: true },
+];
+
 /* Decorative market chart from the Figma hero card, drawn as SVG so it stays
-   crisp. Candles alternate charcoal/orange over peach gridlines. */
-function CandleChart({ className }: { className?: string }) {
-  const candles = [
-    { x: 16, open: 112, close: 150, low: 158, high: 96, up: false },
-    { x: 52, open: 84, close: 128, low: 140, high: 70, up: false },
-    { x: 88, open: 82, close: 126, low: 138, high: 68, up: false },
-    { x: 124, open: 44, close: 92, low: 104, high: 30, up: true },
-    { x: 160, open: 24, close: 66, low: 78, high: 12, up: false },
-    { x: 196, open: 62, close: 104, low: 116, high: 50, up: false },
-    { x: 232, open: 34, close: 74, low: 86, high: 22, up: true },
-    { x: 268, open: 70, close: 118, low: 130, high: 58, up: true },
-    { x: 304, open: 30, close: 78, low: 92, high: 18, up: true },
-  ];
+   crisp. Candles alternate charcoal/orange over peach gridlines.
+
+   `wide` spreads the candles apart instead of squashing them, which is how a
+   1.9:1 chart becomes a 3.2:1 band without the candles losing their shape —
+   flattening the y axis buries every wick inside its own body. The mobile
+   hero wants a band: at its native proportions a full-width chart card is
+   taller than the photograph it sits under. */
+function CandleChart({ className, wide = false }: { className?: string; wide?: boolean }) {
+  const spread = wide ? 1.7 : 1;
+  const w = 336 * spread;
   return (
-    <svg viewBox="0 0 336 180" fill="none" aria-hidden className={className}>
+    <svg viewBox={`0 0 ${w} 180`} fill="none" aria-hidden className={className}>
       {[24, 60, 96, 132, 168].map((y) => (
-        <line key={y} x1="4" x2="332" y1={y} y2={y} stroke="#FFD6C2" strokeWidth="1.5" />
+        <line key={y} x1="4" x2={w - 4} y1={y} y2={y} stroke="#FFD6C2" strokeWidth="1.5" />
       ))}
-      {candles.map((c) => (
+      {CANDLES.map((c) => (
         <g key={c.x} stroke={c.up ? "#FF5A1F" : "#171717"} fill={c.up ? "#FF5A1F" : "#171717"}>
-          <line x1={c.x + 10} x2={c.x + 10} y1={c.high} y2={c.low} strokeWidth="2.5" />
-          <rect x={c.x} y={c.open} width="20" height={Math.max(6, c.close - c.open)} rx="2.5" />
+          <line x1={c.x * spread + 10} x2={c.x * spread + 10} y1={c.high} y2={c.low} strokeWidth="2.5" />
+          <rect x={c.x * spread} y={c.open} width="20" height={Math.max(6, c.close - c.open)} rx="2.5" />
         </g>
       ))}
     </svg>
@@ -89,7 +98,7 @@ const BARS = [
    the composition, or the strip reads as part of it. */
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden pt-10 pb-20 lg:pt-4 lg:pb-28">
+    <section className="relative overflow-hidden pb-12 lg:pt-4 lg:pb-28">
       <div className="mx-auto w-full max-w-[1370px] px-6">
         {/* Desktop: an absolutely-composed stage. `@container` makes it the
             reference box for every `cqw` below. */}
@@ -196,47 +205,80 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Mobile / tablet: stacked blocks, photo below, chart last. */}
-        <div className="lg:hidden">
-          <h1 className="font-poppins font-bold tracking-[-0.02em] text-white">
-            {["The high street of", "AI tools for", "ecommerce."].map((line, i) => (
-              <span
-                key={line}
-                className={`hero-enter block w-fit rounded-[10px] bg-brand px-4 pt-2 pb-3 text-[clamp(2.15rem,8.6vw,3.4rem)] leading-[1.02] ${i > 0 ? "mt-2" : ""} ${i === 1 ? "ml-6" : ""}`}
-                style={{ animationDelay: `${i * 100}ms` }}
-              >
-                {line}
+        {/* Mobile is its own hero, not the stage rearranged.
+            ------------------------------------------------------------------
+            The desktop composition is a collage that needs width: three
+            headline blocks stepping around a photo cut out to receive them.
+            One column cannot hold that, so the same idea is turned inside
+            out. The orange block becomes the section rather than sitting in
+            it, the type is white inside it, and the last line inverts to
+            white-on-orange so the block motif still has a voice. The photo
+            interlocks by riding up over the panel's bottom edge — the same
+            job the cut-out notch does on desktop, done the way a single
+            column can do it. */}
+        <div className="-mx-6 lg:hidden">
+          {/* Square foot on purpose: the photo straddles this edge, and a
+              rounded one would have its curve sliced off by the crossing. */}
+          <div className="bg-brand px-6 pt-9 pb-24">
+            {/* The floor has to stay under the vw term at 320px, or it wins
+                there and the last line — the only one paying for a block's
+                padding on top of its own width — wraps inside the block. */}
+            <h1 className="font-poppins text-[clamp(1.75rem,9.4vw,3.5rem)] leading-[1.06] font-extrabold tracking-[-0.02em] text-white">
+              <span className="hero-enter block">The high street</span>
+              <span className="hero-enter block" style={{ animationDelay: "70ms" }}>
+                of AI tools
               </span>
-            ))}
-          </h1>
+              <span
+                className="hero-enter mt-1.5 block w-fit rounded-[14px] bg-white px-4 pb-[0.08em] text-brand"
+                style={{ animationDelay: "140ms" }}
+              >
+                for ecommerce.
+              </span>
+            </h1>
 
-          <p className="hero-enter mt-6 text-[clamp(1.0625rem,4.4vw,1.25rem)] leading-snug text-body-mute" style={{ animationDelay: "300ms" }}>
-            Growmerce turns search into sales by understanding what shoppers
-            actually ask for.
-          </p>
+            <p
+              className="hero-enter mt-6 max-w-[30ch] text-[clamp(1.0625rem,4.3vw,1.2rem)] leading-snug text-white/85"
+              style={{ animationDelay: "230ms" }}
+            >
+              Growmerce turns search into sales by understanding what shoppers
+              actually ask for.
+            </p>
 
-          <div className="hero-enter mt-6 flex flex-wrap gap-3" style={{ animationDelay: "360ms" }}>
-            <Link href={GROWSEARCH_DEMO} className="cta-primary">
-              See demo
-            </Link>
-            <Link href="#trial" className="cta-secondary">
-              Try it free
-            </Link>
+            {/* Below 360px the pair no longer fits on one row, and two
+                left-aligned buttons of different widths look like a mistake —
+                so they go full width there instead. */}
+            <div className="hero-enter mt-7 flex flex-wrap gap-3" style={{ animationDelay: "310ms" }}>
+              <Link href={GROWSEARCH_DEMO} className="cta-primary-inverse max-[359px]:w-full">
+                See demo
+              </Link>
+              <Link href="#trial" className="cta-secondary-inverse max-[359px]:w-full">
+                Try it free
+              </Link>
+            </div>
           </div>
 
-          <Image
-            src="/img/pages/hero-shopping-desk.png"
-            alt="A shopping trolley of parcels on a desk beside a laptop showing an online store"
-            width={712}
-            height={534}
-            sizes="100vw"
-            className="hero-enter-scale mt-8 h-auto w-full"
-            style={{ animationDelay: "200ms" }}
-          />
+          {/* The photo is cut out for the desktop stage, so the crop starts
+              below its transparent corner. It rides up onto the panel, and
+              the chart hangs off its far corner — two overlaps instead of
+              three tiles stacked in a column. */}
+          <div className="hero-enter-scale relative -mt-16 px-6" style={{ animationDelay: "380ms" }}>
+            <div className="overflow-hidden rounded-[18px] shadow-[0_26px_50px_-28px_rgba(96,44,14,0.6)]" style={{ aspectRatio: "712 / 354" }}>
+              <Image
+                src="/img/pages/hero-shopping-desk.png"
+                alt="A shopping trolley of parcels on a desk beside a laptop showing an online store"
+                width={712}
+                height={534}
+                sizes="100vw"
+                className="h-full w-full origin-bottom scale-[1.04] object-cover object-bottom"
+              />
+            </div>
 
-          <div className="mt-4 rounded-[20px] bg-peach/60 p-4">
-            <CandleChart className="h-auto w-full" />
+            <div className="absolute right-6 -bottom-8 w-[58%] rounded-[18px] bg-[#fae2d2] px-4 py-3 shadow-[0_18px_36px_-20px_rgba(96,44,14,0.7)] ring-4 ring-white">
+              <CandleChart wide className="h-auto w-full" />
+            </div>
           </div>
+          {/* Clears the chart card's overhang. */}
+          <div aria-hidden className="h-8" />
         </div>
       </div>
     </section>
