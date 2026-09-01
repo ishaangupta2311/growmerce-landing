@@ -6,7 +6,6 @@ import Image from "next/image";
 const PLATFORMS = [
   { name: "Shopify", src: "/img/logos/logo-shopify.svg", w: 261, h: 75, cls: "h-8 sm:h-10", live: true },
   { name: "BigCommerce", src: "/img/logos/logo-bigcommerce.svg", w: 81, h: 81, cls: "h-9 sm:h-11", live: false },
-  { name: "WordPress", src: "/img/logos/logo-wordpress.svg", w: 85, h: 85, cls: "h-9 sm:h-11", live: false },
   // Figma's woo artboard is a 259px square with the wordmark in a thin band;
   // this is that band trimmed to its ink bounds so it matches the others.
   { name: "WooCommerce", src: "/img/logos/logo-woocommerce.png", w: 777, h: 158, cls: "h-6 sm:h-8", live: false },
@@ -53,26 +52,56 @@ function ComingSoon({ className }: { className?: string }) {
   );
 }
 
-/* The logo row itself. It sizes to its contents and keeps one even gap rather
-   than stretching across the container — spreading four marks over a 1370px
-   row leaves them looking unrelated. Every surface that shows the platforms
-   in a line uses this, so the rhythm is fixed in one place. */
+/* One platform and its status. The marks are different heights; a common band
+   keeps them on one baseline instead of stepping, and keeps the labels level
+   too. */
+function PlatformItem({ platform, muted }: { platform: Platform; muted?: boolean }) {
+  return (
+    <div aria-hidden={muted || undefined} className="flex shrink-0 flex-col items-center gap-2.5">
+      <span className="flex h-9 items-center sm:h-11">
+        <PlatformMark platform={platform} className={`w-auto ${platform.cls}`} />
+      </span>
+      {!platform.live && <ComingSoon />}
+    </div>
+  );
+}
+
+/* The logo row. From sm up it sizes to its contents and keeps one even gap
+   rather than stretching across the container — spreading the marks over a
+   1370px row leaves them looking unrelated.
+
+   On a phone that row has to wrap, and a wrapped row of three lands as
+   two-plus-one, which reads as a mistake rather than a rhythm. So it runs as
+   a marquee there instead: the track holds two identical copies of the row,
+   and shifting it by half its width lands the second copy exactly where the
+   first began, so the loop has no seam. The copy is aria-hidden, so the
+   platforms are announced once. Every surface that shows the platforms in a
+   line uses this, so the rhythm is fixed in one place. */
 function PlatformLogos({ className }: { className?: string }) {
   return (
-    <div
-      className={`flex flex-wrap items-start justify-center gap-x-12 gap-y-6 sm:gap-x-16 ${className ?? ""}`}
-    >
-      {PLATFORMS.map((p) => (
-        <div key={p.name} className="flex flex-col items-center gap-2.5">
-          {/* The marks are different heights; a common band keeps them on one
-              baseline instead of stepping, and keeps the labels level too. */}
-          <span className="flex h-9 items-center sm:h-11">
-            <PlatformMark platform={p} className={`w-auto ${p.cls}`} />
-          </span>
-          {!p.live && <ComingSoon />}
+    <>
+      <div
+        className={`marquee-mask relative w-full overflow-hidden sm:hidden ${className ?? ""}`}
+      >
+        <div className="marquee-track flex w-max">
+          {[false, true].map((copy) => (
+            <div key={String(copy)} className="flex shrink-0 items-start gap-x-12 pr-12">
+              {PLATFORMS.map((p) => (
+                <PlatformItem key={p.name} platform={p} muted={copy} />
+              ))}
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
+      </div>
+
+      <div
+        className={`hidden flex-wrap items-start justify-center gap-x-12 gap-y-6 sm:flex sm:gap-x-16 ${className ?? ""}`}
+      >
+        {PLATFORMS.map((p) => (
+          <PlatformItem key={p.name} platform={p} />
+        ))}
+      </div>
+    </>
   );
 }
 

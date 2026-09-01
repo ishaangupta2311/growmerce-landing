@@ -127,7 +127,7 @@ export default function PricingPage() {
                   never a share of revenue.
                 </p>
               </div>
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex flex-wrap items-center gap-4 [&>a]:max-[430px]:w-full">
                 <Link
                   href="mailto:admin@growmerce.ai"
                   className="cta-primary"

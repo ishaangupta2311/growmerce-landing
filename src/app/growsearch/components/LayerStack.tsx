@@ -145,8 +145,39 @@ export default function LayerStack() {
         </p>
 
         <div className="mt-8 grid items-center gap-8 lg:grid-cols-[1fr_380px] lg:gap-4">
+          {/* Phone version of the same five layers. The isometric footprint
+              needs width a phone has not got, but the idea survives seen from
+              the front: the catalogue at the bottom, each job stacked on it,
+              the revenue on top. Same colours as the legend's chips, so the
+              two halves still refer to each other, and the same staggered
+              rise on reveal. */}
+          <div
+            aria-hidden
+            className="relative mx-auto h-[164px] w-full max-w-[300px] lg:hidden"
+          >
+            {LAYERS.map((layer, i) => (
+              <div
+                key={layer.id}
+                className="stack-slab absolute inset-x-0 h-[38px] rounded-[13px]"
+                style={
+                  {
+                    bottom: i * 28,
+                    zIndex: i + 1,
+                    /* A few pixels of lean per layer, centred on the middle
+                       one, so the edge-on stack reads as depth rather than as
+                       a bar chart without drifting off its own axis. */
+                    transform: `translateX(${(i - 2) * 5}px)`,
+                    background: layer.face,
+                    boxShadow: extrude(layer.edge, 8),
+                    "--slab-delay": `${i * 130}ms`,
+                  } as CSSProperties
+                }
+              />
+            ))}
+          </div>
+
           {/* Hidden under lg: the isometric footprint needs width it does not
-              have there, and the legend already says everything. */}
+              have there. */}
           <div
             aria-hidden
             className="relative hidden h-[500px] w-full lg:block"

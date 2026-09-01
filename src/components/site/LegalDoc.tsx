@@ -66,12 +66,14 @@ export default function LegalDoc({
             <p className="font-poppins text-[12px] font-semibold tracking-[0.14em] text-charcoal/55 uppercase">
               On this page
             </p>
-            <ol className="mt-4 space-y-2.5">
+            {/* Padding, not gap: a 15px line box is 18px tall, and on a phone
+                this is a list of navigation targets like any other. */}
+            <ol className="mt-3 space-y-1">
               {sections.map((section) => (
                 <li key={section.id}>
                   <a
                     href={`#${section.id}`}
-                    className="text-[15px] leading-snug text-body-mute transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                    className="inline-block py-1.5 text-[15px] leading-snug text-body-mute transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                   >
                     {section.heading}
                   </a>

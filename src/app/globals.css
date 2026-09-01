@@ -193,6 +193,40 @@ body {
 }
 
 /* Hero entrance — staggered, runs once on load. */
+/* Platform strip, phone width. Two identical copies of the row sit in the
+   track, so shifting it by half its width lands the second copy exactly where
+   the first began and the loop has no seam. Paused rather than reset under
+   reduced motion — the first copy is still the whole row. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee 16s linear infinite;
+  will-change: transform;
+}
+
+.marquee-mask {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 8%,
+    #000 92%,
+    transparent
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
 .hero-enter {
   opacity: 0;
   animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;

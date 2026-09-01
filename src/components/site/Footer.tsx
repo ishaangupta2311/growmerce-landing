@@ -47,18 +47,25 @@ export default function Footer() {
   return (
     <footer className="mx-auto max-w-[1370px] px-6 pb-10 font-bricolage">
       <div className="border-t border-line pt-12">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,1fr))] lg:gap-8">
+        {/* Two columns from the smallest phone up. Four link lists stacked in
+            one column made the footer taller than the page section above it,
+            and none of these lists is long enough to need the full width. */}
+        <div className="grid grid-cols-2 gap-x-5 gap-y-9 lg:grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,1fr))] lg:gap-8">
           {COLUMNS.map((col) => (
             <div key={col.heading}>
               <h3 className="text-[clamp(1.125rem,1.6vw,1.5rem)] font-bold">
                 {col.heading}
               </h3>
-              <ul className="mt-4 space-y-3">
+              {/* The padding is the tap target: a 17px line box is 21px tall,
+                  under the 24px minimum, and on a phone these sit in a single
+                  column where a mis-tap costs a page load. The list spacing
+                  comes off to match, so the rhythm barely moves. */}
+              <ul className="mt-3 space-y-1">
                 {col.links.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-[17px] text-body-mute transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                      className="inline-block py-1.5 text-[17px] text-body-mute transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                     >
                       {link.label}
                     </Link>
@@ -69,10 +76,19 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="mt-14 flex flex-col items-start justify-between gap-6 border-t border-line pt-7 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-7">
+        <div className="mt-10 flex flex-col items-start justify-between gap-5 border-t border-line pt-6 sm:flex-row sm:items-center lg:mt-14 lg:pt-7">
+          {/* The icons are 28px; the 44px box around each is the tap target.
+              -ml-2 pulls the first one's padding back off the margin so the
+              row still starts on the column's edge, and gap-3.5 restores the
+              28px the old gap-7 put between the marks themselves. */}
+          <div className="-ml-2 flex items-center gap-3.5">
             {SOCIALS.map((s) => (
-              <Link key={s.name} href="#" aria-label={s.name}>
+              <Link
+                key={s.name}
+                href="#"
+                aria-label={s.name}
+                className="grid size-11 place-items-center"
+              >
                 <Image
                   src={s.icon}
                   alt=""
@@ -83,20 +99,25 @@ export default function Footer() {
               </Link>
             ))}
           </div>
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-[16px]">
-            <span className="font-semibold">@2026 Growmerce</span>
-            <Link
-              href="/terms"
-              className="text-body-mute transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-            >
-              Terms &amp; Conditions
-            </Link>
-            <Link
-              href="/privacy"
-              className="text-body-mute transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-            >
-              Privacy Policy
-            </Link>
+          {/* The notice and the legal links are separate lines on a phone —
+              wrapped together they broke as "copyright + terms" then a lonely
+              "privacy" underneath. */}
+          <div className="flex flex-col gap-1.5 text-[16px] sm:flex-row sm:items-center sm:gap-x-8">
+            <span className="font-semibold">&copy;2026 Growmerce</span>
+            <span className="flex flex-wrap items-center gap-x-6">
+              <Link
+                href="/terms"
+                className="inline-block py-1.5 text-body-mute transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              >
+                Terms &amp; Conditions
+              </Link>
+              <Link
+                href="/privacy"
+                className="inline-block py-1.5 text-body-mute transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              >
+                Privacy Policy
+              </Link>
+            </span>
           </div>
         </div>
       </div>

@@ -20,7 +20,10 @@ export default function SearchHero() {
             that reads sentences, recovers dead ends, and reports exactly
             what it sold.
           </p>
-          <div className="mt-9 flex flex-wrap items-center gap-4">
+          {/* The pair wraps on a phone; left-aligned at their own widths the
+              two stacked buttons look like a mistake, so they take the column
+              instead. */}
+          <div className="mt-9 flex flex-wrap items-center gap-4 [&>a]:max-[430px]:w-full">
             <Link href="#trial" className="cta-primary">
               Start free trial
               <Arrow className="cta-arrow" />
