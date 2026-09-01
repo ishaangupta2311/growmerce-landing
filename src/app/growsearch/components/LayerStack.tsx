@@ -145,48 +145,23 @@ export default function LayerStack() {
         </p>
 
         <div className="mt-8 grid items-center gap-8 lg:grid-cols-[1fr_380px] lg:gap-4">
-          {/* Phone version of the same five layers. The isometric footprint
-              needs width a phone has not got, but the idea survives seen from
-              the front: the catalogue at the bottom, each job stacked on it,
-              the revenue on top. Same colours as the legend's chips, so the
-              two halves still refer to each other, and the same staggered
-              rise on reveal. */}
+          {/* The assembly draws 534x387 at full size, so on a phone it is
+              scaled to fit rather than hidden — the isometric read is the
+              whole point of it, and a flat deck of bars says nothing the
+              legend does not. --stack-scale carries the factor per breakpoint
+              (globals.css) because the transform below has to compose it with
+              the rotation, and the height comes down to match so the section
+              does not sit in a well of its own whitespace. */}
           <div
             aria-hidden
-            className="relative mx-auto h-[164px] w-full max-w-[300px] lg:hidden"
-          >
-            {LAYERS.map((layer, i) => (
-              <div
-                key={layer.id}
-                className="stack-slab absolute inset-x-0 h-[38px] rounded-[13px]"
-                style={
-                  {
-                    bottom: i * 28,
-                    zIndex: i + 1,
-                    /* A few pixels of lean per layer, centred on the middle
-                       one, so the edge-on stack reads as depth rather than as
-                       a bar chart without drifting off its own axis. */
-                    transform: `translateX(${(i - 2) * 5}px)`,
-                    background: layer.face,
-                    boxShadow: extrude(layer.edge, 8),
-                    "--slab-delay": `${i * 130}ms`,
-                  } as CSSProperties
-                }
-              />
-            ))}
-          </div>
-
-          {/* Hidden under lg: the isometric footprint needs width it does not
-              have there. */}
-          <div
-            aria-hidden
-            className="relative hidden h-[500px] w-full lg:block"
+            className="relative h-[250px] w-full sm:h-[340px] lg:h-[500px]"
             style={{ perspective: "1400px" }}
           >
             <div
-              className="absolute top-1/2 left-1/2"
+              className="stack-iso absolute top-1/2 left-1/2"
               style={{
-                transform: "translate(-50%, -50%) rotateX(56deg) rotateZ(45deg)",
+                transform:
+                  "translate(-50%, -50%) scale(var(--stack-scale)) translateX(var(--stack-nudge)) rotateX(56deg) rotateZ(45deg)",
                 transformStyle: "preserve-3d",
               }}
             >

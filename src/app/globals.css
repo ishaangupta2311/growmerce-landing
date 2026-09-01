@@ -279,6 +279,45 @@ body {
   }
 }
 
+/* How far down the isometric stack is scaled to fit its column. It draws
+   534px wide at full size; the phone column is 342.
+
+   The nudge centres it: the loose cubes sit further to one side than the
+   other, so the drawn extent is about 43px off the origin the slabs turn
+   around. In a 926px desktop column that never showed; in 342 it hangs off
+   the left margin. */
+.stack-iso {
+  --stack-scale: 0.48;
+  --stack-nudge: 43px;
+}
+
+/* Each step is the largest factor whose 534px keeps clear of the column at
+   the narrow end of the range — the column is the viewport less the 48px of
+   page padding. Full size needs 534 of it, which arrives at 640. */
+@media (min-width: 380px) {
+  .stack-iso {
+    --stack-scale: 0.6;
+  }
+}
+
+@media (min-width: 480px) {
+  .stack-iso {
+    --stack-scale: 0.75;
+  }
+}
+
+@media (min-width: 640px) {
+  .stack-iso {
+    --stack-scale: 1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .stack-iso {
+    --stack-nudge: 0px;
+  }
+}
+
 @keyframes stack-bob {
   0%,
   100% {
