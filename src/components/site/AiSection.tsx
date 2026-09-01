@@ -53,8 +53,13 @@ export default function AiSection() {
       <div className="grid items-center gap-10 rounded-[40px] bg-white px-8 py-14 shadow-glow-lg sm:px-14 lg:min-h-[616px] lg:grid-cols-2 lg:rounded-[63px]">
         {/* The half the design left open, now carrying the mock for whichever
             conviction is expanded. Stacked and cross-faded so the space never
-            blanks mid-swap. */}
-        <div className="relative -mx-2 mb-10 aspect-[1386/1135] overflow-hidden rounded-[24px] bg-peach/40 lg:mx-0 lg:mb-0 lg:mr-10">
+            blanks mid-swap.
+
+            Desktop only: in one column this sits above the list, so opening
+            the fourth conviction changes a picture the reader has already
+            scrolled past. On a phone the mock goes inside the panel it
+            belongs to instead. */}
+        <div className="relative -mx-2 mb-10 hidden aspect-[1386/1135] overflow-hidden rounded-[24px] bg-peach/40 lg:mx-0 lg:mb-0 lg:mr-10 lg:block">
           {ITEMS.map((item, i) => (
             <Image
               key={item.media}
@@ -105,6 +110,15 @@ export default function AiSection() {
                   }`}
                 >
                   <div className="overflow-hidden">
+                    <div className="relative mb-4 aspect-[1386/1135] overflow-hidden rounded-[18px] bg-peach/40 lg:hidden">
+                      <Image
+                        src={item.media}
+                        alt={item.alt}
+                        fill
+                        sizes="92vw"
+                        className="object-cover"
+                      />
+                    </div>
                     <p className="pb-5 text-sm leading-[27px]">{item.body}</p>
                   </div>
                 </div>

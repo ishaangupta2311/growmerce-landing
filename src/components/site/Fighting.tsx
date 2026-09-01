@@ -39,17 +39,23 @@ export default function Fighting() {
       <div className="mt-14 grid gap-8 md:grid-cols-3">
         {CARDS.map((card, i) => (
           <Reveal key={card.title} delay={i * 120}>
-            <article className="h-full rounded-[27px] bg-white p-7 shadow-glow transition-[transform,box-shadow] duration-300 hover-lift [--lift:6px] hover:shadow-glow-lg">
-              {card.bare ? (
-                <div className="flex size-[66px] items-center justify-center rounded-full bg-brand-bright/30">
-                  <Image src={card.icon} alt="" width={41} height={41} />
-                </div>
-              ) : (
-                <Image src={card.icon} alt="" width={66} height={63} />
-              )}
-              <h3 className="mt-5 text-4xl font-bold">{card.title}</h3>
-              <div className="draw-line mt-3 h-[3px] w-[73px] bg-brand" />
-              <p className="mt-4 max-w-[347px] leading-[1.4]">{card.body}</p>
+            {/* Three columns give each title a line of its own and the size
+                to carry it. Stacked in one column, a 36px word over a 66px
+                mark spends most of the card on one word — so on a phone the
+                mark and the title share a row and the type comes down. */}
+            <article className="h-full rounded-[27px] bg-white p-6 shadow-glow transition-[transform,box-shadow] duration-300 hover-lift [--lift:6px] hover:shadow-glow-lg md:p-7">
+              <div className="flex items-center gap-4 md:block">
+                {card.bare ? (
+                  <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-brand-bright/30 md:size-[66px]">
+                    <Image src={card.icon} alt="" width={41} height={41} className="size-7 md:size-[41px]" />
+                  </div>
+                ) : (
+                  <Image src={card.icon} alt="" width={66} height={63} className="h-12 w-auto shrink-0 md:h-[63px]" />
+                )}
+                <h3 className="text-[26px] font-bold md:mt-5 md:text-4xl">{card.title}</h3>
+              </div>
+              <div className="draw-line mt-4 h-[3px] w-[73px] bg-brand md:mt-3" />
+              <p className="mt-3 max-w-[347px] leading-[1.4] md:mt-4">{card.body}</p>
             </article>
           </Reveal>
         ))}

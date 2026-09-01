@@ -107,16 +107,21 @@ export default function PricingPlans() {
                   : `or $${plan.yearly.toLocaleString()}/ year and save ${plan.savePct}%`}
               </p>
 
-              <p className="mt-6 text-[clamp(1.0625rem,1.5vw,1.5rem)] font-semibold">
+              {/* Three columns side by side make a comparison; three stacked
+                  in one column make the reader scroll 1300px of the same five
+                  lines to find the one that differs. So on a phone the card
+                  carries only what changes between tiers, and the five shared
+                  lines are printed once, under the three. */}
+              <p className="mt-6 hidden text-[clamp(1.0625rem,1.5vw,1.5rem)] font-semibold lg:block">
                 Features
               </p>
-              <ul className="mt-3 space-y-2.5 text-[15px] font-medium text-charcoal">
-                <li className="flex gap-2.5">
+              <ul className="mt-4 space-y-2.5 text-[15px] font-medium text-charcoal lg:mt-3">
+                <li className="flex gap-2.5 border-t border-line pt-4 font-semibold lg:border-0 lg:pt-0 lg:font-medium">
                   <Tick />
                   {plan.searches}
                 </li>
                 {SHARED.map((f) => (
-                  <li key={f} className="flex gap-2.5">
+                  <li key={f} className="hidden gap-2.5 lg:flex">
                     <Tick />
                     {f}
                   </li>
@@ -129,6 +134,20 @@ export default function PricingPlans() {
             </div>
           </article>
         ))}
+      </div>
+
+      <div className="mt-6 rounded-[20px] bg-cream px-6 py-6 lg:hidden">
+        <p className="font-poppins text-[11px] font-bold tracking-[0.16em] text-brand uppercase">
+          Every plan includes
+        </p>
+        <ul className="mt-3 space-y-2.5 text-[15px] font-medium text-charcoal">
+          {SHARED.map((f) => (
+            <li key={f} className="flex gap-2.5">
+              <Tick />
+              {f}
+            </li>
+          ))}
+        </ul>
       </div>
 
       <p className="mt-6 text-center text-[15px] text-muted">

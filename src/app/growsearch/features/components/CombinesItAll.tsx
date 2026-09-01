@@ -148,8 +148,14 @@ export default function CombinesItAll() {
                   <span className="mt-0.5 block text-[13px] leading-snug text-body-mute">
                     {cap.detail}
                   </span>
+                  {/* Beside the label this holds its own width and squeezes
+                      the column that carries the reading to about 100px, so
+                      every line wraps three times. Under it, on a phone. */}
+                  <span className="mt-1 block text-[12px] text-muted line-through sm:hidden">
+                    {cap.replaces}
+                  </span>
                 </span>
-                <span className="shrink-0 text-[12px] text-muted line-through sm:text-[13px]">
+                <span className="hidden shrink-0 text-[13px] text-muted line-through sm:block">
                   {cap.replaces}
                 </span>
               </li>

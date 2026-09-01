@@ -70,6 +70,7 @@ export default function WhyGrowsearch() {
   const [reducedMotion, setReducedMotion] = useState<boolean | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const tablistRef = useRef<HTMLDivElement>(null);
   const activeCapability = CAPABILITIES[activeIndex];
 
   useEffect(() => {
@@ -102,6 +103,16 @@ export default function WhyGrowsearch() {
 
     return () => window.clearTimeout(timeoutId);
   }, [activeCapability.durationMs, activeIndex, isVisible, reducedMotion, timerReset]);
+
+  /* The strip scrolls on a phone, and the rotation moves the selection on its
+     own — without this the active chip drifts out of sight. `block: "nearest"`
+     keeps it from scrolling the page vertically as well. */
+  useEffect(() => {
+    const list = tablistRef.current;
+    const tab = tabRefs.current[activeIndex];
+    if (!list || !tab || list.scrollWidth <= list.clientWidth) return;
+    tab.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  }, [activeIndex]);
 
   const selectCapability = (index: number) => {
     setActiveIndex(index);
@@ -159,10 +170,17 @@ export default function WhyGrowsearch() {
 
         <Reveal className="mt-12">
           <div>
+            {/* Below sm these are a scrolling strip, not a grid. Four cards
+                deep enough to hold their body copy stack to about 640px on a
+                phone, which puts the demo they control below the fold — so
+                the thing being explained is never on screen with the
+                explanation. As chips they cost one row, and the body text
+                moves under the panel. */}
             <div
+              ref={tablistRef}
               role="tablist"
               aria-label="Growsearch capabilities"
-              className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
+              className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:grid sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0 sm:grid-cols-2 xl:grid-cols-4 [&::-webkit-scrollbar]:hidden"
             >
               {CAPABILITIES.map((capability, index) => {
                 const isActive = index === activeIndex;
@@ -182,9 +200,9 @@ export default function WhyGrowsearch() {
                     onClick={() => selectCapability(index)}
                     onKeyDown={(event) => handleTabKeyDown(event, index)}
                     data-active={isActive}
-                    className="group relative flex min-h-[116px] w-full items-start gap-3 rounded-[18px] border-2 border-brand/15 bg-white/45 px-4 py-4 text-left transition-[background-color,border-color,box-shadow] duration-300 hover:border-brand/45 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand data-[active=true]:border-brand data-[active=true]:bg-white data-[active=true]:shadow-glow"
+                    className="group relative flex w-auto shrink-0 items-center gap-2.5 rounded-full border-2 border-brand/15 bg-white/45 px-3.5 py-2.5 text-left transition-[background-color,border-color,box-shadow] duration-300 hover:border-brand/45 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand data-[active=true]:border-brand data-[active=true]:bg-white data-[active=true]:shadow-glow sm:min-h-[116px] sm:w-full sm:shrink sm:items-start sm:gap-3 sm:rounded-[18px] sm:px-4 sm:py-4"
                   >
-                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand/12 transition-colors duration-300 group-data-[active=true]:bg-brand/18">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand/12 transition-colors duration-300 group-data-[active=true]:bg-brand/18 sm:size-10">
                       <Image
                         src={capability.icon}
                         alt=""
@@ -194,16 +212,18 @@ export default function WhyGrowsearch() {
                       />
                     </span>
                     <span className="min-w-0">
-                      <span className="block text-base font-bold leading-tight text-charcoal">
+                      <span className="block text-[15px] font-bold leading-tight whitespace-nowrap text-charcoal sm:text-base sm:whitespace-normal">
                         {capability.title}
                       </span>
-                      <span className="mt-2 block text-sm leading-snug text-body-mute">
+                      {/* On a phone this reads under the panel instead, so
+                          the chip stays one line tall. */}
+                      <span className="mt-2 hidden text-sm leading-snug text-body-mute sm:block">
                         {capability.body}
                       </span>
                     </span>
                     <span
                       aria-hidden="true"
-                      className="ml-auto mt-0.5 shrink-0 text-lg text-brand opacity-0 transition-opacity duration-300 group-data-[active=true]:opacity-100"
+                      className="mt-0.5 ml-auto hidden shrink-0 text-lg text-brand opacity-0 transition-opacity duration-300 group-data-[active=true]:opacity-100 sm:block"
                     >
                       ↗
                     </span>
@@ -219,7 +239,7 @@ export default function WhyGrowsearch() {
               role="tabpanel"
               aria-labelledby={tabId(activeCapability.id)}
               tabIndex={0}
-              className="mx-auto mt-10 max-w-[880px] rounded-[26px] bg-white p-3 shadow-[0_30px_80px_-50px_rgba(23,23,23,0.6)] outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:p-4"
+              className="mx-auto mt-5 max-w-[880px] rounded-[26px] bg-white p-3 sm:mt-10 shadow-[0_30px_80px_-50px_rgba(23,23,23,0.6)] outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:p-4"
             >
               {activeCapability.mediaSrc ? (
                 <Image
@@ -247,6 +267,10 @@ export default function WhyGrowsearch() {
                 </div>
               )}
             </div>
+
+            <p className="mx-auto mt-4 max-w-[46ch] text-center text-[15px] leading-snug text-body-mute sm:hidden">
+              {activeCapability.body}
+            </p>
           </div>
         </Reveal>
       </div>

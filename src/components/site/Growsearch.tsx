@@ -68,7 +68,7 @@ export default function Growsearch() {
             ))}
           </ul>
 
-          <div className="mt-12 flex flex-wrap items-center gap-5">
+          <div className="mt-12 flex flex-wrap items-center gap-4 [&>a]:max-[430px]:w-full sm:gap-5">
             <Link href={GROWSEARCH_HOME} className="cta-primary">
               Explore Growsearch
               <Arrow className="cta-arrow" />
