@@ -17,7 +17,7 @@ export default function TrialBand() {
             className="pointer-events-none absolute -bottom-28 left-[8%] size-[320px] rounded-full bg-white/10 blur-[100px]"
           />
           <h2 className="relative text-[clamp(2rem,4vw,3rem)] leading-[1.15] font-bold">
-            Try Growsearch free for 15 days
+            Try Growsearch free for 14 days
           </h2>
           <div className="relative mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
@@ -35,7 +35,7 @@ export default function TrialBand() {
             </Link>
           </div>
           <p className="relative mt-6 text-sm text-white/80">
-            15 days free trial. · No credit card required.
+            14 days free trial. · No credit card required.
           </p>
         </div>
       </Reveal>

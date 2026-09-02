@@ -130,7 +130,7 @@ export default function PricingPlans() {
             </div>
 
             <div className="rounded-b-[20px] border-t border-line bg-[#f5f5f5] px-7 py-4">
-              <p className="text-[14px] font-semibold">15 days free trial</p>
+              <p className="text-[14px] font-semibold">14 days free trial</p>
             </div>
           </article>
         ))}
@@ -151,7 +151,7 @@ export default function PricingPlans() {
       </div>
 
       <p className="mt-6 text-center text-[15px] text-muted">
-        Every plan includes a 15-day free trial. No credit card required, no
+        Every plan includes a 14-day free trial. No credit card required, no
         revenue share, cancel whenever you like.{" "}
         <Link href={GROWSEARCH_HOME} className="font-semibold text-brand underline">
           See what Growsearch does

@@ -51,7 +51,7 @@ const SECTIONS: LegalSection[] = [
     id: "trial",
     heading: "The free trial",
     body: [
-      "Every plan starts with a 15-day free trial. No card is required to begin it, and we take no revenue share at any point.",
+      "Every plan starts with a 14-day free trial. No card is required to begin it, and we take no revenue share at any point.",
       "The trial gives you the full plan so the comparison is against your own store’s numbers. If you do not choose a plan by the end of it, the app simply stops serving AI results and your native Shopify search continues as before.",
     ],
   },

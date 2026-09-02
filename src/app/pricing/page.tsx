@@ -14,7 +14,7 @@ import { GROWSEARCH_DEMO, GROWSEARCH_FEATURES } from "@/lib/site-urls";
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Growsearch plans from $49/month, every one with a 15-day free trial. No revenue share, no seat minimums.",
+    "Growsearch plans from $49/month, every one with a 14-day free trial. No revenue share, no seat minimums.",
 };
 
 const ENTERPRISE = [
@@ -28,7 +28,7 @@ const ENTERPRISE = [
 const PRICING_FAQ = [
   {
     q: "Is there really a free trial?",
-    a: "Yes — 15 days on every plan, no credit card required. You install Growsearch, point it at your catalogue and watch what your own shoppers search for before you decide anything.",
+    a: "Yes — 14 days on every plan, no credit card required. You install Growsearch, point it at your catalogue and watch what your own shoppers search for before you decide anything.",
   },
   {
     q: "What counts as a search?",

@@ -11,7 +11,7 @@ export default function ClosingCta() {
             See what it costs to stop losing searches
           </h2>
           <p className="mx-auto mt-4 max-w-[52ch] text-[17px] leading-relaxed text-body-mute">
-            Every plan includes a 15-day free trial, no credit card
+            Every plan includes a 14-day free trial, no credit card
             required. Compare tiers and pick the one that fits your
             catalogue.
           </p>

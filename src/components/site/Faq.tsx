@@ -24,7 +24,7 @@ export const HOME_FAQ: FaqItem[] = [
   },
   {
     q: "What does it cost, and can I try it first?",
-    a: "Plans start at $49/month and every plan includes a 15-day free trial with no credit card required. Pricing is a simple monthly number you can cancel — no revenue share and no seat minimums.",
+    a: "Plans start at $49/month and every plan includes a 14-day free trial with no credit card required. Pricing is a simple monthly number you can cancel — no revenue share and no seat minimums.",
   },
 ];
 
