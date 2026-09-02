@@ -193,6 +193,38 @@ body {
 }
 
 /* Hero entrance — staggered, runs once on load. */
+/* Product mocks, cropped for phones — see DemoShot. The frame is sized to the
+   cropped region and the image is laid over it oversized and offset, so one
+   file serves both. At sm the crop resets to the identity and the frame
+   becomes the source's own aspect again. */
+.demo-shot {
+  --cx: var(--crop-x);
+  --cy: var(--crop-y);
+  --cw: var(--crop-w);
+  --ch: var(--crop-h);
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: calc(var(--sw) * var(--cw) / (var(--sh) * var(--ch)));
+}
+
+.demo-shot > img {
+  position: absolute;
+  max-width: none;
+  height: auto;
+  width: calc(100% / var(--cw));
+  left: calc(var(--cx) / var(--cw) * -100%);
+  top: calc(var(--cy) / var(--ch) * -100%);
+}
+
+@media (min-width: 640px) {
+  .demo-shot {
+    --cx: 0;
+    --cy: 0;
+    --cw: 1;
+    --ch: 1;
+  }
+}
+
 /* Platform strip, phone width. Two identical copies of the row sit in the
    track, so shifting it by half its width lands the second copy exactly where
    the first began and the loop has no seam. Paused rather than reset under

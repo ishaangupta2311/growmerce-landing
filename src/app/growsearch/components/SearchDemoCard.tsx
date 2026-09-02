@@ -121,6 +121,9 @@ export default function SearchDemoCard() {
             blanks between queries. Decorative: the sr-only note below is the
             accessible description, and four alt texts read out at once would
             not be. */}
+        {/* The four panels cross-fade in one box, so this zooms into the grid
+            rather than reframing per mock: a quarter-size desktop screenshot
+            is not a picture of anything on a phone. */}
         <div className="relative mt-4 grid overflow-hidden rounded-[20px] bg-peach">
           {DEMOS.map((demo, index) => (
             <Image
@@ -130,8 +133,9 @@ export default function SearchDemoCard() {
               width={1386}
               height={863}
               priority={index === 0}
-              sizes="(min-width: 640px) 560px, 100vw"
-              className="col-start-1 row-start-1 h-[210px] w-full object-cover object-top transition-opacity duration-500 ease-out sm:h-[250px]"
+              /* 180vw below sm: the zoom below renders it at 1.8x the box. */
+              sizes="(min-width: 640px) 560px, 180vw"
+              className="col-start-1 row-start-1 h-[210px] w-full origin-[80%_32%] scale-[1.8] object-cover object-top transition-opacity duration-500 ease-out sm:h-[250px] sm:origin-center sm:scale-100"
               style={{ opacity: index === queryIndex ? 1 : 0 }}
             />
           ))}

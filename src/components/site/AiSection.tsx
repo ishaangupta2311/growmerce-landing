@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Arrow from "./Arrow";
+import DemoShot from "./DemoShot";
 import Reveal from "./Reveal";
 import { GROWSEARCH_HOME } from "@/lib/site-urls";
 
@@ -110,15 +111,14 @@ export default function AiSection() {
                   }`}
                 >
                   <div className="overflow-hidden">
-                    <div className="relative mb-4 aspect-[1386/1135] overflow-hidden rounded-[18px] bg-peach/40 lg:hidden">
-                      <Image
-                        src={item.media}
-                        alt={item.alt}
-                        fill
-                        sizes="92vw"
-                        className="object-cover"
-                      />
-                    </div>
+                    <DemoShot
+                      src={item.media}
+                      alt={item.alt}
+                      width={1386}
+                      height={1135}
+                      sizes="92vw"
+                      className="mb-4 rounded-[18px] bg-peach/40 lg:hidden"
+                    />
                     <p className="pb-5 text-sm leading-[27px]">{item.body}</p>
                   </div>
                 </div>

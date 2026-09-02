@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import Image from "next/image";
 import Reveal from "@/components/site/Reveal";
+import DemoShot from "@/components/site/DemoShot";
 
 type Capability = {
   id: string;
@@ -242,13 +243,13 @@ export default function WhyGrowsearch() {
               className="mx-auto mt-5 max-w-[880px] rounded-[26px] bg-white p-3 sm:mt-10 shadow-[0_30px_80px_-50px_rgba(23,23,23,0.6)] outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:p-4"
             >
               {activeCapability.mediaSrc ? (
-                <Image
+                <DemoShot
                   src={activeCapability.mediaSrc}
                   alt={`${activeCapability.title} preview`}
                   width={1386}
                   height={1135}
                   sizes="(min-width: 940px) 880px, 92vw"
-                  className="h-auto w-full rounded-[18px]"
+                  className="w-full rounded-[18px]"
                 />
               ) : (
                 <div className="flex min-h-[320px] flex-col justify-between rounded-[18px] bg-charcoal p-6 text-white sm:min-h-[420px] sm:p-8">

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import CtaPair from "@/components/site/CtaPair";
 import Faq from "@/components/site/Faq";
 import Reveal from "@/components/site/Reveal";
+import DemoShot from "@/components/site/DemoShot";
 import Arrow from "@/components/site/Arrow";
 import { GROWSEARCH_HOME } from "@/lib/site-urls";
 import StorefrontReveal from "./components/StorefrontReveal";
@@ -123,14 +123,14 @@ export default function SolutionsPage() {
             >
               {/* “kava drinks” on purpose: the comparison table below opens
                   with it as the query native search returns nothing for. */}
-              <Image
+              <DemoShot
                 src="/img/demos/kava-drinks.webp"
                 alt="A search for “kava drinks” returning six kava products, the query the comparison below names as one native search finds nothing for"
                 width={1386}
                 height={1135}
                 priority
                 sizes="(min-width: 1024px) 46vw, 100vw"
-                className="h-auto w-full rounded-[12px]"
+                className="w-full rounded-[12px]"
               />
             </div>
           </div>

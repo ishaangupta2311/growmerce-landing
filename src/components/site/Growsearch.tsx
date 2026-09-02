@@ -3,6 +3,7 @@ import Link from "next/link";
 import Arrow from "./Arrow";
 import Reveal from "./Reveal";
 import { PLATFORMS, PlatformMark, ComingSoon } from "./PlatformStrip";
+import DemoShot from "./DemoShot";
 import { GROWSEARCH_DEMO, GROWSEARCH_HOME } from "@/lib/site-urls";
 
 const CHECKLIST = [
@@ -83,7 +84,7 @@ export default function Growsearch() {
         </Reveal>
 
         <Reveal delay={150}>
-          <Image
+          <DemoShot
             src="/img/demos/linen-shirt.webp"
             alt="A shopper searches “linen shirt but not white” and Growsearch returns six linen shirts, none of them white"
             width={1387}
@@ -100,7 +101,7 @@ export default function Growsearch() {
           <div className="h-px flex-1 bg-brand" />
           <Image src="/img/icon-sparkle.svg" alt="" width={23} height={23} />
           <p className="text-center text-2xl font-bold">
-            Explore our products in these ecosystem
+            Explore our products in these ecosystems
           </p>
           <Image src="/img/icon-sparkle.svg" alt="" width={23} height={23} />
           <div className="h-px flex-1 bg-brand" />
