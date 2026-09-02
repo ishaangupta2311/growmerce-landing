@@ -560,3 +560,45 @@ body {
     scroll-behavior: auto;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Demo-store gate — see TryFreeButton.
+   On a phone the panel is a sheet rising from the bottom edge; from sm it is
+   a centred dialog that scales in. Two keyframes rather than one, because a
+   sheet that scales from its centre reads as a dropped card.
+-------------------------------------------------------------------------- */
+
+@keyframes gate-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes gate-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gate-backdrop {
+  animation: gate-backdrop-in 180ms ease-out both;
+}
+
+.gate-panel {
+  animation: gate-sheet-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (min-width: 640px) {
+  .gate-panel {
+    animation-name: scale-in;
+    transform-origin: center;
+  }
+}

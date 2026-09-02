@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import TryFreeButton from "./TryFreeButton";
 import { GROWSEARCH_DEMO } from "@/lib/site-urls";
 
 const CANDLES = [
@@ -198,9 +199,7 @@ export default function Hero() {
               <Link href={GROWSEARCH_DEMO} className="cta-primary">
                 See demo
               </Link>
-              <Link href="#trial" className="cta-secondary">
-                Try it free
-              </Link>
+              <TryFreeButton className="cta-secondary" source="home-hero-desktop" />
             </div>
           </div>
         </div>
@@ -251,9 +250,10 @@ export default function Hero() {
               <Link href={GROWSEARCH_DEMO} className="cta-primary-inverse max-[359px]:w-full">
                 See demo
               </Link>
-              <Link href="#trial" className="cta-secondary-inverse max-[359px]:w-full">
-                Try it free
-              </Link>
+              <TryFreeButton
+                className="cta-secondary-inverse max-[359px]:w-full"
+                source="home-hero-mobile"
+              />
             </div>
           </div>
 
