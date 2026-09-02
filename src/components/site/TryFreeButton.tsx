@@ -9,9 +9,11 @@ import {
   DEMO_STORE_PASSWORD,
 } from "@/lib/site-urls";
 
-/* Long enough to read the password and hit Copy, short enough that nobody
-   wonders whether the button worked. */
-const REDIRECT_MS = 6000;
+/* Long enough that a distracted reader can still hit Copy, short enough that
+   nobody wonders whether the button worked. Erring long on purpose: being
+   yanked to the store mid-copy is a worse failure than waiting a beat, and
+   most people take the button before the clock runs out anyway. */
+const REDIRECT_MS = 8000;
 
 /* Mirrors the check in /api/trial-lead so the visitor sees our message rather
    than a 400 they cannot act on. */
@@ -33,11 +35,15 @@ function Close() {
 }
 
 /**
- * "Try it free" opens the live demo storefront — but that store is password
- * protected, and the email is the toll for the password. The three beats
- * (ask, reveal, send) all happen in one panel so the visitor never loses the
- * thread, and the reveal step hands over the password *before* it navigates,
- * because the store's own door asks for it on arrival.
+ * Every trial CTA on the site opens the live demo storefront — but that store
+ * is password protected, and the email is the toll for the password. The three
+ * beats (ask, reveal, send) all happen in one panel so the visitor never loses
+ * the thread, and the reveal step hands over the password *before* it
+ * navigates, because the store's own door asks for it on arrival.
+ *
+ * The copy has to land from "Start free trial" as well as "Try it free", so it
+ * says up front that the trying happens on a store that already runs the app
+ * — rather than implying the visitor is about to install anything.
  */
 export default function TryFreeButton({
   className,
@@ -231,12 +237,13 @@ export default function TryFreeButton({
                       id={titleId}
                       className="font-poppins mt-3 text-[clamp(1.5rem,6vw,1.75rem)] leading-[1.12] font-extrabold tracking-[-0.02em] text-charcoal"
                     >
-                      Search a real storefront.
+                      Try it on a live storefront.
                     </h2>
                     <p className="mt-3 text-[15.5px] leading-relaxed text-body-mute">
-                      The demo is a live Shopify store running Growsearch. It
-                      sits behind a password — tell us where to reach you and
-                      we&apos;ll hand it over.
+                      Growsearch already runs on a demo Shopify store, so
+                      there&apos;s nothing to install. It sits behind a
+                      password — tell us where to reach you and we&apos;ll hand
+                      it over.
                     </p>
 
                     <form onSubmit={submit} noValidate className="mt-6">
@@ -286,8 +293,8 @@ export default function TryFreeButton({
                     </form>
 
                     <p className="mt-4 text-[12.5px] leading-relaxed text-muted">
-                      No card, no install. We&apos;ll only use this to talk to
-                      you about Growmerce — see our{" "}
+                      No card, no install. We&apos;ll use your email to follow
+                      up about Growmerce — see our{" "}
                       <Link
                         href="/privacy"
                         className="underline underline-offset-2 hover:text-brand"

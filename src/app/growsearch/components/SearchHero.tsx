@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
+import TryFreeButton from "@/components/site/TryFreeButton";
 import SearchDemoCard from "./SearchDemoCard";
 import { GROWSEARCH_DEMO } from "@/lib/site-urls";
 
@@ -22,12 +23,13 @@ export default function SearchHero() {
           </p>
           {/* The pair wraps on a phone; left-aligned at their own widths the
               two stacked buttons look like a mistake, so they take the column
-              instead. */}
-          <div className="mt-9 flex flex-wrap items-center gap-4 [&>a]:max-[430px]:w-full">
-            <Link href="#trial" className="cta-primary">
+              instead. Matches children, not anchors — the trial CTA is a
+              button now that it opens the demo-store gate. */}
+          <div className="mt-9 flex flex-wrap items-center gap-4 [&>*]:max-[430px]:w-full">
+            <TryFreeButton className="cta-primary" source="growsearch-hero">
               Start free trial
               <Arrow className="cta-arrow" />
-            </Link>
+            </TryFreeButton>
             <Link
               href={GROWSEARCH_DEMO}
               className="cta-secondary"

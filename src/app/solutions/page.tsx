@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import CtaPair from "@/components/site/CtaPair";
+import TryFreeButton from "@/components/site/TryFreeButton";
 import Faq from "@/components/site/Faq";
 import Reveal from "@/components/site/Reveal";
 import DemoShot from "@/components/site/DemoShot";
@@ -267,16 +267,16 @@ export default function SolutionsPage() {
               Find out what your search bar has been hiding
             </h2>
             <p className="max-w-[52ch] text-[17px] text-white/90">
-              Fifteen days, your own catalogue, your own shoppers. The
+              Fourteen days, your own catalogue, your own shoppers. The
               zero-result list alone is usually worth the install.
             </p>
-            <Link
-              href="/pricing"
+            <TryFreeButton
               className="cta-primary-inverse"
+              source="solutions-closing"
             >
               Start free trial
               <Arrow className="size-5" />
-            </Link>
+            </TryFreeButton>
           </div>
         </Reveal>
 

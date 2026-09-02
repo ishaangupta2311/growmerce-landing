@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
+import TryFreeButton from "@/components/site/TryFreeButton";
 import { GROWSEARCH_DEMO } from "@/lib/site-urls";
 
 export default function TrialBand() {
@@ -20,13 +21,13 @@ export default function TrialBand() {
             Try Growsearch free for 14 days
           </h2>
           <div className="relative mt-8 flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="#trial-form"
+            <TryFreeButton
               className="cta-primary-inverse"
+              source="growsearch-trial-band"
             >
               Start free trial
               <Arrow className="cta-arrow" />
-            </Link>
+            </TryFreeButton>
             <Link
               href={GROWSEARCH_DEMO}
               className="cta-secondary-inverse"

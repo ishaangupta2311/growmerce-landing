@@ -4,14 +4,16 @@ import LegalDoc, { type LegalSection } from "@/components/site/LegalDoc";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "What Growsearch collects from shoppers and merchants, why, who processes it, and how long it is kept.",
+    "What Growsearch collects from shoppers and merchants, what growmerce.ai collects from visitors, why, who processes it, and how long it is kept.",
 };
 
 const CONTACT = "admin@growmerce.ai";
 
-/* Reproduced from the policy published with the Shopify listing. Wording is
-   unchanged apart from naming the app Growsearch on first mention and routing
-   contact through the Growmerce address rather than a personal one. */
+/* The app sections are reproduced from the policy published with the Shopify
+   listing. Wording is unchanged apart from naming the app Growsearch on first
+   mention and routing contact through the Growmerce address rather than a
+   personal one. `website-data` is ours, not Shopify's: the listing policy
+   covers the app, and the demo-store gate collects an address on this site. */
 const SECTIONS: LegalSection[] = [
   {
     id: "shopper-data",
@@ -42,6 +44,15 @@ const SECTIONS: LegalSection[] = [
     heading: "Merchant and store data",
     body: [
       "The app stores the store domain, an access token issued by Shopify, and the product catalog information needed to build the search index: titles, descriptions, images, prices, and availability.",
+    ],
+  },
+  {
+    id: "website-data",
+    heading: "Email addresses collected on this website",
+    body: [
+      "Everything above concerns the app running on a merchant\u2019s storefront. This section concerns growmerce.ai itself.",
+      "Unlocking the demo store asks for your email address. We record the address, which button you came from, and the time, and we use them to follow up with you about Growmerce. We do not sell the address, share it for advertising, or add it to any list you did not ask to be on.",
+      "Any email or CRM platform we use to hold the address processes it on our behalf and is bound by the same restrictions. To have it deleted, write to the address at the bottom of this page.",
     ],
   },
   {
@@ -115,14 +126,15 @@ export default function PrivacyPage() {
   return (
     <LegalDoc
       title="Privacy Policy"
-      updated="August 11, 2026"
+      updated="September 2, 2026"
       intro={
         <>
           Growsearch &mdash; listed on the Shopify App Store as Smart Search
           &mdash; is a Shopify app that replaces a store&rsquo;s built-in search
           with AI-assisted product search and reports on how shoppers use it.
           This policy explains what the app collects, why, and how long it is
-          kept.
+          kept &mdash; and what this website collects from the people who
+          visit it.
         </>
       }
       sections={SECTIONS}
