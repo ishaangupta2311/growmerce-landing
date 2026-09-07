@@ -290,24 +290,17 @@ export default function Navbar({
               )}
             </nav>
 
-            {/* Full width and stacked: the sheet is the whole screen here, so
-                a pair of half-width buttons would leave the primary action
-                smaller than every row above it. Pinned to the foot, because
-                the list is taller than any phone and the primary action
+            {/* Full width: the sheet is the whole screen here, so a half-width
+                button would be smaller than every row above it. Pinned to the
+                foot, because the list is taller than any phone and the action
                 should not be something you have to scroll to find. */}
-            <div className="sticky bottom-0 -mx-5 grid gap-3 border-t border-brand/10 bg-cream px-5 pt-4 pb-6">
+            <div className="sticky bottom-0 -mx-5 grid border-t border-brand/10 bg-cream px-5 pt-4 pb-6">
               <DemoStoreButton
                 source="navbar-mobile"
                 onOpen={() => setMobile(false)}
                 className="cta-primary w-full"
               />
-              <Link
-                href="#login"
-                onClick={() => setMobile(false)}
-                className="cta-secondary w-full"
-              >
-                Login
-              </Link>
+
             </div>
           </div>
         </div>
