@@ -562,7 +562,7 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   Demo-store gate — see TryFreeButton.
+   Demo-store gate — see DemoStoreButton.
    On a phone the panel is a sheet rising from the bottom edge; from sm it is
    a centred dialog that scales in. Two keyframes rather than one, because a
    sheet that scales from its centre reads as a dropped card.

@@ -1,9 +1,8 @@
 import Link from "next/link";
 import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
-import TryFreeButton from "@/components/site/TryFreeButton";
+import DemoStoreButton from "@/components/site/DemoStoreButton";
 import SearchDemoCard from "./SearchDemoCard";
-import { GROWSEARCH_DEMO } from "@/lib/site-urls";
 
 export default function SearchHero() {
   return (
@@ -26,16 +25,11 @@ export default function SearchHero() {
               instead. Matches children, not anchors — the trial CTA is a
               button now that it opens the demo-store gate. */}
           <div className="mt-9 flex flex-wrap items-center gap-4 [&>*]:max-[430px]:w-full">
-            <TryFreeButton className="cta-primary" source="growsearch-hero">
+            <Link href="/pricing" className="cta-primary">
               Start free trial
               <Arrow className="cta-arrow" />
-            </TryFreeButton>
-            <Link
-              href={GROWSEARCH_DEMO}
-              className="cta-secondary"
-            >
-              See demo
             </Link>
+            <DemoStoreButton className="cta-secondary" source="growsearch-hero" />
           </div>
         </Reveal>
 

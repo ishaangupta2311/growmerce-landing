@@ -3,9 +3,12 @@ export const GROWSEARCH_HOME = "https://search.growmerce.ai/";
 export const GROWSEARCH_FEATURES = "https://search.growmerce.ai/features";
 
 /**
- * Where "See demo" should land: the reel grid, not the top of the features
- * page. The anchor is on the "What your shoppers get" section in
- * src/app/growsearch/features/page.tsx — move the id and this follows.
+ * The reel grid, not the top of the features page. The anchor is on the
+ * "What your shoppers get" section in src/app/growsearch/features/page.tsx —
+ * move the id and this follows.
+ *
+ * "See demo" no longer points here: it opens the live demo store behind the
+ * email gate. This is now only the Resources menu's "Videos" entry.
  */
 export const GROWSEARCH_DEMO = `${GROWSEARCH_FEATURES}#demo`;
 

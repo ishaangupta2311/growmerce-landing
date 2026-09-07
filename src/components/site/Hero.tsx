@@ -1,8 +1,7 @@
 import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import TryFreeButton from "./TryFreeButton";
-import { GROWSEARCH_DEMO } from "@/lib/site-urls";
+import DemoStoreButton from "./DemoStoreButton";
 
 const CANDLES = [
   { x: 16, open: 112, close: 150, low: 158, high: 96, up: false },
@@ -196,10 +195,10 @@ export default function Hero() {
               className="hero-enter flex items-center gap-4"
               style={{ animationDelay: "380ms" }}
             >
-              <Link href={GROWSEARCH_DEMO} className="cta-primary">
-                See demo
+              <DemoStoreButton className="cta-primary" source="home-hero-desktop" />
+              <Link href="/pricing" className="cta-secondary">
+                Try it free
               </Link>
-              <TryFreeButton className="cta-secondary" source="home-hero-desktop" />
             </div>
           </div>
         </div>
@@ -247,13 +246,13 @@ export default function Hero() {
                 left-aligned buttons of different widths look like a mistake —
                 so they go full width there instead. */}
             <div className="hero-enter mt-7 flex flex-wrap gap-3" style={{ animationDelay: "310ms" }}>
-              <Link href={GROWSEARCH_DEMO} className="cta-primary-inverse max-[359px]:w-full">
-                See demo
-              </Link>
-              <TryFreeButton
-                className="cta-secondary-inverse max-[359px]:w-full"
+              <DemoStoreButton
+                className="cta-primary-inverse max-[359px]:w-full"
                 source="home-hero-mobile"
               />
+              <Link href="/pricing" className="cta-secondary-inverse max-[359px]:w-full">
+                Try it free
+              </Link>
             </div>
           </div>
 

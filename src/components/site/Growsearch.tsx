@@ -4,7 +4,8 @@ import Arrow from "./Arrow";
 import Reveal from "./Reveal";
 import { PLATFORMS, PlatformMark, ComingSoon } from "./PlatformStrip";
 import DemoShot from "./DemoShot";
-import { GROWSEARCH_DEMO, GROWSEARCH_HOME } from "@/lib/site-urls";
+import DemoStoreButton from "./DemoStoreButton";
+import { GROWSEARCH_HOME } from "@/lib/site-urls";
 
 const CHECKLIST = [
   "Understands natural language and intent.",
@@ -74,12 +75,7 @@ export default function Growsearch() {
               Explore Growsearch
               <Arrow className="cta-arrow" />
             </Link>
-            <Link
-              href={GROWSEARCH_DEMO}
-              className="cta-secondary"
-            >
-              See demo
-            </Link>
+            <DemoStoreButton className="cta-secondary" source="home-growsearch" />
           </div>
         </Reveal>
 
@@ -135,10 +131,10 @@ export default function Growsearch() {
               Power your entire commerce journey with AI.
             </p>
           </div>
-          <Link href={GROWSEARCH_DEMO} className="cta-primary">
+          <DemoStoreButton className="cta-primary" source="home-platform-band">
             See demo
             <Arrow className="cta-arrow" />
-          </Link>
+          </DemoStoreButton>
         </div>
       </Reveal>
     </section>

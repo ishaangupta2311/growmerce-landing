@@ -9,7 +9,8 @@ import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
 import PricingPlans from "@/components/site/PricingPlans";
 import AllPlans from "./components/AllPlans";
-import { GROWSEARCH_DEMO, GROWSEARCH_FEATURES } from "@/lib/site-urls";
+import DemoStoreButton from "@/components/site/DemoStoreButton";
+import { GROWSEARCH_FEATURES } from "@/lib/site-urls";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -135,16 +136,9 @@ export default function PricingPage() {
                   Talk to sales
                   <Arrow className="size-5" />
                 </Link>
-                <Link
-                  href={GROWSEARCH_DEMO}
-                  className="cta-secondary"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-                    <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" stroke="currentColor" strokeWidth="1.8" />
-                    <path d="M3.5 9.5h17M8 3.5V6M16 3.5V6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                  </svg>
-                  See demo
-                </Link>
+                {/* The calendar mark went with the old link: this opens a
+                    storefront now, it does not book anything. */}
+                <DemoStoreButton className="cta-secondary" source="pricing-enterprise" />
               </div>
             </div>
           </section>

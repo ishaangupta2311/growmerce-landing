@@ -1,8 +1,7 @@
 import Link from "next/link";
 import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
-import TryFreeButton from "@/components/site/TryFreeButton";
-import { GROWSEARCH_DEMO } from "@/lib/site-urls";
+import DemoStoreButton from "@/components/site/DemoStoreButton";
 
 export default function TrialBand() {
   return (
@@ -21,19 +20,14 @@ export default function TrialBand() {
             Try Growsearch free for 14 days
           </h2>
           <div className="relative mt-8 flex flex-wrap items-center justify-center gap-4">
-            <TryFreeButton
-              className="cta-primary-inverse"
-              source="growsearch-trial-band"
-            >
+            <Link href="/pricing" className="cta-primary-inverse">
               Start free trial
               <Arrow className="cta-arrow" />
-            </TryFreeButton>
-            <Link
-              href={GROWSEARCH_DEMO}
-              className="cta-secondary-inverse"
-            >
-              See demo
             </Link>
+            <DemoStoreButton
+              className="cta-secondary-inverse"
+              source="growsearch-trial-band"
+            />
           </div>
           <p className="relative mt-6 text-sm text-white/80">
             14 days free trial. · No credit card required.

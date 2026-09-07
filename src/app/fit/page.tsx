@@ -5,9 +5,8 @@ import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import Faq from "@/components/site/Faq";
 import Reveal from "@/components/site/Reveal";
-import TryFreeButton from "@/components/site/TryFreeButton";
+import DemoStoreButton from "@/components/site/DemoStoreButton";
 import Arrow from "@/components/site/Arrow";
-import { GROWSEARCH_DEMO } from "@/lib/site-urls";
 import CatalogMock from "./components/CatalogMock";
 import IntentMock from "./components/IntentMock";
 import HeroArt from "./components/HeroArt";
@@ -114,10 +113,10 @@ export default function FitPage() {
                 className="hero-enter mt-9 flex flex-wrap items-center gap-4 [&>*]:max-[430px]:w-full"
                 style={{ animationDelay: "250ms" }}
               >
-                <Link href={GROWSEARCH_DEMO} className="cta-primary">
-                  See demo
+                <DemoStoreButton className="cta-primary" source="fit-hero" />
+                <Link href="/pricing" className="cta-secondary">
+                  Try it free
                 </Link>
-                <TryFreeButton className="cta-secondary" source="fit-hero" />
               </div>
             </div>
 

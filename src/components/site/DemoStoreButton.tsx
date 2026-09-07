@@ -9,12 +9,6 @@ import {
   DEMO_STORE_PASSWORD,
 } from "@/lib/site-urls";
 
-/* Long enough that a distracted reader can still hit Copy, short enough that
-   nobody wonders whether the button worked. Erring long on purpose: being
-   yanked to the store mid-copy is a worse failure than waiting a beat, and
-   most people take the button before the clock runs out anyway. */
-const REDIRECT_MS = 8000;
-
 /* Mirrors the check in /api/trial-lead so the visitor sees our message rather
    than a 400 they cannot act on. */
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -35,24 +29,30 @@ function Close() {
 }
 
 /**
- * Every trial CTA on the site opens the live demo storefront — but that store
- * is password protected, and the email is the toll for the password. The three
- * beats (ask, reveal, send) all happen in one panel so the visitor never loses
- * the thread, and the reveal step hands over the password *before* it
- * navigates, because the store's own door asks for it on arrival.
+ * Every "See demo" on the site opens the live demo storefront — but that store
+ * is password protected, and the email is the toll for the password. Both beats
+ * happen in one panel so the visitor never loses the thread, and the password
+ * is handed over before they leave, because the store's own door asks for it
+ * on arrival.
  *
- * The copy has to land from "Start free trial" as well as "Try it free", so it
- * says up front that the trying happens on a store that already runs the app
- * — rather than implying the visitor is about to install anything.
+ * The store opens in a new tab, which is why the last step is a link the
+ * visitor clicks rather than a timer: a `window.open` fired from a countdown
+ * has no user gesture behind it and popup blockers eat it. Leaving this panel
+ * open behind the new tab is deliberate too — it is where the password still
+ * is when they get to the door and find they did not copy it.
  */
-export default function TryFreeButton({
+export default function DemoStoreButton({
   className,
-  children = "Try it free",
+  children = "See demo",
   source = "hero",
+  onOpen,
 }: {
   className?: string;
   children?: React.ReactNode;
   source?: string;
+  /** Fired as the panel opens — the mobile nav uses it to close its sheet,
+      which otherwise sits under the panel waiting to be found again. */
+  onOpen?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("email");
@@ -60,20 +60,14 @@ export default function TryFreeButton({
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [secondsLeft, setSecondsLeft] = useState(Math.round(REDIRECT_MS / 1000));
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const goRef = useRef<HTMLAnchorElement>(null);
-  const barRef = useRef<HTMLDivElement>(null);
 
   const titleId = useId();
   const errorId = useId();
-
-  // Portals need a DOM; render nothing on the server pass.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
 
   const close = () => {
     setOpen(false);
@@ -81,7 +75,6 @@ export default function TryFreeButton({
     setError(null);
     setSending(false);
     setCopied(false);
-    setSecondsLeft(Math.round(REDIRECT_MS / 1000));
     triggerRef.current?.focus();
   };
 
@@ -131,27 +124,6 @@ export default function TryFreeButton({
     else goRef.current?.focus();
   }, [open, step]);
 
-  /* One clock drives both the countdown text and the draining bar, so they
-     cannot disagree. The bar is written straight to the node — at 60fps it
-     would otherwise re-render the panel a few hundred times on the way out. */
-  useEffect(() => {
-    if (step !== "unlocked") return;
-    const start = performance.now();
-    let frame = requestAnimationFrame(function tick(now) {
-      const left = Math.max(0, REDIRECT_MS - (now - start));
-      if (barRef.current) {
-        barRef.current.style.width = `${(left / REDIRECT_MS) * 100}%`;
-      }
-      setSecondsLeft(Math.ceil(left / 1000));
-      if (left === 0) {
-        window.location.assign(DEMO_STORE_ENTRANCE);
-        return;
-      }
-      frame = requestAnimationFrame(tick);
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [step]);
-
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const value = email.trim();
@@ -193,12 +165,18 @@ export default function TryFreeButton({
         ref={triggerRef}
         type="button"
         className={className}
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          onOpen?.();
+          setOpen(true);
+        }}
       >
         {children}
       </button>
 
-      {mounted && open
+      {/* No mounted guard: `open` starts false on both passes and can only be
+          flipped by a click, so by the time this portals there is a document
+          to portal into. */}
+      {open
         ? createPortal(
             <div
               className="gate-backdrop fixed inset-0 z-[100] flex items-end justify-center bg-charcoal/55 p-0 backdrop-blur-[3px] sm:items-center sm:p-6"
@@ -314,7 +292,7 @@ export default function TryFreeButton({
                     </h2>
 
                     {/* The store asks for this on arrival, so it has to be
-                        readable and grabbable before the redirect fires. */}
+                        readable and grabbable before they go. */}
                     <div className="mt-5 flex items-center justify-between gap-4 rounded-[14px] border-2 border-dashed border-brand/40 bg-cream px-5 py-4">
                       <code className="font-poppins text-[26px] leading-none font-extrabold tracking-[0.08em] text-brand">
                         {DEMO_STORE_PASSWORD}
@@ -340,23 +318,18 @@ export default function TryFreeButton({
                     <a
                       ref={goRef}
                       href={DEMO_STORE_ENTRANCE}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="cta-primary mt-6 w-full max-[359px]:gap-2 max-[359px]:px-4 max-[359px]:text-[15px]"
                     >
                       Open the demo store
                       <Arrow className="cta-arrow" />
                     </a>
 
-                    <div className="mt-6">
-                      <div
-                        aria-hidden
-                        className="h-[3px] w-full overflow-hidden rounded-full bg-line"
-                      >
-                        <div ref={barRef} className="h-full w-full bg-brand" />
-                      </div>
-                      <p className="mt-2.5 text-center text-[12.5px] text-muted">
-                        Taking you there in {secondsLeft}s…
-                      </p>
-                    </div>
+                    <p className="mt-4 text-center text-[12.5px] text-muted">
+                      Opens in a new tab. This panel keeps the password if you
+                      need it again.
+                    </p>
                   </>
                 )}
               </div>

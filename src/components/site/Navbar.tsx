@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import HeaderMegaMenu, { type HeaderMegaMenuVariant } from "./HeaderMegaMenu";
-import { GROWMERCE_HOME, GROWSEARCH_DEMO, GROWSEARCH_FEATURES, GROWSEARCH_HOME } from "@/lib/site-urls";
+import DemoStoreButton from "./DemoStoreButton";
+import { GROWMERCE_HOME, GROWSEARCH_FEATURES, GROWSEARCH_HOME } from "@/lib/site-urls";
 
 type MenuItem = { label: string; href: string; note?: string };
 type NavEntry = { label: string; href?: string; items?: MenuItem[] };
@@ -200,12 +201,10 @@ export default function Navbar({
         ) : null}
 
         <div className="flex shrink-0 items-center gap-2.5">
-          <Link
-            href={GROWSEARCH_DEMO}
+          <DemoStoreButton
+            source="navbar"
             className="hidden items-center justify-center rounded-[10px] bg-brand px-5 py-2 font-poppins text-[15px] font-bold text-white shadow-[0_10px_24px_-14px_rgba(255,90,31,0.9)] transition-transform duration-200 hover-lift sm:inline-flex"
-          >
-            See demo
-          </Link>
+          />
           <Link
             href="#login"
             className="hidden items-center justify-center rounded-[10px] border-2 border-brand bg-white px-[18px] py-[6px] font-poppins text-[15px] font-bold text-brand transition-[background-color,color] duration-200 hover:bg-brand hover:text-white sm:inline-flex"
@@ -296,13 +295,11 @@ export default function Navbar({
                 the list is taller than any phone and the primary action
                 should not be something you have to scroll to find. */}
             <div className="sticky bottom-0 -mx-5 grid gap-3 border-t border-brand/10 bg-cream px-5 pt-4 pb-6">
-              <Link
-                href={GROWSEARCH_DEMO}
-                onClick={() => setMobile(false)}
+              <DemoStoreButton
+                source="navbar-mobile"
+                onOpen={() => setMobile(false)}
                 className="cta-primary w-full"
-              >
-                See demo
-              </Link>
+              />
               <Link
                 href="#login"
                 onClick={() => setMobile(false)}
