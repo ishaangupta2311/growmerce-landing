@@ -1,0 +1,29 @@
+clip_number,side,source_clip,beat,start_seconds,end_seconds,voiceover
+01,customer-side,endless-refinement.mp4,1,0.000,6.000,Watch this gift search go from browsing... to one clear option.
+01,customer-side,endless-refinement.mp4,2,6.000,13.000,It's for my sister. Keep it under fifty dollars. Then—only discounted products.
+01,customer-side,endless-refinement.mp4,3,13.000,21.267,"Are these vegan? One gift box remains. Grow Search lets shoppers narrow things down, one follow-up at a time."
+02,customer-side,never-a-dead-end.mp4,1,0.000,6.000,"What if your search bar could answer back? Here, a shopper has a makeup question."
+02,customer-side,never-a-dead-end.mp4,2,6.000,13.000,My foundation looks different outside. Grow Search recommends a mirror—and they ask about the lighting modes.
+02,customer-side,never-a-dead-end.mp4,3,13.000,23.533,"Then: is it magnifying? They get the answer and add it to cart, right here. That's Grow Search—helping shoppers make a decision."
+03,customer-side,close-enough.mp4,1,0.000,6.000,No exact match doesn't have to end the search. Watch this.
+03,customer-side,close-enough.mp4,2,6.000,14.000,Grow Search shows alternatives. The shopper explains their skin type and what they're looking for.
+03,customer-side,close-enough.mp4,3,14.000,21.000,Only show options under twenty-five dollars. Now there are two. Then they ask another product question.
+03,customer-side,close-enough.mp4,4,21.000,27.267,Compare the options. Add one to cart. Give shoppers a way to keep going.
+04,customer-side,fast-first.mp4,1,0.000,5.000,Quick matches first. Then a more focused search.
+04,customer-side,fast-first.mp4,2,5.000,15.000,"Here, a shopper searches for sunscreen, then explains the finish they want. Grow Search recommends options and explains the differences."
+04,customer-side,fast-first.mp4,3,15.000,24.000,"Next, they set a twenty-five-dollar budget. The product list narrows to two options."
+04,customer-side,fast-first.mp4,4,24.000,31.000,Changed their mind? I meant thirty-five. The results update again.
+04,customer-side,fast-first.mp4,5,31.000,36.633,"Then they add to cart, right from search. That's Grow Search."
+05,customer-side,assistant-narrowing.mp4,1,0.000,6.000,Two shampoos. Different benefits. How does your shopper choose?
+05,customer-side,assistant-narrowing.mp4,2,6.000,14.000,They explain: colour-treated hair that gets frizzy in humidity. Grow Search lays out the options. Which are sulphate-free?
+05,customer-side,assistant-narrowing.mp4,3,14.000,21.000,Compare these two. Then: preserving my colour matters more.
+05,customer-side,assistant-narrowing.mp4,4,21.000,26.700,The recommendation follows their priority. Grow Search helps shoppers choose through conversation.
+06,merchant-side,visitor-journeys.mp4,1,0.000,5.000,What happened after that search? Open a visitor journey in Grow Search.
+06,merchant-side,visitor-journeys.mp4,2,5.000,10.000,"See the searches, returned results, and follow-up questions."
+06,merchant-side,visitor-journeys.mp4,3,10.000,14.400,"Then read the AI's responses, step by step."
+07,merchant-side,what-shoppers-want.mp4,1,0.000,3.000,Does your store search lead anywhere?
+07,merchant-side,what-shoppers-want.mp4,2,3.000,8.767,"Grow Search tracks clicks, add-to-carts, and purchases from search. See the numbers."
+08,merchant-side,top-searches.mp4,1,0.000,3.500,Your shoppers are telling you what they want.
+08,merchant-side,top-searches.mp4,2,3.500,7.167,Grow Search shows their searches—and what happened next.
+09,merchant-side,search-opportunities.mp4,1,0.000,3.400,Slow searches. Missing matches. No clicks.
+09,merchant-side,search-opportunities.mp4,2,3.400,7.600,"Grow Search flags the issues, so you know what to fix first."
