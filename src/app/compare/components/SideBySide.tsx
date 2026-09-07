@@ -34,7 +34,7 @@ const SMART_NOTES = ["Understands context", "Shows relevant results", "Delivers 
  */
 export default function SideBySide() {
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-0">
+    <div className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-5">
       <Panel
         tone="plain"
         badge="Traditional search"
@@ -66,7 +66,7 @@ export default function SideBySide() {
           panels on a narrow one. */}
       <div
         aria-hidden
-        className="relative z-10 mx-auto grid size-12 place-items-center rounded-full bg-white font-poppins text-[15px] font-extrabold text-brand shadow-[0_10px_26px_-12px_rgba(23,23,23,0.45)] ring-1 ring-brand/20 lg:-mx-6 lg:self-center"
+        className="relative z-10 mx-auto grid size-12 place-items-center rounded-full bg-white font-poppins text-[15px] font-extrabold text-brand shadow-[0_10px_26px_-12px_rgba(23,23,23,0.45)] ring-1 ring-brand/20 lg:-mx-9 lg:self-center"
       >
         VS
       </div>
@@ -114,14 +114,17 @@ function Panel({
   return (
     <section
       aria-label={badge}
-      className={`rounded-[22px] p-5 sm:p-6 ${
-        smart
-          ? "bg-white ring-2 ring-brand/35 lg:pl-10"
-          : "bg-[#fafafa] ring-1 ring-line lg:pr-10"
+      /* Both panels get the same padding and the same internal rhythm — the
+         asymmetric insets they had before made the two product rows different
+         widths, so the tiles never lined up across the divide. */
+      className={`flex flex-col rounded-[22px] p-5 sm:p-6 ${
+        smart ? "bg-white ring-2 ring-brand/35" : "bg-[#fafafa] ring-1 ring-line"
       }`}
     >
       <p
-        className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 font-poppins text-[13px] font-bold sm:text-[14px] ${
+        /* self-start: the panel is a flex column now, and without it the pill
+           stretches to the full width of the card. */
+        className={`inline-flex w-fit items-center gap-2 self-start rounded-full px-4 py-1.5 font-poppins text-[13px] font-bold sm:text-[14px] ${
           smart ? "bg-brand text-white" : "bg-charcoal/25 text-white"
         }`}
       >
@@ -190,7 +193,9 @@ function Panel({
         ))}
       </ul>
 
-      <div className="mt-4">{footer}</div>
+      {/* mt-auto: the left panel has no add-to-cart buttons, so without this its
+          footer floats and the two panels finish at different heights. */}
+      <div className="mt-auto pt-4">{footer}</div>
 
       {/* The Figma writes these in the margin in a hand. There is no margin on a
           phone, so they sit under the panel they belong to. */}

@@ -5,10 +5,26 @@ type Mark = "yes" | "part" | "no";
    argue with; the categories are stable and every merchant can place their own
    stack in one of them. */
 const COLUMNS = [
-  { key: "native", label: "Native store search" },
-  { key: "recs", label: "Recommendation apps" },
-  { key: "plugins", label: "General AI plugins" },
-  { key: "growmerce", label: "Growmerce" },
+  {
+    key: "native",
+    label: "Native store search",
+    note: "What your platform ships with out of the box.",
+  },
+  {
+    key: "recs",
+    label: "Recommendation apps",
+    note: "Surface related and upsell products, but never touch the search bar.",
+  },
+  {
+    key: "plugins",
+    label: "General AI plugins",
+    note: "Assistants bolted beside the storefront rather than built into its results.",
+  },
+  {
+    key: "growmerce",
+    label: "Growmerce",
+    note: "Growsearch, installed on your existing theme.",
+  },
 ] as const;
 
 type Row = {
@@ -60,7 +76,11 @@ const ROWS: Row[] = [
   },
 ];
 
-const LABEL: Record<Mark, string> = { yes: "Yes", part: "Partly", no: "No" };
+const LABEL: Record<Mark, string> = {
+  yes: "Yes",
+  part: "Partly — some products in the category do it, or do a piece of it",
+  no: "No",
+};
 
 /**
  * The capability matrix.
@@ -105,6 +125,7 @@ export default function CapabilityTable() {
                   }`}
                 >
                   {col.label}
+                  <Info label={col.label} note={col.note} last={col.key === "growmerce"} />
                 </th>
               ))}
             </tr>
@@ -138,18 +159,36 @@ export default function CapabilityTable() {
         </table>
       </div>
 
-      {/* What each column means, so the ticks can be argued with. */}
-      <p className="mt-5 max-w-[92ch] text-[14px] leading-relaxed text-body-mute">
-        <span className="font-bold text-charcoal">How to read this.</span>{" "}
-        <span className="font-semibold">Native store search</span> is what your
-        platform ships with. <span className="font-semibold">Recommendation
-        apps</span> surface related and upsell products but never touch the
-        search bar. <span className="font-semibold">General AI plugins</span> are
-        assistants bolted beside the storefront rather than built into its
-        results. &ldquo;Partly&rdquo; means some products in the category do it,
-        or do a piece of it &mdash; not that none of them do.
-      </p>
     </div>
+  );
+}
+
+/**
+ * The column's definition, on the column rather than in a paragraph under the
+ * table. Hover shows it; so does keyboard focus and a tap, which is the whole
+ * reason it is a button and not a `title` attribute.
+ */
+function Info({ label, note, last }: { label: string; note: string; last: boolean }) {
+  return (
+    <span className="group relative ml-1.5 inline-block align-middle">
+      <button
+        type="button"
+        aria-label={`What “${label}” means`}
+        className="grid size-[15px] cursor-help place-items-center rounded-full bg-charcoal/15 font-poppins text-[10px] leading-none font-bold text-white transition-colors group-hover:bg-charcoal/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+      >
+        i
+      </button>
+      {/* Anchored inside the table: the wrapper clips its overflow to keep the
+          rounded corners, so a tooltip hanging past the edge would be cut. */}
+      <span
+        role="tooltip"
+        className={`pointer-events-none absolute top-[calc(100%+8px)] z-20 w-[210px] rounded-[10px] bg-charcoal px-3 py-2 text-left font-sans text-[12.5px] leading-snug font-normal text-white opacity-0 shadow-[0_14px_30px_-14px_rgba(23,23,23,0.6)] transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100 ${
+          last ? "right-0" : "left-1/2 -translate-x-1/2"
+        }`}
+      >
+        {note}
+      </span>
+    </span>
   );
 }
 

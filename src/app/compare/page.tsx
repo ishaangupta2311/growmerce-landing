@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
@@ -6,8 +7,6 @@ import Faq from "@/components/site/Faq";
 import Reveal from "@/components/site/Reveal";
 import DemoStoreButton from "@/components/site/DemoStoreButton";
 import Arrow from "@/components/site/Arrow";
-import { Burst } from "@/components/site/Marks";
-import StorefrontMock from "./components/StorefrontMock";
 import SideBySide from "./components/SideBySide";
 import CapabilityTable from "./components/CapabilityTable";
 
@@ -17,18 +16,9 @@ export const metadata: Metadata = {
     "Traditional search, recommendation apps and general AI plugins each solve a piece of it. Compare the capabilities that actually shape the ecommerce experience — and see the same search run through both.",
 };
 
-/* The Figma stacks these four beside the storefront. They are the argument the
-   rest of the page then evidences, in the order a shopper meets them. */
-const CLAIMS = [
-  { icon: SearchIcon, title: "Understands", rest: "shopper intent" },
-  { icon: CartIcon, title: "Connects", rest: "the full journey" },
-  { icon: TrendIcon, title: "Drives", rest: "more revenue" },
-  { icon: PersonIcon, title: "Gives you", rest: "real insights" },
-];
-
 const JOURNEY = [
   { icon: SearchIcon, title: "Search", rest: "with intent" },
-  { icon: CubeIcon, title: "Find the", rest: "right products" },
+  { icon: CubeIcon, title: "Find", rest: "the right products" },
   { icon: CartIcon, title: "Add to cart", rest: "effortlessly" },
   { icon: TrendIcon, title: "Grow", rest: "your revenue" },
 ];
@@ -104,59 +94,28 @@ export default function ComparePage() {
                   Try it free
                 </Link>
               </div>
-
-              {/* The four claims. Beside the mock on a wide screen, under the
-                  copy on a narrow one — they read as captions to it either way. */}
-              <ul
-                className="hero-enter mt-10 grid gap-3 sm:grid-cols-2 lg:mt-12"
-                style={{ animationDelay: "330ms" }}
-              >
-                {CLAIMS.map((claim) => (
-                  <li
-                    key={claim.title}
-                    className="flex items-center gap-3 rounded-[14px] bg-cream px-4 py-3"
-                  >
-                    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-white text-brand">
-                      <claim.icon className="size-5" />
-                    </span>
-                    <span className="text-[14.5px] leading-tight">
-                      <span className="block font-bold text-charcoal">
-                        {claim.title}
-                      </span>
-                      <span className="block text-body-mute">{claim.rest}</span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
             </div>
 
             {/* min-w-0: a grid item's automatic minimum is its min-content
                 width, so without this the mock's nowrap query string sets the
                 track's minimum — and with it the page's minimum layout width,
                 which hands a 320px phone a 370px viewport to pan around in. */}
+            {/* The Figma's staged artwork, used whole. At the width this column
+                gives it the 1239px source lands within a hair of retina, and
+                the chips and note it carries are part of the picture. */}
             <div
               className="hero-enter-scale relative min-w-0"
               style={{ animationDelay: "150ms" }}
             >
-              {/* The peach wash the Figma paints behind the device. */}
-              <span
-                aria-hidden
-                className="absolute -inset-x-6 -top-10 bottom-4 -z-10 rounded-[48px] bg-[radial-gradient(120%_90%_at_70%_20%,var(--color-peach),transparent_72%)]"
+              <Image
+                src="/img/compare/hero-laptop.webp"
+                alt="A Growmerce storefront answering “summer dresses under $100” with four in-stock dresses, ringed by the claims it makes: understands shopper intent, connects the full journey, drives more revenue, gives you real insights"
+                width={1239}
+                height={1261}
+                priority
+                sizes="(min-width: 1024px) 52vw, 100vw"
+                className="h-auto w-full"
               />
-              <StorefrontMock />
-
-              <span className="absolute -top-5 right-4 hidden items-center gap-2 rounded-[12px] bg-white px-3.5 py-2 text-[13px] leading-tight font-bold text-charcoal shadow-[0_14px_32px_-18px_rgba(23,23,23,0.5)] ring-1 ring-brand/15 sm:flex">
-                <Burst className="size-4 text-brand" />
-                Understands natural language
-              </span>
-              <span className="absolute -bottom-5 left-6 hidden items-center gap-2 rounded-[12px] bg-white px-3.5 py-2 text-[13px] leading-tight font-bold text-charcoal shadow-[0_14px_32px_-18px_rgba(23,23,23,0.5)] ring-1 ring-brand/15 sm:flex">
-                <TrendIcon className="size-4 text-brand" />
-                Turns searches into sales
-              </span>
-
-              <p className="mt-8 max-w-[24ch] -rotate-2 font-hand text-[21px] leading-tight font-medium text-brand lg:absolute lg:-right-4 lg:-bottom-24 lg:mt-0">
-                More than a search tool. A complete discovery experience.
-              </p>
             </div>
           </div>
         </section>
@@ -287,33 +246,52 @@ export default function ComparePage() {
                 </div>
               ))}
             </dl>
-            <p className="mt-8 max-w-[80ch] text-[14.5px] leading-relaxed text-body-mute">
-              These are published results from other vendors in the category,
-              not Growmerce results &mdash; we have not been running long enough
-              to have our own, and we would rather you measured us against your
-              own store than against anyone&rsquo;s number. The trial reports
-              zero-result rate and search-attributed checkouts from day one, so
-              you can.
-            </p>
           </section>
         </Reveal>
 
         {/* Closing */}
-        <Reveal className="mx-auto max-w-[1370px] px-6 pb-16">
-          <div className="flex flex-col items-center gap-6 rounded-[26px] bg-brand px-8 py-12 text-center text-white">
-            <h2 className="max-w-[24ch] text-[clamp(1.75rem,3.4vw,3rem)] leading-tight font-extrabold text-balance">
-              Run the same search through both
-            </h2>
-            <p className="max-w-[52ch] text-[17px] text-white/90">
-              The demo store is a real storefront with Growsearch on it. Ask it
-              something your own search bar would fumble, and see which one
-              answers.
-            </p>
-            <DemoStoreButton className="cta-primary-inverse" source="compare-closing">
-              See demo
-              <Arrow className="size-5" />
-            </DemoStoreButton>
-          </div>
+        <Reveal className="mx-auto max-w-[1370px] px-6 pb-24 lg:pb-32">
+          <section
+            aria-labelledby="closing-title"
+            className="relative rounded-[26px] bg-[linear-gradient(105deg,var(--color-cream),var(--color-peach))] px-7 pt-10 sm:px-10 lg:pt-12"
+          >
+            <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-10">
+              <div className="pb-10 lg:pb-12">
+                <p className="font-poppins text-[clamp(0.9rem,1.5vw,1.125rem)] font-extrabold tracking-[0.06em] text-brand uppercase">
+                  Ready to see the difference?
+                </p>
+                <h2
+                  id="closing-title"
+                  className="mt-3 max-w-[16ch] font-poppins text-[clamp(1.75rem,4vw,3.25rem)] leading-[1.06] font-extrabold tracking-tight text-charcoal text-balance"
+                >
+                  Turn more searches into loyal customers.
+                </h2>
+                <p className="mt-5 max-w-[46ch] text-[clamp(1rem,1.4vw,1.125rem)] leading-relaxed text-body-mute">
+                  Join growing brands using Growmerce to create smarter, more
+                  personalized shopping experiences.
+                </p>
+                <div className="mt-8 flex flex-wrap items-center gap-4 [&>*]:max-[430px]:w-full">
+                  <Link href="/pricing" className="cta-primary">
+                    Try it free
+                    <Arrow className="cta-arrow size-5" />
+                  </Link>
+                  <DemoStoreButton className="cta-secondary" source="compare-closing" />
+                </div>
+              </div>
+
+              {/* It hangs off the bottom edge, as drawn — which is why the
+                  panel does not clip its overflow and the section below leaves
+                  room for the overhang. */}
+              <Image
+                src="/img/compare/cta-laptop.webp"
+                alt="Growsearch running on a storefront, answering a shopper's question with products they can add to the cart from the results"
+                width={902}
+                height={782}
+                sizes="(min-width: 1024px) 45vw, 100vw"
+                className="-mb-10 h-auto w-full self-end lg:-mb-16"
+              />
+            </div>
+          </section>
         </Reveal>
 
         <Faq items={COMPARE_FAQ} />
@@ -367,15 +345,6 @@ function TrendIcon({ className }: IconProps) {
     <svg viewBox="0 0 24 24" fill="none" aria-hidden className={className}>
       <path d="M3.5 16.75 9.25 11l3.5 3.5L20.5 6.75" {...STROKE} />
       <path d="M14.75 6.75h5.75v5.75" {...STROKE} />
-    </svg>
-  );
-}
-
-function PersonIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden className={className}>
-      <circle cx="12" cy="8" r="4.1" {...STROKE} />
-      <path d="M4.4 20.4a7.6 7.6 0 0 1 15.2 0" {...STROKE} />
     </svg>
   );
 }
