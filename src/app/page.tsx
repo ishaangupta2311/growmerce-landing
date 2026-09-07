@@ -5,7 +5,8 @@ import Fighting from "@/components/site/Fighting";
 import Growsearch from "@/components/site/Growsearch";
 import PricingBand from "@/components/site/PricingBand";
 import AiSection from "@/components/site/AiSection";
-import Faq, { HOME_FAQ } from "@/components/site/Faq";
+import Faq from "@/components/site/Faq";
+import { HOME_FAQ } from "@/lib/faqs";
 import Footer from "@/components/site/Footer";
 
 export default function Home() {

@@ -9,7 +9,7 @@ import LayerStack from "./components/LayerStack";
 import InstallSteps from "./components/InstallSteps";
 import TrialBand from "./components/TrialBand";
 import PricingPlans from "@/components/site/PricingPlans";
-import { GROWSEARCH_FAQ } from "./faq-data";
+import { GROWSEARCH_FAQ } from "@/lib/faqs";
 
 export const metadata: Metadata = {
   title: "Growsearch — Storefront search that never dead-ends",

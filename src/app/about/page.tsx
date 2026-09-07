@@ -4,6 +4,7 @@ import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import CtaPair from "@/components/site/CtaPair";
 import Faq from "@/components/site/Faq";
+import { ABOUT_FAQ } from "@/lib/faqs";
 import ProveItBand from "@/components/site/ProveItBand";
 import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
@@ -59,29 +60,6 @@ const UPDATES = [
     tag: "Company",
     title: "Charging from day one",
     dek: "Why there are no free pilots here, and what that changes about the roadmap.",
-  },
-];
-
-const ABOUT_FAQ = [
-  {
-    q: "So what is Growmerce, exactly?",
-    a: "An ecommerce AI studio. We own, build and operate the tools ourselves rather than reselling somebody else's model — Growsearch today, more to follow once each one has paying customers.",
-  },
-  {
-    q: "Why only one product?",
-    a: "Because a half-built suite helps nobody. Growsearch has to earn its place with real stores before the second tool gets any engineering time. That's a deliberate constraint, not a stage we're embarrassed about.",
-  },
-  {
-    q: "Who is behind it?",
-    a: "It's founder-led out of Delhi, serving stores globally. The person who writes the code is the person who answers your demo call — which is an advantage while we're small, and we intend to keep it as long as possible.",
-  },
-  {
-    q: "What's next after Growsearch?",
-    a: "Whatever the searches tell us. The zero-result terms and shopper questions Growsearch collects are the best product roadmap we could ask for — so the next tool will come out of real customer behaviour, not a brainstorm.",
-  },
-  {
-    q: "How do I get in touch?",
-    a: "Drop your store URL in the form above and we'll come back with a teardown of the three workflows most likely costing you hours — before any call.",
   },
 ];
 

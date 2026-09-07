@@ -5,6 +5,7 @@ import Footer from "@/components/site/Footer";
 import PlatformStrip from "@/components/site/PlatformStrip";
 import CtaPair from "@/components/site/CtaPair";
 import Faq from "@/components/site/Faq";
+import { PRICING_FAQ } from "@/lib/faqs";
 import Reveal from "@/components/site/Reveal";
 import Arrow from "@/components/site/Arrow";
 import PricingPlans from "@/components/site/PricingPlans";
@@ -24,29 +25,6 @@ const ENTERPRISE = [
   "Custom integration",
   "24x7 priority support",
   "Advanced analytics for improvement",
-];
-
-const PRICING_FAQ = [
-  {
-    q: "Is there really a free trial?",
-    a: "Yes — 14 days on every plan, no credit card required. You install Growsearch, point it at your catalogue and watch what your own shoppers search for before you decide anything.",
-  },
-  {
-    q: "What counts as a search?",
-    a: "One shopper query against your storefront. Follow-up refinements in the same conversation — “only under $20”, “show me sunscreens instead” — are part of that session, not new searches, so a browsing shopper doesn't burn your allowance.",
-  },
-  {
-    q: "What happens if I go over my plan's searches?",
-    a: "Search keeps working — we never switch your storefront off mid-month. We'll flag that you're trending over and suggest the tier that fits; if it was a one-off spike, nothing changes.",
-  },
-  {
-    q: "Monthly or yearly — what's the difference?",
-    a: "Only the price. Yearly saves between 7% and 15% depending on the tier; the product is identical. Start monthly if you want to stay light on your feet.",
-  },
-  {
-    q: "Can I cancel, and do you take a cut of revenue?",
-    a: "Cancel any time from your dashboard, and no — there is no revenue share and no per-seat pricing. A flat monthly number you can predict, which is the whole point.",
-  },
 ];
 
 export default function PricingPage() {

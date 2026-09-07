@@ -4,6 +4,7 @@ import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import CtaPair from "@/components/site/CtaPair";
 import Faq from "@/components/site/Faq";
+import { SOLUTIONS_FAQ } from "@/lib/faqs";
 import Reveal from "@/components/site/Reveal";
 import DemoShot from "@/components/site/DemoShot";
 import Arrow from "@/components/site/Arrow";
@@ -60,25 +61,6 @@ const COMPARE = [
   {
     without: "You cannot tell which searches earned money",
     with: "Search-attributed checkouts tracked to the product",
-  },
-];
-
-const SOLUTIONS_FAQ = [
-  {
-    q: "Does Growsearch replace my Shopify search or sit on top of it?",
-    a: "It sits on top. Your native results still render instantly — Growsearch layers intent matching, recovery and ranking over them, so the shopper never waits on a model and nothing breaks if the AI has an off day.",
-  },
-  {
-    q: "We already have a filter app. Is this the same thing?",
-    a: "No. Filters make the shopper do the work of narrowing. Growsearch reads the narrowing out of their sentence, and lets them keep adjusting it in conversation — “only under $20”, “actually show me sunscreens instead”.",
-  },
-  {
-    q: "How quickly would we see whether it helped?",
-    a: "Within the trial. Zero-result rate and search-attributed checkouts are visible from day one, so the comparison is against your own store's numbers rather than a case study.",
-  },
-  {
-    q: "What about stores with huge or messy catalogues?",
-    a: "That's the case it's built for. Metafields and custom attributes are indexed, out-of-stock items are ranked down rather than hidden, and drafts and archived products are excluded.",
   },
 ];
 

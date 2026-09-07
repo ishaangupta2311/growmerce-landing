@@ -4,6 +4,7 @@ import Link from "next/link";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import Faq from "@/components/site/Faq";
+import { FIT_FAQ } from "@/lib/faqs";
 import Reveal from "@/components/site/Reveal";
 import DemoStoreButton from "@/components/site/DemoStoreButton";
 import Arrow from "@/components/site/Arrow";
@@ -55,29 +56,6 @@ const NOT_A_FIT = [
     Icon: ChartDownIcon,
     title: "Optimizing discovery is not a priority (yet)",
     body: "If improving search, product discovery, or customer journeys is not a key focus for your business right now, it might be better to revisit Growmerce later.",
-  },
-];
-
-const FIT_FAQ = [
-  {
-    q: "How small is too small a catalogue?",
-    a: "There is no hard number, but under roughly a hundred products a shopper can usually reach anything from your menus in two clicks, and search never becomes the path they take. The better signal is your own search volume: if the bar is barely used, fix that first — Growsearch makes search better, it does not make people start using it.",
-  },
-  {
-    q: "How do I tell whether search actually drives my sales?",
-    a: "Shopify reports on it. Compare the conversion rate of sessions that used search against sessions that did not — searchers usually convert several times better. If the gap is wide and the share of searching sessions is meaningful, search is a lever. If almost nobody searches, it is not.",
-  },
-  {
-    q: "We are on WooCommerce, not Shopify. Can we use it?",
-    a: "Not yet. Growsearch installs as a Shopify app today and WooCommerce is next on the roadmap — so for now the honest answer for a Woo store is to wait.",
-  },
-  {
-    q: "What if we're not sure and want a second opinion?",
-    a: "Say so. Send us your storefront and roughly what share of sessions use search, and we will tell you if it is not worth your money — we would rather lose the sale than have you cancel in month two.",
-  },
-  {
-    q: "If we are a fit, how do we find out for certain?",
-    a: "Run the 14-day trial on your own catalogue. Zero-result rate and search-attributed checkouts show up from day one, so the answer comes from your own store's numbers rather than from us.",
   },
 ];
 

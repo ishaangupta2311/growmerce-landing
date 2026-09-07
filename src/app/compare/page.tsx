@@ -4,6 +4,7 @@ import Link from "next/link";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import Faq from "@/components/site/Faq";
+import { COMPARE_FAQ } from "@/lib/faqs";
 import Reveal from "@/components/site/Reveal";
 import DemoStoreButton from "@/components/site/DemoStoreButton";
 import Arrow from "@/components/site/Arrow";
@@ -31,29 +32,6 @@ const BENCHMARKS = [
   { figure: "10–30%", label: "conversion lift from AI shopping assistants", source: "Rep AI" },
   { figure: "6×", label: "better conversion for assisted shoppers at Kendra Scott", source: "iAdvize" },
   { figure: "+20%", label: "average order value in early access to Loomi", source: "Bloomreach" },
-];
-
-const COMPARE_FAQ = [
-  {
-    q: "Do I have to replace my existing search app?",
-    a: "Only if it is doing the same job. Growsearch installs alongside your theme and takes over the search bar; if you are running a filter or merchandising app that does something else, it stays. What you should not do is run two things both claiming the search results — pick one.",
-  },
-  {
-    q: "How is this different from adding an AI chatbot?",
-    a: "A chatbot sits beside the storefront and answers questions. Growsearch is inside the results — it reads the query, ranks the catalogue, recovers the dead ends and reports what the searches earned. Shoppers never have to notice they are talking to anything.",
-  },
-  {
-    q: "Recommendation apps already lift my AOV. Why add search?",
-    a: "They work on shoppers who are already looking at something. Search is the shopper who told you exactly what they wanted before you showed them anything — and it is the one place a wrong answer ends the session instead of shaping it.",
-  },
-  {
-    q: "Can I compare it against what I have now?",
-    a: "That is the intended way to buy it. The 14-day trial runs on your own catalogue, and zero-result rate and search-attributed checkouts are visible from day one, so the comparison is against your store's own numbers rather than anyone's marketing page — including this one.",
-  },
-  {
-    q: "What if my catalogue is messy?",
-    a: "Metafields and custom attributes are indexed, out-of-stock products are ranked down rather than hidden, and drafts and archived products are excluded. Messy catalogues are where the gap between keyword matching and intent is widest.",
-  },
 ];
 
 export default function ComparePage() {

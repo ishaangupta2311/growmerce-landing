@@ -9,7 +9,7 @@ import CombinesItAll from "./components/CombinesItAll";
 import FeatureReelGrid from "./components/FeatureReelGrid";
 import ClosingCta from "./components/ClosingCta";
 import { FEATURE_ROWS } from "./rows-data";
-import { FEATURES_FAQ } from "./faq-data";
+import { FEATURES_FAQ } from "@/lib/faqs";
 
 export const metadata: Metadata = {
   title: "Growsearch features — Everything your search bar should be doing",

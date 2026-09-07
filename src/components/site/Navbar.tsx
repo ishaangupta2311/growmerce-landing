@@ -27,7 +27,7 @@ const NAV: NavEntry[] = [
     items: [
       { label: "What is Growmerce", href: "/about" },
       { label: "FAQ", href: "/#faq" },
-      { label: "Help center", href: "#" },
+      { label: "Help center", href: "/help" },
     ],
   },
   {
