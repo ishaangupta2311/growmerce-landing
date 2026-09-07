@@ -34,6 +34,7 @@ const NAV: NavEntry[] = [
     items: [
       { label: "How we work", href: "/about" },
       { label: "Same catalog, different outcome", href: "/solutions" },
+      { label: "Is Growmerce a fit for me?", href: "/fit" },
     ],
   },
   { label: "Pricing", href: "/pricing" },
