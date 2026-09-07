@@ -25,7 +25,7 @@ export default function SearchHero() {
               instead. Matches children, not anchors — the trial CTA is a
               button now that it opens the demo-store gate. */}
           <div className="mt-9 flex flex-wrap items-center gap-4 [&>*]:max-[430px]:w-full">
-            <Link href="/pricing" className="cta-primary">
+            <Link href="/try" className="cta-primary">
               Start free trial
               <Arrow className="cta-arrow" />
             </Link>

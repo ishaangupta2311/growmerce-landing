@@ -196,7 +196,7 @@ export default function Hero() {
               style={{ animationDelay: "380ms" }}
             >
               <DemoStoreButton className="cta-primary" source="home-hero-desktop" />
-              <Link href="/pricing" className="cta-secondary">
+              <Link href="/try" className="cta-secondary">
                 Try it free
               </Link>
             </div>
@@ -250,7 +250,7 @@ export default function Hero() {
                 className="cta-primary-inverse max-[359px]:w-full"
                 source="home-hero-mobile"
               />
-              <Link href="/pricing" className="cta-secondary-inverse max-[359px]:w-full">
+              <Link href="/try" className="cta-secondary-inverse max-[359px]:w-full">
                 Try it free
               </Link>
             </div>

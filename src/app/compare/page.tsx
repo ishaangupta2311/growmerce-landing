@@ -68,7 +68,7 @@ export default function ComparePage() {
                 style={{ animationDelay: "250ms" }}
               >
                 <DemoStoreButton className="cta-primary" source="compare-hero" />
-                <Link href="/pricing" className="cta-secondary">
+                <Link href="/try" className="cta-secondary">
                   Try it free
                 </Link>
               </div>
@@ -249,7 +249,7 @@ export default function ComparePage() {
                   personalized shopping experiences.
                 </p>
                 <div className="mt-8 flex flex-wrap items-center gap-4 [&>*]:max-[430px]:w-full">
-                  <Link href="/pricing" className="cta-primary">
+                  <Link href="/try" className="cta-primary">
                     Try it free
                     <Arrow className="cta-arrow size-5" />
                   </Link>

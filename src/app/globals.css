@@ -710,3 +710,103 @@ body {
     rotate: calc(-1 * var(--a) - 360deg);
   }
 }
+
+/* --------------------------------------------------------------------------
+   "Try it free" preview — see src/app/try/.
+
+   Two beats only. The stepper's dot has to read as *waiting* rather than as
+   done, so the running step breathes while the finished ones go solid; and
+   the widget arrives after the frame rather than with it, because the whole
+   claim of the page is that it was drawn onto their storefront.
+-------------------------------------------------------------------------- */
+
+@keyframes step-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
+}
+
+.step-pulse {
+  animation: step-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes gs-widget-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* The canvas it sits on is already scaled, so the entrance runs on the widget
+   itself — a transform on the canvas would fight the fit. */
+.gs-widget {
+  animation: gs-widget-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
+  transform-origin: top center;
+}
+
+/* The preview stage.
+
+   The composition is fixed artwork — a 1440-wide browser viewport with the
+   widget drawn on it — so it is laid out at full size and scaled into
+   whatever column it lands in. The scale is CSS rather than a measured
+   ResizeObserver value so the frame is correct on the very first paint,
+   before (and without) hydration.
+
+   Two canvases, one shown at a time. Under 700px the desktop canvas would put
+   the product titles at four physical pixels, so a phone gets a 430-wide
+   canvas whose widget stacks the assistant above the results — a different
+   box, not the same one smaller. */
+
+.gs-stage {
+  container-type: inline-size;
+}
+
+.gs-canvas {
+  position: relative;
+  width: 100%;
+  /* Never draw larger than the artwork; past 1440 it would just go soft. */
+  max-width: calc(var(--gs-cw) * 1px);
+  aspect-ratio: var(--gs-cw) / var(--gs-ch);
+}
+
+.gs-canvas > .gs-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(var(--gs-cw) * 1px);
+  height: calc(var(--gs-ch) * 1px);
+  transform: scale(min(1, 100cqw / calc(var(--gs-cw) * 1px)));
+  transform-origin: top left;
+}
+
+.gs-canvas--wide {
+  --gs-cw: 1440;
+  --gs-ch: 944;
+}
+
+.gs-canvas--compact {
+  --gs-cw: 430;
+  --gs-ch: 900;
+}
+
+@container (width >= 700px) {
+  .gs-canvas--compact {
+    display: none;
+  }
+}
+
+@container (width < 700px) {
+  .gs-canvas--wide {
+    display: none;
+  }
+}

@@ -92,7 +92,7 @@ export default function FitPage() {
                 style={{ animationDelay: "250ms" }}
               >
                 <DemoStoreButton className="cta-primary" source="fit-hero" />
-                <Link href="/pricing" className="cta-secondary">
+                <Link href="/try" className="cta-secondary">
                   Try it free
                 </Link>
               </div>

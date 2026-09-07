@@ -20,7 +20,7 @@ export default function TrialBand() {
             Try Growsearch free for 14 days
           </h2>
           <div className="relative mt-8 flex flex-wrap items-center justify-center gap-4">
-            <Link href="/pricing" className="cta-primary-inverse">
+            <Link href="/try" className="cta-primary-inverse">
               Start free trial
               <Arrow className="cta-arrow" />
             </Link>
