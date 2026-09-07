@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import Arrow from "./Arrow";
+import PricingOrbit from "./PricingOrbit";
 import Reveal from "./Reveal";
 
 export default function PricingBand() {
@@ -19,15 +19,9 @@ export default function PricingBand() {
         className="pointer-events-none absolute -bottom-40 left-[30%] size-[420px] rounded-full bg-[#ffd2b0]/20 blur-[110px]"
       />
 
-      {/* Connected-icon web from Figma, right side. */}
-      <Image
-        src="/img/pages/pricing-web.png"
-        alt=""
-        width={965}
-        height={432}
-        aria-hidden
-        className="pointer-events-none absolute -top-6 right-0 hidden h-[calc(100%+3rem)] w-auto object-contain object-right lg:block"
-      />
+      {/* Connected-icon web from Figma, right side — arcs redrawn as geometry
+          so the discs can travel along them. */}
+      <PricingOrbit className="-top-6 right-0 hidden h-[calc(100%+3rem)] lg:block" />
 
       <div className="relative mx-auto max-w-[1370px] px-6">
         <Reveal>

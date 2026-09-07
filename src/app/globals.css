@@ -662,3 +662,57 @@ body {
     margin-inline: 0;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Pricing band orbits — see PricingOrbit.
+
+   The arm is a zero-size box pinned at its arc's centre; rotating it swings
+   whatever hangs off it around the circle. The disc translates out along the
+   arm by the radius and then counter-rotates by the same angle, which keeps it
+   upright while it travels. Both animations share `--dur` and both alternate,
+   so the two rotations stay exactly opposite for the whole cycle.
+-------------------------------------------------------------------------- */
+
+.orbit-arm {
+  position: absolute;
+  width: 0;
+  height: 0;
+  rotate: var(--a);
+  animation: orbit-swing var(--dur) ease-in-out infinite alternate;
+}
+
+.orbit-disc {
+  position: absolute;
+  max-width: none;
+  translate: calc(var(--r) - 50%) -50%;
+  rotate: calc(-1 * var(--a));
+  animation: orbit-level var(--dur) ease-in-out infinite alternate;
+}
+
+@keyframes orbit-swing {
+  from {
+    rotate: calc(var(--a) - var(--sweep));
+  }
+  to {
+    rotate: calc(var(--a) + var(--sweep));
+  }
+}
+
+@keyframes orbit-level {
+  from {
+    rotate: calc(var(--sweep) - var(--a));
+  }
+  to {
+    rotate: calc(-1 * var(--sweep) - var(--a));
+  }
+}
+
+/* The blanket reduced-motion rule below collapses every animation to a hair
+   over 0s, which would freeze these at the end of their swing rather than
+   where the artwork parks them. Zeroing the sweep lands them on their marks. */
+@media (prefers-reduced-motion: reduce) {
+  .orbit-arm,
+  .orbit-disc {
+    --sweep: 0deg;
+  }
+}

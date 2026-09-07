@@ -206,12 +206,6 @@ export default function Navbar({
             source="navbar"
             className="hidden items-center justify-center rounded-[10px] bg-brand px-5 py-2 font-poppins text-[15px] font-bold text-white shadow-[0_10px_24px_-14px_rgba(255,90,31,0.9)] transition-transform duration-200 hover-lift sm:inline-flex"
           />
-          <Link
-            href="#login"
-            className="hidden items-center justify-center rounded-[10px] border-2 border-brand bg-white px-[18px] py-[6px] font-poppins text-[15px] font-bold text-brand transition-[background-color,color] duration-200 hover:bg-brand hover:text-white sm:inline-flex"
-          >
-            Login
-          </Link>
           <button
             type="button"
             aria-label="Menu"

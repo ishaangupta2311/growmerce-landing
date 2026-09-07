@@ -104,9 +104,17 @@ export default function Growsearch() {
         </div>
       </Reveal>
 
-      <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-4 lg:gap-10 lg:px-24">
+      {/* Centred rather than gridded: there are three platforms and the row was
+          built for four, so the empty fourth cell pushed the whole set left. A
+          wrapping flex centres them at every count, and on a phone the odd one
+          out lands under the middle rather than hard against the margin. */}
+      <div className="mt-10 flex flex-wrap justify-center gap-6 lg:gap-10">
         {PLATFORMS.map((p, i) => (
-          <Reveal key={p.name} delay={i * 100}>
+          <Reveal
+            key={p.name}
+            delay={i * 100}
+            className="w-[calc(50%-0.75rem)] sm:w-[220px] lg:w-[250px]"
+          >
             <div className="flex h-[142px] flex-col items-center justify-center gap-3.5 rounded-[26px] bg-white px-6 shadow-[0_12px_40px_rgba(0,0,0,0.10)] transition-transform duration-300 hover-lift [--lift:6px]">
               {/* Fixed band so the marks agree across the four cards rather
                   than stepping with each one's height. */}
