@@ -5,10 +5,12 @@ import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import Faq from "@/components/site/Faq";
 import Reveal from "@/components/site/Reveal";
-import DemoShot from "@/components/site/DemoShot";
 import TryFreeButton from "@/components/site/TryFreeButton";
 import Arrow from "@/components/site/Arrow";
 import { GROWSEARCH_DEMO } from "@/lib/site-urls";
+import CatalogMock from "./components/CatalogMock";
+import IntentMock from "./components/IntentMock";
+import HeroArt from "./components/HeroArt";
 import PlugInDiagram from "./components/PlugInDiagram";
 import InsightsPanel from "./components/InsightsPanel";
 import {
@@ -120,15 +122,7 @@ export default function FitPage() {
             </div>
 
             <div className="hero-enter-scale" style={{ animationDelay: "150ms" }}>
-              <Image
-                src="/img/pages/fit-hero.webp"
-                alt="A shopper thinking, surrounded by the moments a storefront has to get right — browsing, search, offers, delivery and the review afterwards"
-                width={841}
-                height={669}
-                priority
-                sizes="(min-width: 1024px) 44vw, 100vw"
-                className="mx-auto h-auto w-full max-w-[560px]"
-              />
+              <HeroArt className="mx-auto w-full max-w-[560px]" />
             </div>
           </div>
         </section>
@@ -161,16 +155,7 @@ export default function FitPage() {
               body="More products, more chances for shoppers to get lost."
               badge="Helps shoppers find the right products, faster."
               icon={<CubeIcon className="size-8" />}
-              media={
-                <DemoShot
-                  src="/img/demos/rainy-commute.webp"
-                  alt="A search for a rainy commute returning six real products from the catalogue"
-                  width={1386}
-                  height={1135}
-                  sizes="(min-width: 1024px) 46vw, 100vw"
-                  className="w-full rounded-[14px]"
-                />
-              }
+              media={<CatalogMock />}
             />
 
             <FitRow
@@ -180,16 +165,7 @@ export default function FitPage() {
               body="The shoppers who use your search bar are the ones closest to buying."
               badge="Turn every search into a buying opportunity."
               icon={<SearchIcon className="size-8" />}
-              media={
-                <DemoShot
-                  src="/img/demos/gifts.webp"
-                  alt="A shopper asking for gift ideas and refining the results in conversation"
-                  width={1386}
-                  height={1135}
-                  sizes="(min-width: 1024px) 46vw, 100vw"
-                  className="w-full rounded-[14px]"
-                />
-              }
+              media={<IntentMock />}
             />
 
             <FitRow
@@ -199,13 +175,11 @@ export default function FitPage() {
               badge="Easy setup. Works with your existing store."
               icon={<BoltIcon className="size-8" />}
               media={<PlugInDiagram />}
-              plain
             />
 
             <FitRow
               n="04"
               flip
-              plain
               title="You want insights from what shoppers actually ask"
               body="Every query is a customer telling you what they came for."
               badge="See what shoppers search for and uncover new opportunities."
@@ -268,11 +242,11 @@ export default function FitPage() {
                 crops her against it. Stacked, there is no edge to sit on and
                 she is simply the picture above the copy. */}
             <Image
-              src="/img/pages/fit-thinking.webp"
+              src="/img/fit/thinking.svg"
               alt=""
               aria-hidden
-              width={315}
-              height={254}
+              width={1890}
+              height={1524}
               sizes="(min-width: 1024px) 300px, 240px"
               className="h-auto w-[210px] shrink-0 self-center sm:w-[250px] lg:w-[300px] lg:self-end"
             />
@@ -299,11 +273,11 @@ export default function FitPage() {
 
             {/* Decoration, and the first thing to go when the panel is narrow. */}
             <Image
-              src="/img/pages/fit-plane.webp"
+              src="/img/fit/plane.svg"
               alt=""
               aria-hidden
-              width={144}
-              height={255}
+              width={864}
+              height={1530}
               sizes="150px"
               className="pointer-events-none absolute right-0 bottom-0 hidden h-full w-auto xl:block"
             />
@@ -323,9 +297,6 @@ export default function FitPage() {
  *
  * `flip` swaps the columns from lg up only — on a phone the text always leads,
  * because a reader who meets the picture first has nothing to read it against.
- * `plain` is for the two visuals built in markup rather than screenshotted;
- * they carry their own surfaces, so the tinted frame the mocks need would put
- * a second card around a card.
  */
 function FitRow({
   n,
@@ -335,7 +306,6 @@ function FitRow({
   icon,
   media,
   flip = false,
-  plain = false,
 }: {
   n: string;
   title: string;
@@ -344,7 +314,6 @@ function FitRow({
   icon: React.ReactNode;
   media: React.ReactNode;
   flip?: boolean;
-  plain?: boolean;
 }) {
   return (
     <Reveal>
@@ -369,22 +338,10 @@ function FitRow({
           </p>
         </div>
 
-        <div
-          className={
-            flip
-              ? "lg:order-1 " + frame(plain)
-              : frame(plain)
-          }
-        >
+        <div className={`flex justify-center px-2 py-4 sm:px-6 sm:py-8 ${flip ? "lg:order-1" : ""}`}>
           {media}
         </div>
       </div>
     </Reveal>
   );
-}
-
-function frame(plain: boolean) {
-  return plain
-    ? "flex justify-center px-2 py-6 sm:px-6 sm:py-10"
-    : "overflow-hidden rounded-[22px] bg-peach/45 p-3 sm:p-4";
 }
