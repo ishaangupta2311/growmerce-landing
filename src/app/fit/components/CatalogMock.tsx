@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Burst, Sparkle } from "./marks";
+import { Burst, Sparkle } from "@/components/site/Marks";
 
 /* The six that fill the grid behind the panel, and the three the search
    returns. Cut out of the Figma slide — the photography is the one part of

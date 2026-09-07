@@ -1,4 +1,4 @@
-/* The two decorative marks the Figma scatters through this page: a four-point
+/* The two decorative marks the Figma scatters through the site: a four-point
    sparkle, and the little burst of strokes it puts at the corner of anything
    worth noticing. Both are decoration and both are hidden from the reader. */
 

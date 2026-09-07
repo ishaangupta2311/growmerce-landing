@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Burst, Sparkle } from "./marks";
+import { Burst, Sparkle } from "@/components/site/Marks";
 
 const PICKS = [
   { src: "mug", alt: "Stoneware mug" },

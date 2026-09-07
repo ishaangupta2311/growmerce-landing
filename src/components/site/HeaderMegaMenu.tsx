@@ -29,7 +29,7 @@ const WHY_US_GROUPS = [
   {
     title: "Compare",
     links: [
-      { label: "Growmerce Vs Competition", href: "/solutions" },
+      { label: "Growmerce Vs Competition", href: "/compare" },
       { label: "Is Growmerce a fit for me?", href: "/fit" },
     ],
   },

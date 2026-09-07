@@ -602,3 +602,63 @@ body {
     transform-origin: center;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Capability matrix — see CapabilityTable.
+
+   Five columns is right on a desk and impossible on a phone: the narrowest
+   column lands around 60px, and "Recommendation apps" does not fit in 60px at
+   any size still worth reading. Below sm the same markup lays out as one card
+   per capability and each cell names its own column from `data-label`, so
+   there is exactly one copy of every claim in the document either way.
+
+   Changing `display` drops the implicit table roles, which is why the markup
+   carries explicit ones — they are redundant at sm and up, and load-bearing
+   below it.
+-------------------------------------------------------------------------- */
+
+@media (max-width: 639px) {
+  .cap-matrix thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .cap-matrix,
+  .cap-matrix tbody,
+  .cap-matrix tr,
+  .cap-matrix th,
+  .cap-matrix td {
+    display: block;
+    width: auto;
+  }
+
+  .cap-matrix tr {
+    padding: 0.25rem 0 0.75rem;
+  }
+
+  .cap-matrix td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.4rem 1rem;
+    text-align: left;
+  }
+
+  .cap-matrix td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--color-body-mute);
+  }
+
+  /* The mark sits at the end of its own row here, so the auto margin that
+     centred it in a column would push it off the edge. */
+  .cap-matrix td > span {
+    margin-inline: 0;
+  }
+}
