@@ -4,13 +4,16 @@ import type { PreviewResult } from "@/lib/preview/types";
  * The browser the preview is staged in: chrome bar, then the visitor's own
  * storefront behind the widget.
  *
- * Two backdrops, one shape. When the job returned a screenshot we show it,
- * pushed back with a 1px blur and a scrim mixed from the store's own
- * background so the widget reads as foreground rather than as a second
- * screenshot. When it returned null — no browser on the box, or the page
- * refused to render — we draw the store instead from its theme: a header, a
- * hero band in the accent, a four-up product row. It is not their page, but
- * it is their colours, their radius and their name, which is the whole point.
+ * Two backdrops, one shape. When the job returned a screenshot we show it, and
+ * in the "with Growsearch" state a light scrim mixed from the store's own
+ * background pushes it back far enough for the widget to read as foreground.
+ * When it returned null — no browser on the box, or the page refused to
+ * render — we draw the store instead from its theme: a header, a hero band in
+ * the accent, a four-up product row. It is not their page, but it is their
+ * colours, their radius and their name, which is the whole point.
+ *
+ * `dimmed` is the only thing that changes between the before and after states
+ * here, and it only moves an opacity, so the frame itself never reflows.
  *
  * Sized in design pixels; see StageCanvas for the scaling.
  */
@@ -168,10 +171,13 @@ export default function StoreFrame({
   result,
   compact,
   chromeHeight,
+  dimmed,
 }: {
   result: PreviewResult;
   compact: boolean;
   chromeHeight: number;
+  /** False in the "before" state, where the storefront must be shown as it is. */
+  dimmed: boolean;
 }) {
   return (
     <div
@@ -254,24 +260,37 @@ export default function StoreFrame({
       <div className="relative min-h-0 flex-1">
         {result.screenshot ? (
           <>
+            {/* The capture is a 1440-wide desktop viewport; the phone canvas
+                is a tall, narrow frame, so `cover` has to crop it hard. Anchor
+                that crop top-left rather than top-centre: the left edge is
+                where a storefront keeps its logo and its headline, so what
+                survives is the part that makes the page recognisably theirs
+                instead of an arbitrary slice of the middle. */}
             {/* eslint-disable-next-line @next/next/no-img-element -- this is a
                 data: URL built by the preview job, so there is no remote asset
                 for next/image to optimise and no domain to whitelist. */}
             <img
               src={result.screenshot}
               alt=""
-              className="absolute inset-0 size-full object-cover object-top"
+              className={`absolute inset-0 size-full object-cover ${
+                compact ? "object-left-top" : "object-top"
+              }`}
             />
             {/* Light on purpose. The page has to stay recognisably *their*
                 store — that is the whole claim — so the scrim only takes the
                 contrast down far enough for the widget to sit in front of it,
                 and the panel's own shadow does the rest of the separating.
                 Mixed from the store's own background so a dark storefront is
-                dimmed rather than silvered. */}
+                dimmed rather than silvered.
+
+                It fades rather than unmounting: the "before" state is their
+                page exactly as it is, and a scrim lingering at any strength
+                would make the comparison a lie. */}
             <div
               aria-hidden
-              className="absolute inset-0"
+              className="gs-fade absolute inset-0"
               style={{
+                opacity: dimmed ? 1 : 0,
                 background:
                   "color-mix(in srgb, var(--gs-bg) 28%, transparent)",
               }}

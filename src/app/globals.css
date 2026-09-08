@@ -810,3 +810,13 @@ body {
     display: none;
   }
 }
+
+/* Before/after crossfade on the preview stage.
+
+   Only opacity moves between the two states — both layers are absolutely
+   positioned over the frame — so switching cannot reflow, resize or scroll
+   anything. The reduced-motion block above already clamps this transition to
+   nothing, which is the right outcome: the states still swap, just instantly. */
+.gs-fade {
+  transition: opacity 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}

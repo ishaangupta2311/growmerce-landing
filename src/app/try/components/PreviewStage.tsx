@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -117,9 +118,11 @@ function fallbackResult(store: string): PreviewResult {
 function Canvas({
   result,
   compact,
+  withGrowsearch,
 }: {
   result: PreviewResult;
   compact: boolean;
+  withGrowsearch: boolean;
 }) {
   return (
     <div className={compact ? "gs-canvas gs-canvas--compact" : "gs-canvas gs-canvas--wide"}>
@@ -128,23 +131,155 @@ function Canvas({
           result={result}
           compact={compact}
           chromeHeight={compact ? COMPACT_CANVAS.chrome : DESKTOP_CANVAS.chrome}
+          dimmed={withGrowsearch}
         />
-        <GrowsearchWidget
-          products={result.products}
-          storeTitle={result.title}
-          compact={compact}
-        />
+        {/* The widget fades on a wrapper rather than on itself: its entrance
+            animation owns its own opacity with `both` fill, so an inline
+            opacity on the same element would lose to it and the thing could
+            never fade back out. Both layers are absolutely positioned, so
+            neither state contributes height and the frame cannot move. */}
+        <div
+          className="gs-fade pointer-events-none absolute inset-0"
+          style={{ opacity: withGrowsearch ? 1 : 0 }}
+        >
+          <GrowsearchWidget
+            products={result.products}
+            storeTitle={result.title}
+            compact={compact}
+          />
+        </div>
       </div>
     </div>
   );
 }
 
-function Stage({ result }: { result: PreviewResult }) {
+const MODES = [
+  { id: "before", label: "Your store today" },
+  { id: "after", label: "With Growsearch" },
+] as const;
+
+/**
+ * Two states over one frame.
+ *
+ * "Before" is the screenshot untouched — no scrim, no widget — because the
+ * whole value of a comparison is that one side of it is the truth. "After" is
+ * the scrim and the widget. Only opacity changes between them, so the frame is
+ * pinned: nothing reflows, nothing resizes, and the page does not jump.
+ *
+ * It opens on "after". That is the answer they came for, and the widget's
+ * entrance animation already reads as it landing on their storefront; the
+ * control is there for the second look.
+ */
+function Stage({
+  result,
+  /** True when we are drawing a stand-in because the job could not read them. */
+  synthesised = false,
+}: {
+  result: PreviewResult;
+  synthesised?: boolean;
+}) {
+  const [withGrowsearch, setWithGrowsearch] = useState(true);
+  const groupId = useId();
+
   return (
-    <div className="gs-stage w-full" style={themeVars(result.theme)}>
-      <Canvas result={result} compact={false} />
-      <Canvas result={result} compact />
+    <div>
+      <div
+        role="group"
+        aria-labelledby={groupId}
+        className="mb-4 inline-flex rounded-full border border-line bg-cream p-1"
+      >
+        <span id={groupId} className="sr-only">
+          Compare your storefront with and without Growsearch
+        </span>
+        {MODES.map((mode) => {
+          const active = (mode.id === "after") === withGrowsearch;
+          return (
+            <button
+              key={mode.id}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setWithGrowsearch(mode.id === "after")}
+              className={`font-poppins rounded-full px-4 py-2 text-[13px] font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:px-5 sm:text-[14px] ${
+                active
+                  ? "bg-brand text-white"
+                  : "text-body-mute hover:text-charcoal"
+              }`}
+            >
+              {mode.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="gs-stage w-full" style={themeVars(result.theme)}>
+        <Canvas result={result} compact={false} withGrowsearch={withGrowsearch} />
+        <Canvas result={result} compact withGrowsearch={withGrowsearch} />
+      </div>
+
+      {/* Live, so switching is announced rather than only visible. The height
+          is reserved to the taller of the two captions — measured, not
+          guessed — because they are different lengths and the page must not
+          move under the control that changed it. */}
+      <p
+        aria-live="polite"
+        className="mt-5 min-h-[6rem] text-[14.5px] leading-relaxed text-body-mute sm:min-h-[3.25rem]"
+      >
+        <StageCaption
+          result={result}
+          withGrowsearch={withGrowsearch}
+          synthesised={synthesised}
+        />
+      </p>
     </div>
+  );
+}
+
+function StageCaption({
+  result,
+  withGrowsearch,
+  synthesised,
+}: {
+  result: PreviewResult;
+  withGrowsearch: boolean;
+  synthesised: boolean;
+}) {
+  /* "Mock-up" is the right word for the after state and the wrong one for the
+     before state, where the screenshot is simply their page. */
+  if (!withGrowsearch) {
+    return result.screenshot ? (
+      <>
+        <span className="font-semibold text-charcoal">
+          {result.store}, as it is today.
+        </span>{" "}
+        The screenshot we took of your storefront, untouched.
+      </>
+    ) : (
+      <>
+        <span className="font-semibold text-charcoal">
+          A stand-in for {result.store}.
+        </span>{" "}
+        We couldn&apos;t take a screenshot, so this is a sketch of a storefront
+        rather than yours.
+      </>
+    );
+  }
+
+  return synthesised ? (
+    <>
+      <span className="font-semibold text-charcoal">
+        {THEME_SOURCE_LINE.default}
+      </span>{" "}
+      On a store we can read, every colour above comes from the storefront
+      itself.
+    </>
+  ) : (
+    <>
+      <span className="font-semibold text-charcoal">
+        {THEME_SOURCE_LINE[result.themeSource]}
+      </span>{" "}
+      A mock-up of Growsearch on {result.store} &mdash; nothing was installed
+      and nothing on your store changed.
+    </>
   );
 }
 
@@ -212,8 +347,8 @@ function LoadingPanel({ store, step }: { store: string; step: number }) {
         Building your preview of {store}
       </h2>
       <p className="mt-3 max-w-[52ch] text-[15.5px] leading-relaxed text-body-mute">
-        This takes about fifteen seconds. Your demo store is already open in
-        the other tab if you&apos;d rather start there.
+        This takes about fifteen seconds. We&apos;re reading the public page
+        only &mdash; nothing is being installed and nothing changes.
       </p>
       <div className="mt-8" aria-live="polite">
         <StepList active={step} done={false} />
@@ -249,7 +384,7 @@ function ErrorPanel({
   );
 }
 
-function DemoStoreCard({ opened }: { opened: boolean }) {
+function DemoStoreCard() {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
@@ -273,11 +408,12 @@ function DemoStoreCard({ opened }: { opened: boolean }) {
         Your demo store
       </p>
       <h2 className="font-poppins mt-3 text-[21px] leading-snug font-extrabold tracking-[-0.02em] text-charcoal">
-        {opened ? "It opened in a new tab" : "Open the demo store"}
+        Open the demo store
       </h2>
       <p className="mt-2.5 text-[14.5px] leading-relaxed text-body-mute">
-        Growsearch is already live on it. Search the way a shopper actually
-        talks &mdash; &ldquo;something warm for a rainy commute&rdquo;.
+        A live Shopify storefront running Growsearch, so there is nothing to
+        install. Search it the way a shopper actually talks &mdash;
+        &ldquo;something warm for a rainy commute&rdquo;.
       </p>
 
       {/* The storefront asks for this on arrival, so it has to be readable
@@ -299,7 +435,7 @@ function DemoStoreCard({ opened }: { opened: boolean }) {
       </p>
 
       <OpenDemoStoreButton className="cta-primary mt-5 w-full max-[359px]:px-4 max-[359px]:text-[15px]">
-        {opened ? "Open it again" : "Open the demo store"}
+        Open the demo store
       </OpenDemoStoreButton>
       <p className="mt-3 text-center text-[12.5px] text-muted">
         Opens in a new tab, already unlocked.
@@ -332,7 +468,6 @@ export default function PreviewStage() {
 
   const store = (params.get("store") ?? "").trim().toLowerCase();
   const token = params.get("t") ?? "";
-  const openedAlready = params.get("o") === "1";
 
   /* Dev affordance: the real job needs a live store and a headless Chrome,
      so `?fixture=light|dark` stands in while the page is being built. Gated
@@ -361,7 +496,6 @@ export default function PreviewStage() {
       store={store}
       token={token}
       fixture={fixture}
-      openedAlready={openedAlready}
     />
   );
 }
@@ -370,12 +504,10 @@ function PreviewRun({
   store,
   token,
   fixture,
-  openedAlready,
 }: {
   store: string;
   token: string;
   fixture: "light" | "dark" | null;
-  openedAlready: boolean;
 }) {
   /* Two of the three outcomes are known before the first paint — the dev
      fixture and "they arrived with no token" — so they are the initial state
@@ -446,16 +578,7 @@ function PreviewRun({
         {state.status === "loading" ? (
           <LoadingPanel store={store} step={step} />
         ) : state.status === "ready" ? (
-          <>
-            <Stage result={state.result} />
-            <p className="mt-5 text-[14.5px] text-body-mute">
-              <span className="font-semibold text-charcoal">
-                {THEME_SOURCE_LINE[state.result.themeSource]}
-              </span>{" "}
-              This is a mock-up of Growsearch on {state.result.store} &mdash;
-              nothing was installed and nothing on your store changed.
-            </p>
-          </>
+          <Stage result={state.result} />
         ) : expired ? (
           <ErrorPanel
             title={
@@ -493,20 +616,13 @@ function PreviewRun({
               }
             />
             <div className="mt-8">
-              <Stage result={fallback} />
+              <Stage result={fallback} synthesised />
             </div>
-            <p className="mt-5 text-[14.5px] text-body-mute">
-              <span className="font-semibold text-charcoal">
-                {THEME_SOURCE_LINE.default}
-              </span>{" "}
-              On a store we can read, every colour above comes from the
-              storefront itself.
-            </p>
           </>
         )}
       </div>
 
-      <DemoStoreCard opened={openedAlready} />
+      <DemoStoreCard />
     </div>
   );
 }
