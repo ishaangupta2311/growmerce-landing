@@ -197,7 +197,27 @@ export function finishTheme(partial: Partial<PreviewTheme>): PreviewTheme {
     text = dark ? "#f4f4f4" : DEFAULT_THEME.text;
   }
 
-  const accent = partial.accent ?? (dark ? "#ffffff" : DEFAULT_THEME.accent);
+  const surface =
+    partial.surface ??
+    (dark ?
+      mix(background, "#ffffff", 0.08)
+      /* On light stores the panel should read as "lifted", which means white —
+         unless the page is already white, where a hairline does the work. */
+    : relativeLuminance(background) > 0.9 ? "#ffffff"
+    : mix(background, "#ffffff", 0.6));
+
+  let accent = partial.accent ?? (dark ? "#ffffff" : DEFAULT_THEME.accent);
+  /* The same sanity check `text` gets, for the same reason. When we could only
+     read a stylesheet — no browser, so nothing was ever painted — the accent is
+     a guess at which declared colour a button uses, and the guess is sometimes
+     the page's own white. An accent that vanishes into the panel it sits on is
+     not a brand colour, it is a button the visitor cannot see, so we keep the
+     store's background and drop back to ink. nykaa.com, screenshotless because
+     its edge refuses headless Chrome, came back #ffffff on #ffffff. */
+  if (contrastRatio(accent, surface) < 2) {
+    accent = dark ? "#ffffff" : DEFAULT_THEME.accent;
+  }
+
   const onWhite = contrastRatio(accent, "#ffffff");
   const onInk = contrastRatio(accent, "#111111");
   const accentText =
@@ -208,15 +228,6 @@ export function finishTheme(partial: Partial<PreviewTheme>): PreviewTheme {
     : onInk >= 4.5 ? "#111111"
     : onWhite >= onInk ? "#ffffff"
     : "#111111");
-
-  const surface =
-    partial.surface ??
-    (dark ?
-      mix(background, "#ffffff", 0.08)
-      /* On light stores the panel should read as "lifted", which means white —
-         unless the page is already white, where a hairline does the work. */
-    : relativeLuminance(background) > 0.9 ? "#ffffff"
-    : mix(background, "#ffffff", 0.6));
 
   let muted = partial.muted ?? mix(text, background, 0.42);
   if (contrastRatio(muted, background) < 3) muted = mix(text, background, 0.2);

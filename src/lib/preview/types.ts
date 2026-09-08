@@ -116,6 +116,7 @@ export type PreviewErrorCode =
   | "unauthorized"
   | "rate_limited"
   | "blocked"
+  | "refused"
   | "unreachable"
   | "timeout"
   | "internal";

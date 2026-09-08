@@ -59,6 +59,8 @@ function errorTitle(code: PreviewErrorCode | null, store: string): string {
       return "That one broke on our side";
     case "timeout":
       return "That took longer than we could wait";
+    case "refused":
+      return `${store} wouldn't let us in`;
     default:
       return `We couldn't reach ${store}`;
   }

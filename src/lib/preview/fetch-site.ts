@@ -11,6 +11,13 @@ import type { PreviewPlatform } from "./types";
 const TIMEOUT_MS = 10_000;
 const MAX_BYTES = 2 * 1024 * 1024;
 
+/* Statuses that mean "we got there and were told no", as opposed to "nothing
+   answered". 401/403 are the bot walls; 406 is Akamai's variant; 429 is the
+   store rate limiting us. Retrying http:// after one of these is pointless —
+   the same edge serves both schemes — so `fetchSite` stops rather than
+   burning the budget on a second refusal. */
+const REFUSAL_STATUSES = new Set([401, 403, 406, 429]);
+
 /**
  * A real Chrome identity. Bot-shaped agents get a challenge page or a 403 from
  * most storefront WAFs, which would cost us the theme for no gain.
@@ -70,6 +77,14 @@ export async function fetchSite(host: string, budgetMs = TIMEOUT_MS * 2): Promis
          brand's, and cached the lot for an hour — so the visitor could not even
          retry into a better answer. */
       if (result.status >= 400) {
+        /* A store that answers 403 is not unreachable — we reached it and its
+           edge turned us away, which is what Akamai/Cloudflare bot protection
+           does to anything without a real browser fingerprint. Saying "check
+           the domain" there sends a merchant hunting a typo that isn't
+           there. */
+        if (REFUSAL_STATUSES.has(result.status)) {
+          throw new StoreAccessError("refused", `${scheme}: HTTP ${result.status}`);
+        }
         lastError = new StoreAccessError("unreachable", `${scheme}: HTTP ${result.status}`);
         continue;
       }
@@ -92,7 +107,7 @@ export async function fetchSite(host: string, budgetMs = TIMEOUT_MS * 2): Promis
         );
       /* A blocked host is blocked on every scheme — retrying over http only
          delays the same answer. */
-      if (failure.code === "blocked") throw failure;
+      if (failure.code === "blocked" || failure.code === "refused") throw failure;
       lastError = failure;
     }
   }

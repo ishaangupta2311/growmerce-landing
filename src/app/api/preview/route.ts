@@ -20,6 +20,7 @@
  */
 
 import { buildPreview } from "@/lib/preview";
+import { readPreviewCache } from "@/lib/preview/cache";
 import { clientKey, overBudget } from "@/lib/preview/rate-limit";
 import { normaliseStoreInput, StoreAccessError } from "@/lib/preview/store-url";
 import { verifyPreviewToken } from "@/lib/preview/token";
@@ -28,13 +29,21 @@ import type { PreviewErrorCode, PreviewResponse } from "@/lib/preview/types";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const BUDGET = { limit: 10, windowMs: 10 * 60 * 1000 };
+/* Locally every request keys to the same "unknown" address, because there is no
+   proxy in front to write a forwarded header — so a real budget makes the page
+   untestable after ten tries. The limit exists to cap spend on the deployed
+   site; in dev it only caps the developer. */
+const BUDGET = {
+  limit: process.env.NODE_ENV === "development" ? 200 : 10,
+  windowMs: 10 * 60 * 1000,
+};
 
 const MESSAGES: Record<PreviewErrorCode, string> = {
   invalid_store: "That doesn't look like a store domain. Try something like mystore.com.",
   unauthorized: "This preview link has expired. Pop your store in again and we'll rebuild it.",
   rate_limited: "That's a few previews in a row. Give it ten minutes and try again.",
   blocked: "We can only preview shops that are live on the public internet.",
+  refused: "That store's security turned us away before we could look — some shops block automated visits. Nothing to fix on your end.",
   unreachable: "We couldn't reach that store. Check the domain and try again.",
   timeout: "That store took too long to answer, so we stopped waiting.",
   internal: "Something went wrong on our side while building your preview.",
@@ -68,6 +77,16 @@ export async function POST(request: Request): Promise<Response> {
 
   if (!verifyPreviewToken(token, host)) return fail("unauthorized", 401);
 
+  /* Answer from cache before spending budget. The limit is here to ration
+     browsers, and a cached store launches none — charging for it means a
+     visitor who reloads their own preview twice gets told to come back in ten
+     minutes for work we never did. */
+  const cached = await readPreviewCache(host);
+  if (cached.result) {
+    const hit: PreviewResponse = { ok: true, ...cached.result };
+    return Response.json(hit);
+  }
+
   if (overBudget("preview", clientKey(request), BUDGET)) return fail("rate_limited", 429);
 
   try {
@@ -77,6 +96,9 @@ export async function POST(request: Request): Promise<Response> {
   } catch (err) {
     if (err instanceof StoreAccessError) {
       console.info(`[preview] ${host}: ${err.code} — ${err.message}`);
+      /* 403 from the store is not our client's mistake and not our fault, so
+         neither a 4xx about their request nor a 5xx about us fits. 502 is the
+         honest one: an upstream we depend on refused. */
       return fail(err.code, err.code === "blocked" ? 400 : 502);
     }
     console.error(`[preview] ${host}: unexpected failure`, err);

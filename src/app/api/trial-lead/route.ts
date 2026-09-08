@@ -60,8 +60,13 @@ async function recordLead(lead: Lead): Promise<void> {
 }
 
 /* Generous — this is a form a real person fills in once or twice — but not
-   unlimited, because every success hands back a token for /api/preview. */
-const BUDGET = { limit: 20, windowMs: 10 * 60 * 1000 };
+   unlimited, because every success hands back a token for /api/preview. Lifted
+   in dev, where there is no proxy to tell one caller from another and every
+   request lands in the same bucket. */
+const BUDGET = {
+  limit: process.env.NODE_ENV === "development" ? 500 : 20,
+  windowMs: 10 * 60 * 1000,
+};
 
 export async function POST(request: Request) {
   if (overBudget("trial-lead", clientKey(request), BUDGET)) {

@@ -24,7 +24,7 @@ export {
 } from "../store-domain";
 
 /** The failures a caller can sensibly show a visitor. */
-export type StoreAccessCode = "blocked" | "unreachable" | "timeout";
+export type StoreAccessCode = "blocked" | "refused" | "unreachable" | "timeout";
 
 export class StoreAccessError extends Error {
   readonly code: StoreAccessCode;
@@ -268,6 +268,41 @@ async function readCapped(
  * this feature warrants; the checks below stop every non-adversarial case and
  * the adversary gains only a request with no response body they can read.
  */
+/**
+ * `fetch`, with one concession to real storefronts.
+ *
+ * Node's HTTP parser refuses a response whose header block exceeds
+ * `http.maxHeaderSize` (16 KiB by default) and throws
+ * `UND_ERR_HEADERS_OVERFLOW` — a *connection* error, before any status exists,
+ * so the caller sees "fetch failed" and reports the store unreachable. Big
+ * retailers behind Akamai trip this routinely: nykaa.com answers a
+ * browser-shaped request with a Set-Cookie block well past the cap, while the
+ * same URL with only a `user-agent` comes back at 200.
+ *
+ * So on overflow we ask again with the minimum, and take the plainer page over
+ * no page. It lives here rather than in `fetchSite` on purpose: every caller in
+ * the pipeline must send byte-identical headers to the same host, or the
+ * storefront answers them from different Shopify markets and we render one
+ * product's price in two currencies.
+ */
+async function fetchTolerantly(
+  url: URL,
+  headers: Record<string, string>,
+  signal: AbortSignal,
+): Promise<Response> {
+  try {
+    return await fetch(url, { redirect: "manual", signal, headers });
+  } catch (err) {
+    const code = (err as { cause?: { code?: string } })?.cause?.code;
+    if (code !== "UND_ERR_HEADERS_OVERFLOW" || !headers["user-agent"]) throw err;
+    return await fetch(url, {
+      redirect: "manual",
+      signal,
+      headers: { "user-agent": headers["user-agent"] },
+    });
+  }
+}
+
 export async function safeFetch(url: string, init: SafeFetchOptions = {}): Promise<SafeFetchResult> {
   const { timeoutMs = 10_000, maxBytes = 2 * 1024 * 1024, headers = {} } = init;
 
@@ -298,11 +333,7 @@ export async function safeFetch(url: string, init: SafeFetchOptions = {}): Promi
          caller asked for an answer within `timeoutMs`, resolution included. */
       await assertPublicHost(parsed.hostname, Math.min(DEFAULT_DNS_TIMEOUT_MS, left));
 
-      const response = await fetch(parsed, {
-        redirect: "manual",
-        signal: controller.signal,
-        headers,
-      });
+      const response = await fetchTolerantly(parsed, headers, controller.signal);
 
       const location = response.headers.get("location");
       if (response.status >= 300 && response.status < 400 && location) {
