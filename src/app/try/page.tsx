@@ -8,24 +8,30 @@ import TryForm from "./components/TryForm";
 export const metadata: Metadata = {
   title: "Try it free",
   description:
-    "Give us your store's domain and we'll draw Growsearch on your own storefront — your colours, your products, in about fifteen seconds. No install, no card.",
+    "Give us your store's domain and we'll draw Growsearch on your own storefront — your colours, your products, in about twenty seconds. No install, no card.",
 };
 
+/* These describe what the job actually does, and they have to keep doing so.
+   Step one used to promise "your demo store opens in a new tab", left over from
+   a version of this flow that hijacked a tab on submit. That behaviour was
+   removed and the promise outlived it, so the first thing the page told a
+   visitor was the one thing it no longer did. The demo store is still there —
+   it is a card on the preview itself, opened when someone asks for it. */
 const NEXT = [
   {
     n: "1",
-    title: "Your demo store opens in a new tab",
-    body: "A live Shopify storefront with Growsearch already on it, unlocked as you click.",
+    title: "We read your public storefront",
+    body: "Colours, type, corner radius and a few of your products — all from the page a shopper already sees.",
   },
   {
     n: "2",
-    title: "We visit your store and read its theme",
-    body: "Colours, type, corner radius and a few products — from the public page, the way any shopper sees it.",
+    title: "We photograph your search as it is today",
+    body: "We open your own search box and take a picture of it. Nothing typed, nothing submitted, nothing changed.",
   },
   {
     n: "3",
-    title: "Growsearch, drawn on your storefront",
-    body: "The same widget you just used, in your palette, on your products. Nothing is installed and nothing changes.",
+    title: "Then we draw Growsearch on the same page",
+    body: "Your palette, your products, answering a whole sentence. Flip between the two and see the difference.",
   },
 ];
 
@@ -54,7 +60,7 @@ export default function TryPage() {
               >
                 Tell us your domain and we&apos;ll read your storefront the way
                 a shopper does &mdash; then draw the search your shoppers would
-                get, in your own colours. It takes about fifteen seconds.
+                get, in your own colours. It takes about twenty seconds.
               </p>
 
               <div
