@@ -11,6 +11,7 @@ import Arrow from "@/components/site/Arrow";
 import PricingPlans from "@/components/site/PricingPlans";
 import AllPlans from "./components/AllPlans";
 import DemoStoreButton from "@/components/site/DemoStoreButton";
+import InstallOnShopify from "@/components/site/InstallOnShopify";
 import { GROWSEARCH_FEATURES } from "@/lib/site-urls";
 
 export const metadata: Metadata = {
@@ -58,6 +59,17 @@ export default function PricingPage() {
 
         <div id="plans" className="scroll-mt-28">
           <PricingPlans />
+        </div>
+
+        {/* Sits under the plans as the quiet alternative to picking one: the
+            visitor who has already decided can skip the tiers and install.
+            Bordered, because the loud action on this page is still the plan
+            they choose above it. */}
+        <div className="mx-auto mt-8 flex max-w-[1370px] flex-col items-center px-6">
+          <InstallOnShopify className="max-[430px]:w-full" />
+          <p className="mt-3 text-center text-[14px] text-muted">
+            Opens the Shopify App Store in a new tab.
+          </p>
         </div>
 
         {/* Enterprise */}

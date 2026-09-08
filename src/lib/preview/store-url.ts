@@ -6,10 +6,22 @@
  * gates: a syntactic one (`normaliseStoreInput`, which also strips the paths and
  * schemes people paste) and a network one (`assertPublicHost`, which resolves
  * DNS and refuses anything pointing back inside our own network).
+ *
+ * Only the network gate lives here. The syntactic one moved to
+ * `src/lib/store-domain.ts` so the /try form can run the identical rules in the
+ * browser instead of keeping a mirror of them that drifts; it is re-exported
+ * below so this module is still the one surface a server caller needs.
  */
 
 import { isIP } from "node:net";
-import { resolve4, resolve6 } from "node:dns/promises";
+import { Resolver } from "node:dns/promises";
+
+/* Relative, like every other cross-module import under src/lib/preview. */
+export {
+  isSyntacticallyPublicHost,
+  normaliseStoreInput,
+  PRIVATE_SUFFIXES,
+} from "../store-domain";
 
 /** The failures a caller can sensibly show a visitor. */
 export type StoreAccessCode = "blocked" | "unreachable" | "timeout";
@@ -24,88 +36,7 @@ export class StoreAccessError extends Error {
   }
 }
 
-const MAX_HOST_LENGTH = 253;
 const MAX_REDIRECTS = 5;
-
-/* Names that never belong to a public storefront. `.local` is mDNS, `.internal`
-   is the convention on most private clouds, `.home.arpa` is the RFC 8375 one.
-   Exported because the browser stage applies the same list to every request the
-   page makes, not just the one we chose. */
-export const PRIVATE_SUFFIXES = [
-  ".local",
-  ".internal",
-  ".localhost",
-  ".home.arpa",
-  ".lan",
-  ".intranet",
-];
-
-const LABEL = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
-
-/**
- * The half of the guard that needs no network: everything decidable from the
- * name alone. Split out because request interception has to answer in the
- * moment — a page fires hundreds of subresource requests and a DNS round trip
- * on each one would cost more than the screenshot is worth.
- *
- * An IP literal in *any* form is refused outright. A real storefront and every
- * CDN it uses has a name; a literal is either a mistake or the whole attack.
- */
-export function isSyntacticallyPublicHost(host: string): boolean {
-  const name = host.trim().toLowerCase().replace(/\.$/, "");
-  if (!name || name.length > MAX_HOST_LENGTH) return false;
-
-  /* A URL hostname wears its IPv6 in brackets; strip them so `isIP` can see it. */
-  const bare = name.startsWith("[") && name.endsWith("]") ? name.slice(1, -1) : name;
-  if (isIP(bare) !== 0) return false;
-  if (!bare.includes(".")) return false; // `localhost`, intranet short names
-  return !PRIVATE_SUFFIXES.some((suffix) => bare.endsWith(suffix));
-}
-
-/**
- * Accepts what people actually type — `mystore.com`, `MYSTORE.COM/`,
- * `https://mystore.com/collections/all`, `mystore.myshopify.com`, with stray
- * whitespace — and returns the bare lowercase host, or null if it could never
- * be a public storefront.
- */
-export function normaliseStoreInput(raw: string): string | null {
-  if (typeof raw !== "string") return null;
-
-  const trimmed = raw.trim();
-  if (!trimmed || trimmed.length > 2000) return null;
-  /* A space inside the value is always a typo, and `new URL` would happily
-     percent-encode it into a host we never meant to visit. */
-  if (/\s/.test(trimmed)) return null;
-
-  const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
-
-  let url: URL;
-  try {
-    url = new URL(withScheme);
-  } catch {
-    return null;
-  }
-
-  if (url.protocol !== "https:" && url.protocol !== "http:") return null;
-  if (url.username || url.password) return null;
-  if (url.port && url.port !== "80" && url.port !== "443") return null;
-
-  /* WHATWG parsing already lowercased, punycoded and canonicalised any IPv4
-     spelling (`0x7f000001`, `127.1`), so the checks below see one form only. */
-  const host = url.hostname.replace(/\.$/, "");
-  if (!isSyntacticallyPublicHost(host)) return null;
-
-  const labels = host.split(".");
-  if (labels.some((label) => label.length === 0 || label.length > 63 || !LABEL.test(label))) {
-    return null;
-  }
-  /* A numeric or one-character TLD is never real, and rejecting it closes off
-     the dotted-decimal shapes that survive canonicalisation. */
-  const tld = labels[labels.length - 1];
-  if (tld.length < 2 || !/^[a-z]+$/.test(tld)) return null;
-
-  return host;
-}
 
 function ipv4Bytes(ip: string): number[] | null {
   const parts = ip.split(".");
@@ -165,7 +96,7 @@ function isPublicAddress(ip: string): boolean {
   if (version === 4) {
     const b = ipv4Bytes(ip);
     if (!b) return false;
-    const [a, second] = b;
+    const [a, second, third] = b;
     if (a === 0) return false; // 0.0.0.0/8, unspecified
     if (a === 10) return false; // private
     if (a === 127) return false; // loopback
@@ -173,10 +104,15 @@ function isPublicAddress(ip: string): boolean {
     if (a === 172 && second >= 16 && second <= 31) return false; // private
     if (a === 192 && second === 168) return false; // private
     if (a === 100 && second >= 64 && second <= 127) return false; // CGNAT
-    if (a === 192 && second === 0) return false; // 192.0.0/24 + TEST-NET-1
     if (a === 198 && (second === 18 || second === 19)) return false; // benchmarking
-    if (a === 198 && second === 51) return false; // TEST-NET-2
-    if (a === 203 && second === 0) return false; // TEST-NET-3
+    /* These four are /24s and must be matched as /24s. Blocking the enclosing
+       /16 took 192.0.78.0/24 with it — that is Automattic, so every
+       WordPress.com-hosted WooCommerce store, which is squarely who this
+       feature is for. */
+    if (a === 192 && second === 0 && third === 0) return false; // IETF protocol assignments
+    if (a === 192 && second === 0 && third === 2) return false; // TEST-NET-1
+    if (a === 198 && second === 51 && third === 100) return false; // TEST-NET-2
+    if (a === 203 && second === 0 && third === 113) return false; // TEST-NET-3
     if (a >= 224) return false; // multicast, reserved, broadcast
     return true;
   }
@@ -186,10 +122,22 @@ function isPublicAddress(ip: string): boolean {
     if (!b) return false;
     if (b.every((byte) => byte === 0)) return false; // ::
     if (b.slice(0, 15).every((byte) => byte === 0) && b[15] === 1) return false; // ::1
-    /* ::ffff:a.b.c.d — an IPv4 address wearing a v6 hat; judge the v4. */
+    /* Anything that smuggles an IPv4 address inside a v6 one. Each of these
+       reaches 169.254.169.254 with a completely different spelling, and a
+       classifier that only knows ::ffff: waves them through:
+         ::ffff:a.b.c.d   IPv4-mapped — judge the v4
+         2002:V4::/16     6to4 — judge the v4; a public v4 here is a real host
+         64:ff9b::/96     NAT64 well-known prefix
+         64:ff9b:1::/48   NAT64 local-use prefix (RFC 8215)
+         ::a.b.c.d        deprecated IPv4-compatible
+       The two NAT64 prefixes are translator infrastructure, never a storefront,
+       so they go regardless of what they carry. */
     if (b.slice(0, 10).every((byte) => byte === 0) && b[10] === 0xff && b[11] === 0xff) {
       return isPublicAddress(b.slice(12).join("."));
     }
+    if (b[0] === 0x00 && b[1] === 0x64 && b[2] === 0xff && b[3] === 0x9b) return false;
+    if (b[0] === 0x20 && b[1] === 0x02) return isPublicAddress(b.slice(2, 6).join("."));
+    if (b.slice(0, 12).every((byte) => byte === 0)) return false; // ::/96
     if ((b[0] & 0xfe) === 0xfc) return false; // fc00::/7 ULA, incl. fd00:ec2::254
     if (b[0] === 0xfe && (b[1] & 0xc0) === 0x80) return false; // fe80::/10 link-local
     if (b[0] === 0xfe && (b[1] & 0xc0) === 0xc0) return false; // fec0::/10 site-local
@@ -200,12 +148,22 @@ function isPublicAddress(ip: string): boolean {
   return false;
 }
 
+export const DEFAULT_DNS_TIMEOUT_MS = 4_000;
+
 /**
  * Resolves `host` (A and AAAA) and throws unless every answer is public.
  * "Every", not "the first": a name that resolves to one public and one private
  * address is an attack, not a store.
+ *
+ * `timeoutMs` is not optional in spirit — a resolver that never answers used to
+ * hang past every other limit in the pipeline, because the fetch timeout only
+ * ever covered the fetch. A dedicated `Resolver` is what makes the bound real:
+ * the module-level `resolve4`/`resolve6` take no timeout at all.
  */
-export async function assertPublicHost(host: string): Promise<void> {
+export async function assertPublicHost(
+  host: string,
+  timeoutMs: number = DEFAULT_DNS_TIMEOUT_MS,
+): Promise<void> {
   if (isIP(host) !== 0) {
     if (!isPublicAddress(host)) {
       throw new StoreAccessError("blocked", `${host} is not a public address`);
@@ -213,7 +171,8 @@ export async function assertPublicHost(host: string): Promise<void> {
     return;
   }
 
-  const [v4, v6] = await Promise.allSettled([resolve4(host), resolve6(host)]);
+  const resolver = new Resolver({ timeout: Math.max(250, timeoutMs), tries: 1 });
+  const [v4, v6] = await Promise.allSettled([resolver.resolve4(host), resolver.resolve6(host)]);
   const addresses = [
     ...(v4.status === "fulfilled" ? v4.value : []),
     ...(v6.status === "fulfilled" ? v6.value : []),
@@ -314,6 +273,7 @@ export async function safeFetch(url: string, init: SafeFetchOptions = {}): Promi
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const deadlineAt = Date.now() + timeoutMs;
 
   try {
     let target = url;
@@ -332,7 +292,11 @@ export async function safeFetch(url: string, init: SafeFetchOptions = {}): Promi
       if (parsed.port && parsed.port !== "80" && parsed.port !== "443") {
         throw new StoreAccessError("blocked", `refusing port ${parsed.port}`);
       }
-      await assertPublicHost(parsed.hostname);
+      const left = deadlineAt - Date.now();
+      if (left <= 0) throw new StoreAccessError("timeout", `timed out after ${timeoutMs}ms`);
+      /* DNS shares the request's budget rather than getting one of its own — the
+         caller asked for an answer within `timeoutMs`, resolution included. */
+      await assertPublicHost(parsed.hostname, Math.min(DEFAULT_DNS_TIMEOUT_MS, left));
 
       const response = await fetch(parsed, {
         redirect: "manual",

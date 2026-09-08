@@ -8,12 +8,19 @@
  * single packet leaves. The SSRF guard proper lives in `store-url.ts`.
  *
  * The rate limit is in-process, so it resets on deploy and does not span
- * instances. That is the right trade for a marketing site — it exists to stop a
- * bored visitor looping the form, not a determined attacker, and the real
- * ceiling is the token.
+ * instances, and it keys on an address the platform gave us rather than one the
+ * caller wrote (see rate-limit.ts — the leftmost `x-forwarded-for` entry is
+ * attacker-controlled and made this budget free to reset).
+ *
+ * The token is not the ceiling. /api/trial-lead will mint one for any host it is
+ * asked about, so anyone can hold as many as they like; the token binds a job to
+ * a store, it does not ration jobs. What actually caps the cost of a burst is
+ * the two-browser semaphore in screenshot.ts, which no amount of address
+ * rotation gets past.
  */
 
 import { buildPreview } from "@/lib/preview";
+import { clientKey, overBudget } from "@/lib/preview/rate-limit";
 import { normaliseStoreInput, StoreAccessError } from "@/lib/preview/store-url";
 import { verifyPreviewToken } from "@/lib/preview/token";
 import type { PreviewErrorCode, PreviewResponse } from "@/lib/preview/types";
@@ -21,10 +28,7 @@ import type { PreviewErrorCode, PreviewResponse } from "@/lib/preview/types";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const RATE_WINDOW_MS = 10 * 60 * 1000;
-const RATE_LIMIT = 10;
-
-const hits = new Map<string, number[]>();
+const BUDGET = { limit: 10, windowMs: 10 * 60 * 1000 };
 
 const MESSAGES: Record<PreviewErrorCode, string> = {
   invalid_store: "That doesn't look like a store domain. Try something like mystore.com.",
@@ -39,31 +43,6 @@ const MESSAGES: Record<PreviewErrorCode, string> = {
 function fail(code: PreviewErrorCode, status: number): Response {
   const body: PreviewResponse = { ok: false, error: code, message: MESSAGES[code] };
   return Response.json(body, { status });
-}
-
-function clientKey(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return forwarded || request.headers.get("x-real-ip") || "unknown";
-}
-
-function overLimit(key: string): boolean {
-  const now = Date.now();
-  const recent = (hits.get(key) ?? []).filter((at) => now - at < RATE_WINDOW_MS);
-  if (recent.length >= RATE_LIMIT) {
-    hits.set(key, recent);
-    return true;
-  }
-  recent.push(now);
-  hits.set(key, recent);
-
-  /* Sweep occasionally so a long-lived process does not hold every IP it ever
-     saw. Cheap, and only when the Map has grown enough to be worth it. */
-  if (hits.size > 500) {
-    for (const [ip, times] of hits) {
-      if (times.every((at) => now - at >= RATE_WINDOW_MS)) hits.delete(ip);
-    }
-  }
-  return false;
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -89,7 +68,7 @@ export async function POST(request: Request): Promise<Response> {
 
   if (!verifyPreviewToken(token, host)) return fail("unauthorized", 401);
 
-  if (overLimit(clientKey(request))) return fail("rate_limited", 429);
+  if (overBudget("preview", clientKey(request), BUDGET)) return fail("rate_limited", 429);
 
   try {
     const result = await buildPreview(host);

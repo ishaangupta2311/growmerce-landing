@@ -7,6 +7,7 @@
  * almost guaranteed to emit, and it beats guessing at markup per platform.
  */
 
+import { BROWSER_HEADERS } from "./fetch-site";
 import { safeFetch } from "./store-url";
 import type { PreviewPlatform, PreviewProduct } from "./types";
 
@@ -56,8 +57,12 @@ function detectCurrency(html: string): string | null {
   return meta ? meta[1] : null;
 }
 
+/** ISO 4217 or nothing. `"constructor"` used to render as a native-code string. */
+const CURRENCY_CODE = /^[A-Z]{3}$/;
+
 function formatPrice(amount: number, currency: string | null): string {
-  const symbol = currency ? (SYMBOLS[currency] ?? `${currency} `) : "$";
+  const code = currency && CURRENCY_CODE.test(currency) ? currency : null;
+  const symbol = code ? (Object.hasOwn(SYMBOLS, code) ? SYMBOLS[code] : `${code} `) : "$";
   /* Whole prices read better without the trailing zeros — ".00" on eight tiles
      is just noise. */
   const value = Number.isInteger(amount) ? String(amount) : amount.toFixed(2);
@@ -71,14 +76,20 @@ function toAmount(raw: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/* Long enough for any real CDN URL, short enough that a hostile 1 MB string
+   cannot be echoed into the response and pinned in the cache. */
+const MAX_URL_LENGTH = 2048;
+
 function absolute(value: unknown, base: string): string | null {
   if (typeof value !== "string" || !value.trim()) return null;
+  if (value.length > MAX_URL_LENGTH) return null;
   try {
     const url = new URL(value.trim(), base);
     if (url.protocol !== "https:" && url.protocol !== "http:") return null;
     /* See extract.ts: an http image is blocked on our https preview page. */
     if (url.protocol === "http:" && base.startsWith("https:")) url.protocol = "https:";
-    return url.toString();
+    const absolutised = url.toString();
+    return absolutised.length <= MAX_URL_LENGTH ? absolutised : null;
   } catch {
     return null;
   }
@@ -96,12 +107,19 @@ type ShopifyProduct = {
   product_type?: unknown;
 };
 
-async function fromShopify(origin: string, currency: string | null): Promise<PreviewProduct[]> {
+async function fromShopify(
+  origin: string,
+  currency: string | null,
+  timeoutMs: number,
+): Promise<PreviewProduct[]> {
   const url = new URL(`/products.json?limit=${FETCH_LIMIT}`, origin).toString();
   const result = await safeFetch(url, {
-    timeoutMs: TIMEOUT_MS,
+    timeoutMs,
     maxBytes: MAX_BYTES,
-    headers: { accept: "application/json" },
+    /* Same identity as the HTML fetch, `accept` aside. Shopify Markets picks a
+       market per request; two different identities meant the price and the
+       currency could come from two different ones. */
+    headers: { ...BROWSER_HEADERS, accept: "application/json" },
   });
   if (result.status !== 200) return [];
 
@@ -152,7 +170,10 @@ function offerAmount(offers: unknown): { amount: number | null; currency: string
   if (!isRecord(offers)) return { amount: null, currency: null };
 
   const amount = toAmount(offers.price ?? offers.lowPrice ?? offers.highPrice);
-  const currency = typeof offers.priceCurrency === "string" ? offers.priceCurrency : null;
+  const currency =
+    typeof offers.priceCurrency === "string" && CURRENCY_CODE.test(offers.priceCurrency) ?
+      offers.priceCurrency
+    : null;
   if (amount !== null) return { amount, currency };
   return offerAmount(offers.offers);
 }
@@ -210,13 +231,14 @@ export async function fetchProducts(
   finalUrl: string,
   platform: PreviewPlatform,
   html: string,
+  budgetMs = TIMEOUT_MS,
 ): Promise<PreviewProduct[]> {
   const origin = new URL(finalUrl).origin;
   const currency = detectCurrency(html);
 
   let products: PreviewProduct[] = [];
   if (platform === "shopify") {
-    products = await fromShopify(origin, currency).catch((err: unknown) => {
+    products = await fromShopify(origin, currency, Math.min(TIMEOUT_MS, budgetMs)).catch((err: unknown) => {
       /* Worth a line: /products.json is rate-limited and occasionally refuses,
          and "no products" otherwise looks like the store having none. */
       console.warn(

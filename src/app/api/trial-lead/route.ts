@@ -2,9 +2,9 @@
  * Lead capture behind the demo-store gate and the "Try it free" form.
  *
  * MOCK. No email platform is wired up yet, so a captured address is validated
- * and written to the server log and nowhere else. The flow in front of it is
- * real — the visitor is gated on entering an address either way — but nothing
- * here persists it, so treat leads taken before this is wired as lost.
+ * and then goes nowhere. The flow in front of it is real — the visitor is gated
+ * on entering an address either way — but nothing here persists it, so treat
+ * leads taken before this is wired as lost.
  *
  * It also issues the preview token. `store` is optional: the "See demo" gate
  * sends an email and nothing else, and must keep working exactly as it did.
@@ -12,12 +12,20 @@
  * token that /api/preview requires before it will touch the network. The token
  * is bound to the store, not to the person — it carries nothing about the lead.
  *
+ * Two things this file must keep doing: never write the visitor's address to a
+ * log line (it is a marketing lead, and the log is not where it belongs), and
+ * never hand out tokens without a budget — minting them is cheap for us but it
+ * is the front door to a route that launches browsers.
+ *
  * To make it real, replace the body of `recordLead` with the call to whatever
  * platform you land on (Omnisend, Klaviyo, HubSpot, a Sheet, a database).
  * That function is the only thing that needs to change; the validation, the
  * shape of a lead and the client are all independent of the destination.
  */
 
+import { createHash } from "node:crypto";
+
+import { clientKey, overBudget } from "@/lib/preview/rate-limit";
 import { normaliseStoreInput } from "@/lib/preview/store-url";
 import { signPreviewToken } from "@/lib/preview/token";
 import type { TrialLeadResponse } from "@/lib/preview/types";
@@ -35,11 +43,31 @@ type Lead = {
   at: string;
 };
 
-async function recordLead(lead: Lead): Promise<void> {
-  console.info("[trial-lead] captured (mock — not stored):", lead);
+/**
+ * A stable, non-identifying handle for one address, so two log lines can be tied
+ * together without the address being in either of them. Truncated because this
+ * is for reading logs, not for looking anyone up.
+ */
+function reference(email: string): string {
+  return createHash("sha256").update(email).digest("hex").slice(0, 12);
 }
 
+async function recordLead(lead: Lead): Promise<void> {
+  /* The lead goes to the destination whole; the log gets the reference only. */
+  console.info(
+    `[trial-lead] captured (mock — not stored) ref=${reference(lead.email)} source=${lead.source} store=${lead.store ?? "-"}`,
+  );
+}
+
+/* Generous — this is a form a real person fills in once or twice — but not
+   unlimited, because every success hands back a token for /api/preview. */
+const BUDGET = { limit: 20, windowMs: 10 * 60 * 1000 };
+
 export async function POST(request: Request) {
+  if (overBudget("trial-lead", clientKey(request), BUDGET)) {
+    return Response.json({ ok: false, error: "rate_limited" }, { status: 429 });
+  }
+
   let body: unknown;
   try {
     body = await request.json();

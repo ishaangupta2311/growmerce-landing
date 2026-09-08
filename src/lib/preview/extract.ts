@@ -11,6 +11,7 @@
 
 import { parse, type HTMLElement } from "node-html-parser";
 
+import { BROWSER_HEADERS } from "./fetch-site";
 import { safeFetch } from "./store-url";
 import { parseColour, saturation, relativeLuminance } from "./theme";
 import type { PreviewTheme } from "./types";
@@ -255,7 +256,7 @@ function rankStylesheet(href: string): number {
   return 1;
 }
 
-async function collectCss(root: HTMLElement, finalUrl: string): Promise<string> {
+async function collectCss(root: HTMLElement, finalUrl: string, budgetMs: number): Promise<string> {
   const inline = root
     .querySelectorAll("style")
     .map((node) => node.text)
@@ -279,9 +280,9 @@ async function collectCss(root: HTMLElement, finalUrl: string): Promise<string> 
     chosen.map(async (href) => {
       try {
         const result = await safeFetch(href, {
-          timeoutMs: STYLESHEET_TIMEOUT_MS,
+          timeoutMs: Math.min(STYLESHEET_TIMEOUT_MS, budgetMs),
           maxBytes: STYLESHEET_MAX_BYTES,
-          headers: { accept: "text/css,*/*;q=0.1", referer: finalUrl },
+          headers: { ...BROWSER_HEADERS, accept: "text/css,*/*;q=0.1", referer: finalUrl },
         });
         return result.body;
       } catch {
@@ -301,9 +302,10 @@ async function collectCss(root: HTMLElement, finalUrl: string): Promise<string> 
 export async function extractStylesheetTheme(
   html: string,
   finalUrl: string,
+  budgetMs = STYLESHEET_TIMEOUT_MS,
 ): Promise<Partial<PreviewTheme> | null> {
   const root = parseHtml(html);
-  const css = await collectCss(root, finalUrl);
+  const css = await collectCss(root, finalUrl, budgetMs);
   if (!css.trim()) return null;
 
   const props = customProperties(css);

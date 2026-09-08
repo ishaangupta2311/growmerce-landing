@@ -22,8 +22,18 @@ function secret(): string {
     return cachedSecret;
   }
 
-  /* A per-process key still stops tampering; it just means every restart (and
-     every worker) invalidates outstanding tokens. Warn once — noisy on a dev
+  /* In production a random per-process key is not a degraded mode, it is an
+     outage: /api/trial-lead signs on one instance and /api/preview verifies on
+     another, so every visitor is told their link expired the moment they use it.
+     Better to refuse to start than to ship a form that never works. */
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "PREVIEW_TOKEN_SECRET must be set in production — preview tokens are signed with it and must verify across instances.",
+    );
+  }
+
+  /* Outside production a per-process key still stops tampering; it just means
+     every restart invalidates outstanding tokens. Warn once — noisy on a dev
      server that reloads constantly, and useless more than once. */
   console.warn(
     "[preview] PREVIEW_TOKEN_SECRET is not set — using a random per-process secret. Preview tokens will not survive a restart.",

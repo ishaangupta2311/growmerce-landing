@@ -11,9 +11,18 @@ import type { PreviewPlatform } from "./types";
 const TIMEOUT_MS = 10_000;
 const MAX_BYTES = 2 * 1024 * 1024;
 
-/* A real Chrome string. Bot-shaped agents get a challenge page or a 403 from
-   most storefront WAFs, which would cost us the theme for no gain. */
-const BROWSER_HEADERS: Record<string, string> = {
+/**
+ * A real Chrome identity. Bot-shaped agents get a challenge page or a 403 from
+ * most storefront WAFs, which would cost us the theme for no gain.
+ *
+ * Exported because *every* request in this pipeline has to send the same ones.
+ * Shopify Markets resolves a market per request from headers like
+ * `accept-language`, so asking for the HTML as a browser and the catalogue as a
+ * bare JSON client got two different answers: a Kith keychain came back as
+ * `₹3500` because the amount was read from one market and the currency from
+ * another.
+ */
+export const BROWSER_HEADERS: Record<string, string> = {
   "user-agent":
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
   accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
@@ -26,6 +35,8 @@ export type SiteFetch = {
   /** The URL that served the HTML, after redirects. */
   finalUrl: string;
   platform: PreviewPlatform;
+  /** Upstream status, for the log line. Always 2xx/3xx — see `fetchSite`. */
+  status: number;
 };
 
 function detectPlatform(html: string, finalUrl: string): PreviewPlatform {
@@ -39,16 +50,29 @@ function detectPlatform(html: string, finalUrl: string): PreviewPlatform {
   return "other";
 }
 
-export async function fetchSite(host: string): Promise<SiteFetch> {
+export async function fetchSite(host: string, budgetMs = TIMEOUT_MS * 2): Promise<SiteFetch> {
   let lastError: StoreAccessError | null = null;
+  const startedAt = Date.now();
 
   for (const scheme of ["https", "http"] as const) {
+    const left = budgetMs - (Date.now() - startedAt);
+    if (left <= 500) break;
+
     try {
       const result = await safeFetch(`${scheme}://${host}/`, {
-        timeoutMs: TIMEOUT_MS,
+        timeoutMs: Math.min(TIMEOUT_MS, left),
         maxBytes: MAX_BYTES,
         headers: BROWSER_HEADERS,
       });
+
+      /* A 403 challenge page is not the store. Treating it as one meant we
+         screenshotted Cloudflare's "Just a moment…", took its colours as the
+         brand's, and cached the lot for an hour — so the visitor could not even
+         retry into a better answer. */
+      if (result.status >= 400) {
+        lastError = new StoreAccessError("unreachable", `${scheme}: HTTP ${result.status}`);
+        continue;
+      }
 
       if (!result.body.trim()) {
         lastError = new StoreAccessError("unreachable", `${scheme}: empty body`);
@@ -59,6 +83,7 @@ export async function fetchSite(host: string): Promise<SiteFetch> {
         html: result.body,
         finalUrl: result.url,
         platform: detectPlatform(result.body, result.url),
+        status: result.status,
       };
     } catch (err) {
       const failure =

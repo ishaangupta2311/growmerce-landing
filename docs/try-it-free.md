@@ -33,6 +33,19 @@ the open storefront with no password step. Keep the password visible as a
 fallback (popup blocked, Shopify changes the form): `DEMO_STORE_PASSWORD` in
 `src/lib/site-urls.ts` is deliberately public.
 
+## Environment
+
+`PREVIEW_TOKEN_SECRET` — **required in production.** It signs the short-lived
+tokens `/api/trial-lead` hands out and `/api/preview` checks. Outside production
+an unset value falls back to a random per-process secret, which is fine on one
+dev server and useless anywhere with more than one instance: the two routes
+would land on different processes and every visitor would be told their link had
+expired. `token.ts` therefore refuses to sign at all when `NODE_ENV` is
+`production` and the variable is missing.
+
+`CHROME_PATH` — optional. Points the screenshot stage at a specific browser;
+without it, well-known local paths are tried and then `@sparticuz/chromium`.
+
 ## Contract
 
 `src/lib/preview/types.ts` is the contract between the API and the pages. Read

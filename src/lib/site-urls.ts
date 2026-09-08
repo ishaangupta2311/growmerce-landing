@@ -25,3 +25,15 @@ export const DEMO_STORE_ENTRANCE = `${DEMO_STORE}/password`;
  * the copy in the modal and the store stay in step when the store rotates it.
  */
 export const DEMO_STORE_PASSWORD = "demo";
+
+/**
+ * PLACEHOLDER — this is the Shopify App Store home page, not our listing. The
+ * Growmerce listing does not exist yet, and this stands in so nothing 404s in
+ * the meantime.
+ *
+ * When the listing goes live, replace the string below with its URL. That is
+ * the only line that has to change: every "Install on Shopify" CTA reads this
+ * constant through src/components/site/InstallOnShopify.tsx, so the address
+ * lives here and nowhere else.
+ */
+export const SHOPIFY_APP_LISTING = "https://apps.shopify.com/";

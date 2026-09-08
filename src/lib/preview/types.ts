@@ -113,7 +113,17 @@ export type TrialLeadResponse =
       store?: string;
       token?: string;
     }
-  | { ok: false; error: "invalid_body" | "invalid_email" | "invalid_store" };
+  /**
+   * `rate_limited` is answered with a 429 and a per-IP budget — minting a
+   * token is cheap for us but it is the front door to a route that launches
+   * browsers. It is a "come back in a minute", not a "you got it wrong", and
+   * the form says so rather than sending anyone on to a preview that cannot
+   * run.
+   */
+  | {
+      ok: false;
+      error: "invalid_body" | "invalid_email" | "invalid_store" | "rate_limited";
+    };
 
 /** POST /api/preview request body. */
 export type PreviewRequest = { store: string; token: string };

@@ -6,37 +6,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Arrow from "@/components/site/Arrow";
 import { useOpenDemoStore } from "@/components/site/OpenDemoStore";
 import type { TrialLeadResponse } from "@/lib/preview/types";
+import { normaliseStoreInput } from "@/lib/store-domain";
+import { timeoutSignal } from "./net";
 
-/* Both checks mirror /api/trial-lead, so the visitor sees our sentence rather
-   than a 400 they cannot act on. Deliberately loose: a marketing form should
-   reject the obvious typo and nothing else. */
+/* Character-for-character the server's check, so the visitor sees our sentence
+   rather than a 400 they cannot act on. Deliberately loose: a marketing form
+   should reject the obvious typo and nothing else. */
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-/**
- * Turns whatever they typed into a bare host, or null if it can't be one.
- *
- * People paste `https://mystore.com/collections/all` as often as they type
- * `mystore.com`, so the scheme, the userinfo, the port and everything from the
- * first slash are stripped rather than rejected. What survives is echoed back
- * under the field, so there is never a question about what we understood.
- */
-export function normaliseStore(raw: string): string | null {
-  const trimmed = raw.trim();
-  if (!trimmed || /\s/.test(trimmed)) return null;
-
-  const host = trimmed
-    .toLowerCase()
-    .replace(/^[a-z][a-z0-9+.-]*:\/\//, "")
-    .replace(/^\/+/, "")
-    .split(/[/?#]/)[0]
-    .replace(/^[^@]*@/, "")
-    .replace(/:\d+$/, "")
-    .replace(/\.$/, "");
-
-  if (!host.includes(".") || host.startsWith(".")) return null;
-  if (host.length > 253) return null;
-  return host;
-}
 
 export default function TryForm() {
   const router = useRouter();
@@ -52,8 +28,13 @@ export default function TryForm() {
   const [storeError, setStoreError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  /* Not about either field — "the server is busy" has no input to sit
+     under, so it takes the slot beneath the button. */
+  const [formError, setFormError] = useState<string | null>(null);
 
-  const host = normaliseStore(store);
+  /* The server's own rule, not a friendlier approximation of it — see
+     @/lib/store-domain. Anything this accepts, /api/trial-lead accepts. */
+  const host = normaliseStoreInput(store);
 
   const go = async (target: string, address: string) => {
     const to = (token?: string) =>
@@ -69,15 +50,49 @@ export default function TryForm() {
         /* A stalled POST is the same outcome as a failed one, and worse for
            the visitor: the demo tab is already open and this page would sit
            on "Opening your preview…" forever. Six seconds, then move. */
-        signal: AbortSignal.timeout(6000),
+        signal: timeoutSignal(6000),
       });
       const data = (await res.json()) as TrialLeadResponse;
-      if (data.ok && data.token) {
+
+      if (data.ok) {
         router.push(to(data.token));
         return;
       }
+
+      /* The server refused what we sent. Leaving is the wrong move for any of
+         these: the preview page can only tell them to come back and fix it,
+         and each round trip pops another demo tab. The answer belongs on the
+         page they are already looking at — on the field, where there is one.
+         Both sides now run the same domain rule, so the two typed errors are
+         the disagreement case rather than the usual one; `rate_limited` is
+         the one that shows up in normal use. */
+      if (data.error === "rate_limited") {
+        setSending(false);
+        setFormError(
+          "You've tried a few times — give it a minute and we'll pick this back up.",
+        );
+        return;
+      }
+      if (data.error === "invalid_store" || data.error === "invalid_email") {
+        setSending(false);
+        if (data.error === "invalid_store") {
+          setStoreError(
+            "We couldn't use that domain — check it and try again.",
+          );
+          storeRef.current?.focus();
+        } else {
+          setEmailError(
+            "That address looks incomplete — check it and try again.",
+          );
+          emailRef.current?.focus();
+        }
+        return;
+      }
+      /* `invalid_body` is our bug, not theirs — fall through rather than
+         blame a field they filled in correctly. */
     } catch {
-      /* Covers both the network failure and the six-second abort — see below. */
+      /* Network failure or the six-second abort. Both mean we never heard
+         back, which is not the visitor's problem to solve. */
     }
 
     /* No token, or the call never landed. The preview page shows its
@@ -91,6 +106,7 @@ export default function TryForm() {
     e.preventDefault();
 
     const address = email.trim();
+    setFormError(null);
     const badStore = !host;
     const badEmail = !EMAIL.test(address);
 
@@ -255,13 +271,27 @@ export default function TryForm() {
           {sending ? null : <Arrow className="cta-arrow size-5" />}
         </button>
 
-        {/* The follow-up and the privacy link moved up beside the email field;
-            what is left here is the claim about the store, which belongs with
-            the button rather than with either input. */}
-        <p className="mt-5 text-[12.5px] leading-relaxed text-muted">
-          No card, no install, and we never touch your storefront &mdash; we
-          only read the public page.
-        </p>
+        {/* One slot, two tenants. The reassurance is what belongs under the
+            button; a "come back in a minute" is more use than reassurance the
+            moment there is one, and it has no field of its own to sit under.
+            The reserved height keeps the swap from moving the page — the
+            follow-up and the privacy link live beside the email field now, so
+            all that is left here is the claim about the store. */}
+        <div className="mt-5 min-h-[2.75rem]">
+          {formError ? (
+            <p
+              role="alert"
+              className="text-[13px] leading-relaxed font-semibold text-brand"
+            >
+              {formError}
+            </p>
+          ) : (
+            <p className="text-[12.5px] leading-relaxed text-muted">
+              No card, no install, and we never touch your storefront &mdash; we
+              only read the public page.
+            </p>
+          )}
+        </div>
       </form>
       {demoStoreForm}
     </>

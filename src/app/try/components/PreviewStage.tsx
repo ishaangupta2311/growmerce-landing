@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import Arrow from "@/components/site/Arrow";
 import { OpenDemoStoreButton } from "@/components/site/OpenDemoStore";
+import InstallOnShopify from "@/components/site/InstallOnShopify";
 import { DEMO_STORE_PASSWORD } from "@/lib/site-urls";
 import {
   DEFAULT_THEME,
@@ -20,6 +21,7 @@ import {
   type PreviewResult,
   type PreviewTheme,
 } from "@/lib/preview/types";
+import { isAbort, timeoutSignal } from "./net";
 import StoreFrame from "./StoreFrame";
 import GrowsearchWidget from "./GrowsearchWidget";
 import { FIXTURES } from "./fixture";
@@ -53,6 +55,8 @@ function errorTitle(code: PreviewErrorCode | null, store: string): string {
       return "We've run a lot of these just now";
     case "internal":
       return "That one broke on our side";
+    case "timeout":
+      return "That took longer than we could wait";
     default:
       return `We couldn't reach ${store}`;
   }
@@ -297,12 +301,27 @@ function DemoStoreCard({ opened }: { opened: boolean }) {
       <OpenDemoStoreButton className="cta-primary mt-5 w-full max-[359px]:px-4 max-[359px]:text-[15px]">
         {opened ? "Open it again" : "Open the demo store"}
       </OpenDemoStoreButton>
-      <Link href="/pricing" className="cta-secondary mt-3 w-full">
-        Get my custom plan
-      </Link>
-      <p className="mt-4 text-center text-[12.5px] text-muted">
+      <p className="mt-3 text-center text-[12.5px] text-muted">
         Opens in a new tab, already unlocked.
       </p>
+
+      {/* The card above is about someone else's store; this is the line where
+          it becomes theirs. Kept below the demo button because the password
+          and the button are one unit — but given the rule and its own copy so
+          it does not read as the demo store's smaller sibling. */}
+      <div className="mt-6 border-t border-line pt-5">
+        <p className="text-[13.5px] leading-relaxed text-body-mute">
+          Seen enough? Growsearch installs on your own store from the Shopify
+          App Store.
+        </p>
+        <InstallOnShopify className="mt-3.5 w-full max-[359px]:px-4 max-[359px]:text-[15px]" />
+        <Link
+          href="/pricing"
+          className="mt-4 block text-center text-[13.5px] font-semibold text-charcoal underline underline-offset-4 transition-colors hover:text-brand"
+        >
+          Get my custom plan
+        </Link>
+      </div>
     </aside>
   );
 }
@@ -325,25 +344,55 @@ export default function PreviewStage() {
       ? fixtureKey
       : null;
 
+  useEffect(() => {
+    if (!store) router.replace("/try");
+  }, [store, router]);
+
+  if (!store) return null;
+
+  /* Keyed on the request, not mounted once. Two preview URLs are two different
+     jobs, and going between them with the back button keeps this component
+     mounted — without the key the second URL would render the first store's
+     result under it, because both the fetch guard and the result live in state
+     that only a remount clears. */
+  return (
+    <PreviewRun
+      key={`${store}|${token}|${fixture ?? ""}`}
+      store={store}
+      token={token}
+      fixture={fixture}
+      openedAlready={openedAlready}
+    />
+  );
+}
+
+function PreviewRun({
+  store,
+  token,
+  fixture,
+  openedAlready,
+}: {
+  store: string;
+  token: string;
+  fixture: "light" | "dark" | null;
+  openedAlready: boolean;
+}) {
   /* Two of the three outcomes are known before the first paint — the dev
      fixture and "they arrived with no token" — so they are the initial state
      rather than an effect that immediately re-renders. */
   const [state, setState] = useState<State>(() => {
     if (fixture) return { status: "ready", result: FIXTURES[fixture] };
-    if (store && !token) return { status: "error", code: null, message: "" };
+    if (!token) return { status: "error", code: null, message: "" };
     return { status: "loading" };
   });
   const [step, setStep] = useState(0);
   const startedRef = useRef(false);
 
   useEffect(() => {
-    if (!store) {
-      router.replace("/try");
-      return;
-    }
     if (!token || fixture) return;
     // StrictMode mounts effects twice in development; the job is a POST that
-    // starts a browser, so it runs exactly once per page.
+    // starts a browser, so it runs exactly once per mount — and the component
+    // is remounted per request, so this guard cannot outlive its job.
     if (startedRef.current) return;
     startedRef.current = true;
 
@@ -353,19 +402,26 @@ export default function PreviewStage() {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ store, token }),
+          /* The route caps itself at 60 s. Without a client cap of its own a
+             hung function leaves the stepper sitting on "Drawing Growsearch
+             on it" with nothing behind it, forever. */
+          signal: timeoutSignal(55_000),
         });
         const data = (await res.json()) as PreviewResponse;
         if (data.ok) setState({ status: "ready", result: data });
         else setState({ status: "error", code: data.error, message: data.message });
-      } catch {
+      } catch (err) {
+        const timedOut = isAbort(err);
         setState({
           status: "error",
-          code: "unreachable",
-          message: `We couldn't reach ${store} just now.`,
+          code: timedOut ? "timeout" : "unreachable",
+          message: timedOut
+            ? `${store} took longer than we're willing to make you wait. Big stores sometimes do — it's worth another go in a minute.`
+            : `We couldn't reach ${store} just now.`,
         });
       }
     })();
-  }, [store, token, fixture, router]);
+  }, [store, token, fixture]);
 
   /* The stepper is honest about the shape of the job, not about its progress —
      the API returns one answer at the end, so the steps are timed to the run's
@@ -380,9 +436,9 @@ export default function PreviewStage() {
 
   const fallback = useMemo(() => fallbackResult(store), [store]);
 
-  if (!store) return null;
-
-  const expired = state.status === "error" && (state.code === "unauthorized" || state.code === null);
+  const expired =
+    state.status === "error" &&
+    (state.code === "unauthorized" || state.code === null);
 
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-12">

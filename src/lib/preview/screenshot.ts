@@ -14,6 +14,7 @@ import { existsSync } from "node:fs";
 
 import puppeteer, { type Browser, type HTTPRequest, type Page } from "puppeteer-core";
 
+import { withDeadline } from "./deadline";
 import { assertPublicHost, isSyntacticallyPublicHost } from "./store-url";
 import { contrastRatio, parseColour, saturation } from "./theme";
 import type { PreviewTheme } from "./types";
@@ -73,41 +74,87 @@ type RawComputed = {
   font: string;
 };
 
-let resolvedExecutable: string | null | undefined;
+/* The *promise*, not the path. Caching only the finished answer let two cold
+   requests both miss the cache and both enter `@sparticuz/chromium`, which
+   unpacks a ~100 MB binary into /tmp — so the second one could hand back a path
+   to a half-written executable and exec it. Storing the in-flight promise makes
+   the extraction happen once and everyone wait for the same one. */
+let resolvedExecutable: Promise<string | null> | null = null;
 
 /**
  * `CHROME_PATH` wins, then a real browser on this machine, then the serverless
- * bundle. The last one unpacks ~100 MB on first use, which is fine on Lambda and
- * a waste on a laptop that already has Chrome — hence the order.
+ * bundle. The last one unpacks on first use, which is fine on Lambda and a waste
+ * on a laptop that already has Chrome — hence the order.
  */
-async function executablePath(): Promise<string | null> {
-  if (resolvedExecutable !== undefined) return resolvedExecutable;
+function executablePath(): Promise<string | null> {
+  resolvedExecutable ??= (async () => {
+    const fromEnv = process.env.CHROME_PATH?.trim();
+    if (fromEnv && existsSync(fromEnv)) return fromEnv;
 
-  const fromEnv = process.env.CHROME_PATH?.trim();
-  if (fromEnv && existsSync(fromEnv)) {
-    resolvedExecutable = fromEnv;
-    return resolvedExecutable;
-  }
+    const local = (process.platform === "darwin" ? MAC_CANDIDATES : LINUX_CANDIDATES).find((path) =>
+      existsSync(path),
+    );
+    if (local) return local;
 
-  const local = (process.platform === "darwin" ? MAC_CANDIDATES : LINUX_CANDIDATES).find((path) =>
-    existsSync(path),
-  );
-  if (local) {
-    resolvedExecutable = local;
-    return resolvedExecutable;
-  }
-
-  try {
-    const { default: chromium } = await import("@sparticuz/chromium");
-    resolvedExecutable = await chromium.executablePath();
-  } catch (err) {
-    console.warn("[preview] no Chrome available:", err instanceof Error ? err.message : err);
-    resolvedExecutable = null;
-  }
+    try {
+      const { default: chromium } = await import("@sparticuz/chromium");
+      return await chromium.executablePath();
+    } catch (err) {
+      console.warn("[preview] no Chrome available:", err instanceof Error ? err.message : err);
+      return null;
+    }
+  })();
   return resolvedExecutable;
 }
 
-async function launch(executable: string): Promise<Browser> {
+/**
+ * At most two Chromes at once, process-wide.
+ *
+ * This is the real ceiling on what a burst of requests can cost us: the per-IP
+ * budget in the route is trivially spread across addresses, but nothing gets
+ * past this. A caller that cannot get a slot inside its own budget goes without
+ * a screenshot, which is a stage this pipeline is built to lose.
+ */
+const MAX_CONCURRENT_BROWSERS = 2;
+let running = 0;
+const waiting: (() => void)[] = [];
+
+async function acquireSlot(budgetMs: number): Promise<boolean> {
+  if (running < MAX_CONCURRENT_BROWSERS) {
+    running += 1;
+    return true;
+  }
+
+  let release: (() => void) | null = null;
+  const queued = new Promise<boolean>((resolve) => {
+    release = () => resolve(true);
+    waiting.push(release);
+  });
+
+  const won = await Promise.race([
+    queued,
+    new Promise<boolean>((resolve) => {
+      setTimeout(() => resolve(false), Math.max(0, budgetMs)).unref?.();
+    }),
+  ]);
+
+  if (won) {
+    running += 1;
+    return true;
+  }
+  /* Timed out waiting. Drop our place in the queue so a later release is not
+     handed to a caller that has already given up. */
+  const index = release ? waiting.indexOf(release) : -1;
+  if (index >= 0) waiting.splice(index, 1);
+  return false;
+}
+
+function releaseSlot(): void {
+  running = Math.max(0, running - 1);
+  waiting.shift()?.();
+}
+
+async function launch(executable: string, budgetMs: number): Promise<Browser> {
   const serverless = executable.includes("/tmp/") || process.env.AWS_LAMBDA_FUNCTION_NAME;
   let args = [
     "--no-sandbox",
@@ -130,7 +177,11 @@ async function launch(executable: string): Promise<Browser> {
     headless: true,
     args,
     defaultViewport: VIEWPORT,
-    protocolTimeout: TOTAL_BUDGET_MS,
+    /* Both of these default to 30 s, which is longer than the whole stage is
+       allowed to take. The comment above `TOTAL_BUDGET_MS` used to claim the
+       launch was covered; it was not. */
+    timeout: budgetMs,
+    protocolTimeout: budgetMs,
   });
 }
 
@@ -153,40 +204,69 @@ async function launch(executable: string): Promise<Browser> {
  * read a cross-origin image or a script that fails to parse — and closing it
  * would mean a DNS lookup per request.
  */
-/* One DNS answer per host for a minute. An iframe-heavy storefront hits the same
-   handful of hosts over and over, and this check sits on the critical path of
-   the page load. Deliberately short-lived: a long cache would hand a rebinding
-   attacker a stale "public" verdict, and a slow resolver must not be able to
-   stall the stage, so the lookup itself is on a deadline and fails closed. */
-const HOST_VERDICT_TTL_MS = 60_000;
 const HOST_VERDICT_DEADLINE_MS = 2_000;
-const hostVerdicts = new Map<string, { at: number; allowed: Promise<boolean> }>();
 
-function documentHostAllowed(hostname: string): Promise<boolean> {
-  const cached = hostVerdicts.get(hostname);
-  if (cached && Date.now() - cached.at < HOST_VERDICT_TTL_MS) return cached.allowed;
+/** Per-request-hostname DNS verdicts, scoped to one capture. */
+type HostVerdicts = Map<string, Promise<boolean>>;
+
+/**
+ * Deliberately created per `capture()` and thrown away with it.
+ *
+ * A process-wide cache with a TTL turned DNS rebinding from a race into a
+ * schedule: job one resolves `r.evil.com` to a public address and caches the
+ * verdict, the attacker flips the record, and job two inside the window does no
+ * lookup at all. Scoped to a single job, the worst an attacker gets is the race
+ * they always had.
+ */
+function hostAllowed(hostname: string, verdicts: HostVerdicts): Promise<boolean> {
+  const cached = verdicts.get(hostname);
+  if (cached) return cached;
 
   const allowed = withDeadline(
-    assertPublicHost(hostname),
+    assertPublicHost(hostname, HOST_VERDICT_DEADLINE_MS),
     HOST_VERDICT_DEADLINE_MS,
     `dns ${hostname}`,
   ).then(
     () => true,
     () => false,
   );
-  hostVerdicts.set(hostname, { at: Date.now(), allowed });
+  verdicts.set(hostname, allowed);
 
-  if (hostVerdicts.size > 200) {
-    const oldest = hostVerdicts.keys().next();
-    if (!oldest.done) hostVerdicts.delete(oldest.value);
+  if (verdicts.size > 200) {
+    const oldest = verdicts.keys().next();
+    if (!oldest.done) verdicts.delete(oldest.value);
   }
   return allowed;
 }
 
+/**
+ * The SSRF guard, again, from the other side.
+ *
+ * `safeFetch` only covers the HTML we pulled ourselves. The browser then goes
+ * off and does its own thing: it follows the store's redirects, loads
+ * subresources from wherever the markup points, and renders iframes — all of
+ * which are requests our process makes to hosts we never chose, from inside our
+ * network.
+ *
+ * Every intercepted request therefore gets the full check — name, port and DNS —
+ * regardless of resource type. An earlier version checked DNS on documents only
+ * and called subresource access "blind"; it is not. A hostile page can fire
+ * hundreds of `fetch()`es at `10.0.0.5.nip.io:6443` and friends during the load
+ * window, read the outcomes from JavaScript, and paint them into
+ * `body.style.background` — where `readComputedTheme` and the JPEG hand them
+ * straight back to the caller. Ports are checked for the same reason: the
+ * interesting internal services do not listen on 80.
+ *
+ * What is still open, honestly: between our lookup and Chrome's own connection
+ * the name can change answers, and nothing here can see that. Closing it needs
+ * the browser pointed at a forward proxy that pins each hostname to the address
+ * we validated. That is the right fix and it is not built.
+ */
 async function handleRequest(
   request: HTTPRequest,
   page: Page,
   loaded: () => boolean,
+  verdicts: HostVerdicts,
 ): Promise<void> {
   const abort = () => void request.abort().catch(() => {});
   /* Both calls throw if the request already resolved — a race we cannot win and
@@ -225,13 +305,15 @@ async function handleRequest(
     abort();
     return;
   }
-
+  if (target.port && target.port !== "80" && target.port !== "443") {
+    abort();
+    return;
+  }
   if (!isSyntacticallyPublicHost(target.hostname)) {
     abort();
     return;
   }
-
-  if (type === "document" && !(await documentHostAllowed(target.hostname))) {
+  if (!(await hostAllowed(target.hostname, verdicts))) {
     abort();
     return;
   }
@@ -453,23 +535,18 @@ function readComputedTheme(page: Page): Promise<RawComputed> {
   });
 }
 
-function withDeadline<T>(work: Promise<T>, ms: number, label: string): Promise<T> {
-  return Promise.race([
-    work,
-    new Promise<T>((_, reject) => {
-      setTimeout(() => reject(new Error(`${label} exceeded ${ms}ms`)), ms).unref?.();
-    }),
-  ]);
-}
-
-async function capture(browser: Browser, url: string): Promise<CaptureResult> {
+async function capture(browser: Browser, url: string, budgetMs: number): Promise<CaptureResult> {
   const page = await browser.newPage();
+  const verdicts: HostVerdicts = new Map();
   let loaded = false;
   await page.setRequestInterception(true);
-  page.on("request", (request) => void handleRequest(request, page, () => loaded));
+  page.on("request", (request) => void handleRequest(request, page, () => loaded, verdicts));
   await page.setExtraHTTPHeaders({ "accept-language": "en-US,en;q=0.9" });
 
-  await page.goto(url, { waitUntil: "domcontentloaded", timeout: NAV_TIMEOUT_MS });
+  await page.goto(url, {
+    waitUntil: "domcontentloaded",
+    timeout: Math.min(NAV_TIMEOUT_MS, budgetMs),
+  });
   loaded = true;
   /* Give late-loading hero images a chance, but never wait on the tracker that
      polls forever — hence a grace period rather than `waitUntil: networkidle`. */
@@ -571,25 +648,50 @@ function toTheme(raw: RawComputed): BrowserTheme {
  * not an option on a long-lived server.
  */
 async function shutdown(browser: Browser): Promise<void> {
+  const child = browser.process();
   try {
     await withDeadline(browser.close(), 3_000, "browser close");
   } catch {
-    browser.process()?.kill("SIGKILL");
+    child?.kill("SIGKILL");
+  }
+
+  /* `close()` resolving is not the process being gone, and the semaphore counts
+     real browsers — without this wait a closing Chrome overlaps the next launch
+     and three are briefly alive under a limit of two. */
+  if (child && child.exitCode === null && child.signalCode === null) {
+    await withDeadline(
+      new Promise<void>((resolve) => child.once("exit", () => resolve())),
+      1_000,
+      "browser exit",
+    ).catch(() => {});
   }
 }
 
-export async function captureSite(url: string): Promise<CaptureResult | null> {
+export async function captureSite(url: string, budgetMs: number): Promise<CaptureResult | null> {
+  const budget = Math.min(TOTAL_BUDGET_MS, budgetMs);
+  if (budget < 3_000) return null; // not enough left to be worth a browser
+
   const executable = await executablePath();
   if (!executable) return null;
 
+  const startedAt = Date.now();
+  /* Half the budget at most on queueing — arriving at the capture with no time
+     left to run it is the same as never getting a slot. */
+  if (!(await acquireSlot(budget / 2))) {
+    console.info("[preview] stage=screenshot skipped=busy");
+    return null;
+  }
+
   let browser: Browser | null = null;
   try {
+    const left = () => Math.max(1_000, budget - (Date.now() - startedAt));
     /* Deliberately one browser per job. Reusing a warm instance saves ~400ms but
-       a single wedged page then poisons every later preview, and this route runs
-       at most a handful of times a minute. */
-    browser = await launch(executable);
-    return await withDeadline(capture(browser, url), TOTAL_BUDGET_MS, "screenshot stage");
+       a single wedged page then poisons every later preview, and the semaphore
+       above already caps what a burst can cost. */
+    browser = await launch(executable, left());
+    return await withDeadline(capture(browser, url, left()), left(), "screenshot stage");
   } finally {
     if (browser) await shutdown(browser);
+    releaseSlot();
   }
 }

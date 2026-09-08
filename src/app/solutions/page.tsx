@@ -252,7 +252,7 @@ export default function SolutionsPage() {
               Fourteen days, your own catalogue, your own shoppers. The
               zero-result list alone is usually worth the install.
             </p>
-            <Link href="/pricing" className="cta-primary-inverse">
+            <Link href="/try" className="cta-primary-inverse">
               Start free trial
               <Arrow className="size-5" />
             </Link>
