@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 560" font-family="ui-sans-serif, system-ui, sans-serif">
+  <title>Growsearch merchant search insights</title>
+  <desc>Illustrative merchant analytics showing search totals, top queries, and queries with zero results.</desc>
+  <rect x="1" y="1" width="718" height="558" rx="18" fill="#E5E5E5" stroke="#E5E5E5" stroke-width="2"/>
+  <rect x="2" y="2" width="716" height="556" rx="17" fill="#FFFFFF"/>
+  <!-- Panel heading. -->
+  <circle cx="39" cy="47" r="7" fill="#FF5A1F"/>
+  <text x="58" y="55" fill="#171717" font-size="22" font-weight="600">Search insights</text>
+  <text x="688" y="52" fill="#8A8A8A" font-size="14" text-anchor="end">Last 30 days</text>
+  <!-- Summary metrics. -->
+  <g fill="#FFF4EE" stroke="#FFE4D6" stroke-width="1.5">
+    <rect x="32" y="88" width="208" height="102" rx="12" fill="#FFE4D6"/>
+    <rect x="33.5" y="89.5" width="205" height="99" rx="10.5" stroke="none"/>
+    <rect x="256" y="88" width="208" height="102" rx="12" fill="#FFE4D6"/>
+    <rect x="257.5" y="89.5" width="205" height="99" rx="10.5" stroke="none"/>
+    <rect x="480" y="88" width="208" height="102" rx="12" fill="#FFE4D6"/>
+    <rect x="481.5" y="89.5" width="205" height="99" rx="10.5" stroke="none"/>
+  </g>
+  <g fill="#8A8A8A" font-size="14">
+    <text x="50" y="119">Searches</text>
+    <text x="274" y="119">Zero results</text>
+    <text x="498" y="119">New terms</text>
+  </g>
+  <g fill="#171717" font-size="32" font-weight="600">
+    <text x="50" y="163">4,912</text>
+    <text x="274" y="163">214</text>
+    <text x="498" y="163">38</text>
+  </g>
+  <!-- Each 560-unit track uses an exact proportional filled width. -->
+  <text x="32" y="228" fill="#171717" font-size="15" font-weight="600">Top queries</text>
+  <g font-size="16">
+    <g>
+      <text x="32" y="267" fill="#171717">gift for a coffee lover</text>
+      <text x="688" y="267" fill="#4A4A4A" text-anchor="end">1,284</text>
+      <rect x="32" y="280" width="560" height="10" rx="5" fill="#FFE4D6"/>
+      <rect x="32" y="280" width="560" height="10" rx="5" fill="#FF5A1F"/>
+    </g>
+    <g>
+      <text x="32" y="322" fill="#171717">kava drinks</text>
+      <rect x="140" y="304" width="78" height="24" rx="12" fill="#FF5A1F"/>
+      <text x="179" y="320" fill="#FFFFFF" font-size="12" font-weight="600" text-anchor="middle">0 results</text>
+      <text x="688" y="322" fill="#4A4A4A" text-anchor="end">840</text>
+      <rect x="32" y="335" width="560" height="10" rx="5" fill="#FFE4D6"/>
+      <rect x="32" y="335" width="347.2" height="10" rx="5" fill="#FF5A1F"/>
+    </g>
+    <g>
+      <text x="32" y="377" fill="#171717">linen shirt but not white</text>
+      <text x="688" y="377" fill="#4A4A4A" text-anchor="end">612</text>
+      <rect x="32" y="390" width="560" height="10" rx="5" fill="#FFE4D6"/>
+      <rect x="32" y="390" width="268.8" height="10" rx="5" fill="#FF5A1F"/>
+    </g>
+    <g>
+      <text x="32" y="432" fill="#171717">something warm for the rain</text>
+      <text x="688" y="432" fill="#4A4A4A" text-anchor="end">398</text>
+      <rect x="32" y="445" width="560" height="10" rx="5" fill="#FFE4D6"/>
+      <rect x="32" y="445" width="173.6" height="10" rx="5" fill="#FF5A1F"/>
+    </g>
+  </g>
+  <rect x="32" y="483" width="656" height="1" fill="#E5E5E5"/>
+  <text x="32" y="516" fill="#8A8A8A" font-size="15">Every query, logged — including the ones you can't answer yet.</text>
+</svg>

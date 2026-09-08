@@ -66,7 +66,10 @@ Lives in `src/components/site/`. Page agents MUST import these and MUST NOT edit
 
 `/brand/logo.svg` · `/img/logos/logo-{shopify,bigcommerce,wordpress,woocommerce}.svg`
 `/img/pages/hero-search-mockup.png` (home hero collage, cut out for the
-headline staircase) · `hero-revenue-macbook.png` (home hero card) · `pricing-web.png`
+headline staircase) · `hero-revenue-macbook.png` (home hero card) ·
+`every-store-mark.svg` ("Built for every store" mark) ·
+`search-insights-panel.svg` (the merchant analytics panel in "Turn every search
+into a growth opportunity") · `pricing-web.png`
 (pricing-band icon web) · `unit-opens.png` (solutions) · `combines-it-all.png`
 (features) · `about-screenshot.png`, `about-image2.png` (about) ·
 `growsearch-badge.png` · `/img/smart-search-mock.png` (product UI mock) ·

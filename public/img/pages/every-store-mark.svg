@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 360">
+  <title>One storefront for every catalogue</title>
+  <desc>Three stacked storefront cards with a search field and six product tiles on the front card.</desc>
+  <!-- Two offset cards peek out above and to the right. -->
+  <g fill="#FFFFFF" stroke="#FFE4D6" stroke-width="2">
+    <g>
+      <rect x="82" y="52" width="240" height="232" rx="22" fill="#FFE4D6"/>
+      <rect x="84" y="54" width="236" height="228" rx="20" stroke="none"/>
+    </g>
+    <g>
+      <rect x="62" y="72" width="240" height="232" rx="22" fill="#FFE4D6"/>
+      <rect x="64" y="74" width="236" height="228" rx="20" stroke="none"/>
+    </g>
+    <g>
+      <rect x="42" y="92" width="240" height="232" rx="22" fill="#FFE4D6"/>
+      <rect x="44" y="94" width="236" height="228" rx="20" stroke="none"/>
+    </g>
+  </g>
+  <!-- Chunky search glyph and placeholder stay clear at small sizes. -->
+  <rect x="62" y="114" width="200" height="40" rx="20" fill="#FFF4EE"/>
+  <path fill="#FF5A1F" fill-rule="evenodd" d="M83 123.5 A8.5 8.5 0 1 1 83 140.5 A8.5 8.5 0 1 1 83 123.5 Z M83 126.5 A5.5 5.5 0 1 0 83 137.5 A5.5 5.5 0 1 0 83 126.5 Z"/>
+  <path fill="#FF5A1F" d="M87 138 A1.5 1.5 0 0 1 89 136 L95 142 A1.5 1.5 0 0 1 93 144 Z"/>
+  <rect x="108" y="130" width="112" height="8" rx="4" fill="#D8B7A5"/>
+  <!-- Exactly six product tiles, with one orange highlight. -->
+  <g>
+    <rect x="62" y="176" width="60" height="56" rx="12" fill="#FFF4EE"/>
+    <rect x="132" y="176" width="60" height="56" rx="12" fill="#FF5A1F"/>
+    <rect x="202" y="176" width="60" height="56" rx="12" fill="#FFE4D6"/>
+    <rect x="62" y="246" width="60" height="56" rx="12" fill="#FFE4D6"/>
+    <rect x="132" y="246" width="60" height="56" rx="12" fill="#FFF4EE"/>
+    <rect x="202" y="246" width="60" height="56" rx="12" fill="#FFF4EE"/>
+  </g>
+</svg>
