@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 590" font-family="ui-sans-serif, system-ui, sans-serif">
+  <title>The work is already done</title>
+  <desc>A pale inactive chat bubble sits beside a larger panel. One checked row is promoted above two rows moved aside.</desc>
+  <!-- The small inert chat alternative carries only a cursor and a dismissal. -->
+  <g fill="none" stroke="#E5E5E5" stroke-opacity="1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M66 210 H182 Q202 210 202 230 V309 Q202 329 182 329 H105 L78 352 V329 H66 Q46 329 46 309 V230 Q46 210 66 210 Z" stroke-dasharray="7 9"/>
+    <path d="M78 249 V275"/>
+    <circle cx="215" cy="190" r="15"/>
+    <path d="M210 185 L220 195 M220 185 L210 195"/>
+  </g>
+  <!-- The completed work occupies more than twice the visual area. -->
+  <rect x="276" y="106" width="362" height="390" rx="24" fill="#FFFFFF" stroke="#FFE4D6" stroke-opacity="1" stroke-width="3"/>
+  <rect x="300" y="128" width="86" height="7" rx="3.5" fill="#E5E5E5"/>
+  <!-- Promoted row, with a flush orange left edge and a clear check. -->
+  <rect x="298" y="158" width="316" height="88" rx="16" fill="#FFFFFF" stroke="#FFE4D6" stroke-opacity="1" stroke-width="3"/>
+  <path d="M314 158 H320 V246 H314 Q298 246 298 230 V174 Q298 158 314 158 Z" fill="#FF5A1F"/>
+  <rect x="340" y="183" width="146" height="10" rx="5" fill="#8A8A8A"/>
+  <rect x="340" y="208" width="108" height="8" rx="4" fill="#E5E5E5"/>
+  <circle cx="572" cy="202" r="20" fill="#FFF4EE"/>
+  <path d="M562 202 L569 209 L583 194" fill="none" stroke="#FF5A1F" stroke-opacity="1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Upward movement remains separate from the two displaced rows. -->
+  <path d="M307 376 V274 M298 284 L307 274 L316 284" fill="none" stroke="#FF5A1F" stroke-opacity="1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#FFF4EE" stroke="#FFE4D6" stroke-opacity="1" stroke-width="3">
+    <rect x="338" y="296" width="326" height="68" rx="16"/>
+    <rect x="338" y="392" width="326" height="68" rx="16"/>
+  </g>
+  <g fill="#FFE4D6">
+    <rect x="356" y="314" width="32" height="32" rx="8"/>
+    <rect x="356" y="410" width="32" height="32" rx="8"/>
+  </g>
+  <g fill="#E5E5E5">
+    <rect x="406" y="316" width="188" height="8" rx="4"/>
+    <rect x="406" y="337" width="120" height="7" rx="3.5"/>
+    <rect x="406" y="412" width="146" height="8" rx="4"/>
+    <rect x="406" y="433" width="176" height="7" rx="3.5"/>
+  </g>
+</svg>

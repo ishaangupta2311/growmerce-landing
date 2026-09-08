@@ -64,12 +64,14 @@ Lives in `src/components/site/`. Page agents MUST import these and MUST NOT edit
 
 ## Assets on disk
 
-`/brand/logo.svg` · `/img/logos/logo-{shopify,bigcommerce,wordpress,woocommerce}.svg`
+`/brand/logo.svg` · `/brand/growsearch-mark.svg` (the Growsearch fedora-and-
+magnifier, vectorised from `growsearch-badge.png`) · `/img/logos/logo-{shopify,bigcommerce,wordpress,woocommerce}.svg`
 `/img/pages/hero-search-mockup.png` (home hero collage, cut out for the
 headline staircase) · `hero-revenue-macbook.png` (home hero card) ·
 `every-store-mark.svg` ("Built for every store" mark) ·
 `search-insights-panel.svg` (the merchant analytics panel in "Turn every search
-into a growth opportunity") · `pricing-web.png`
+into a growth opportunity") · `ai-{grounded,installs,measured,not-a-chatbot}.svg`
+(one per conviction in "AI at Growmerce") · `pricing-web.png`
 (pricing-band icon web) · `unit-opens.png` (solutions) · `combines-it-all.png`
 (features) · `about-screenshot.png`, `about-image2.png` (about) ·
 `growsearch-badge.png` · `/img/smart-search-mock.png` (product UI mock) ·

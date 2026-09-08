@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 590" font-family="ui-sans-serif, system-ui, sans-serif">
+  <title>From a query to attributed checkout</title>
+  <desc>A dashed orange path links a query, a result, a cart, and an attributed checkout. Five rising bars sit below.</desc>
+  <!-- Four beats share one simple horizontal trail. -->
+  <path d="M188 250 H568" fill="none" stroke="#FF5A1F" stroke-opacity="1" stroke-width="3" stroke-dasharray="6 9" stroke-linecap="round"/>
+  <rect x="48" y="219" width="150" height="62" rx="31" fill="#FFFFFF" stroke="#FFE4D6" stroke-opacity="1" stroke-width="3"/>
+  <g fill="none" stroke="#FF5A1F" stroke-opacity="1" stroke-width="3.5" stroke-linecap="round">
+    <circle cx="78" cy="247" r="10"/>
+    <path d="M85 254 L94 263"/>
+  </g>
+  <rect x="110" y="246" width="62" height="8" rx="4" fill="#8A8A8A"/>
+  <rect x="258" y="198" width="104" height="104" rx="18" fill="#FFFFFF" stroke="#FFE4D6" stroke-opacity="1" stroke-width="3"/>
+  <rect x="278" y="219" width="35" height="8" rx="4" fill="#FF5A1F"/>
+  <rect x="278" y="241" width="64" height="8" rx="4" fill="#8A8A8A"/>
+  <rect x="278" y="263" width="48" height="8" rx="4" fill="#E5E5E5"/>
+  <!-- A cream disc keeps the trail clear of the open cart glyph. -->
+  <circle cx="461" cy="250" r="43" fill="#FFF4EE"/>
+  <g fill="none" stroke="#FF5A1F" stroke-opacity="1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M433 226 H442 L450 260 H480 L488 237 H445"/>
+    <path d="M450 260 L447 269 H480"/>
+  </g>
+  <g fill="#FF5A1F">
+    <circle cx="453" cy="281" r="5"/>
+    <circle cx="477" cy="281" r="5"/>
+  </g>
+  <rect x="566" y="202" width="108" height="100" rx="18" fill="#FFFFFF" stroke="#FF5A1F" stroke-opacity="1" stroke-width="3"/>
+  <rect x="585" y="222" width="70" height="44" rx="9" fill="#FFE4D6"/>
+  <path d="M608 244 L617 252 L632 236" fill="none" stroke="#FF5A1F" stroke-opacity="1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="620" y="287" text-anchor="middle" fill="#171717" font-size="15" font-weight="600">checkout</text>
+  <path d="M620 162 V190" fill="none" stroke="#FF5A1F" stroke-opacity="1" stroke-width="3" stroke-linecap="round"/>
+  <rect x="550" y="114" width="128" height="48" rx="14" fill="#FFFFFF" stroke="#FFE4D6" stroke-opacity="1" stroke-width="2"/>
+  <text x="614" y="145" text-anchor="middle" fill="#171717" font-size="19" font-weight="600">attributed</text>
+  <!-- Five bars rise steadily; the baseline stays visually quiet. -->
+  <g>
+    <rect x="202" y="448" width="42" height="40" rx="7" fill="#FFE4D6"/>
+    <rect x="270" y="423" width="42" height="65" rx="7" fill="#FF5A1F"/>
+    <rect x="338" y="400" width="42" height="88" rx="7" fill="#FFE4D6"/>
+    <rect x="406" y="375" width="42" height="113" rx="7" fill="#FF5A1F"/>
+    <rect x="474" y="343" width="42" height="145" rx="7" fill="#FF5A1F"/>
+  </g>
+  <path d="M182 489 H538" fill="none" stroke="#E5E5E5" stroke-opacity="1" stroke-width="2" stroke-linecap="round"/>
+</svg>

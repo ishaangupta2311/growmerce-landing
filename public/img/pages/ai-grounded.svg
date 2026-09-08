@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 720 590" font-family="ui-sans-serif, system-ui, sans-serif">
+  <title>Grounded in your data, or it doesn't ship.</title>
+  <desc>Product data, reviews, searches, and customer behaviour feed one model hub. A single arrow leads to an answer with four matching source chips: the model answers only from the store's data.</desc>
+  <defs>
+    <g id="parcel" fill="none" stroke="#FF5A1F" stroke-opacity="1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 6 L12 1 L22 6 V18 L12 23 L2 18 Z M2 6 L12 11 L22 6 M12 11 V23 M7 3.5 L17 8.5"/>
+    </g>
+    <g id="star" fill="none" stroke="#FF5A1F" stroke-opacity="1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 1 L15.4 8 L23 9 L17.5 14.5 L18.8 22 L12 18.4 L5.2 22 L6.5 14.5 L1 9 L8.6 8 Z"/>
+    </g>
+    <g id="search" fill="none" stroke="#FF5A1F" stroke-opacity="1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="10" cy="10" r="8"/>
+      <path d="M16 16 L23 23"/>
+    </g>
+    <g id="cursor" fill="none" stroke="#FF5A1F" stroke-opacity="1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 7 L5 22 L10 17 L14 23 L18 20 L14 14 L21 13 Z M3 1 L4 3 M11 1 L10 4 M1 8 H2"/>
+    </g>
+  </defs>
+  <!-- Smooth source paths meet tangentially at the hub's left edge. -->
+  <g fill="none" stroke="#FF5A1F" stroke-opacity="1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M302 145 C355 145 337 295 386 295"/>
+    <path d="M302 245 C340 245 349 295 386 295"/>
+    <path d="M302 345 C340 345 349 295 386 295"/>
+    <path d="M302 445 C355 445 337 295 386 295"/>
+    <path d="M462 295 H507 M497 285 L507 295 L497 305"/>
+  </g>
+  <!-- Equal source cards leave ample room for the longest label. -->
+  <g fill="#FFFFFF" stroke="#FFE4D6" stroke-opacity="1" stroke-width="3">
+    <rect x="42" y="111" width="260" height="68" rx="16"/>
+    <rect x="42" y="211" width="260" height="68" rx="16"/>
+    <rect x="42" y="311" width="260" height="68" rx="16"/>
+    <rect x="42" y="411" width="260" height="68" rx="16"/>
+  </g>
+  <g fill="#FFE4D6">
+    <rect x="56" y="127" width="36" height="36" rx="9"/>
+    <rect x="56" y="227" width="36" height="36" rx="9"/>
+    <rect x="56" y="327" width="36" height="36" rx="9"/>
+    <rect x="56" y="427" width="36" height="36" rx="9"/>
+  </g>
+  <use xlink:href="#parcel" x="62" y="133"/>
+  <use xlink:href="#star" x="62" y="233"/>
+  <use xlink:href="#search" x="62" y="333"/>
+  <use xlink:href="#cursor" x="62" y="433"/>
+  <g fill="#171717" font-size="18" font-weight="600">
+    <text x="104" y="151">Product data</text>
+    <text x="104" y="251">Reviews</text>
+    <text x="104" y="351">Searches</text>
+    <text x="104" y="451">Customer behaviour</text>
+  </g>
+  <!-- White model hub with one orange ring and four-point sparkle. -->
+  <rect x="386" y="257" width="76" height="76" rx="18" fill="#FFFFFF" stroke="#FFE4D6" stroke-opacity="1" stroke-width="3"/>
+  <circle cx="424" cy="295" r="25" fill="none" stroke="#FF5A1F" stroke-opacity="1" stroke-width="3"/>
+  <path d="M424 279 Q427 292 440 295 Q427 298 424 311 Q421 298 408 295 Q421 292 424 279 Z" fill="#FF5A1F"/>
+  <!-- One larger output card; its chips repeat all four input glyphs. -->
+  <rect x="510" y="184" width="168" height="222" rx="22" fill="#FFFFFF" stroke="#FFE4D6" stroke-opacity="1" stroke-width="3"/>
+  <text x="530" y="222" fill="#171717" font-size="19" font-weight="600">Answer</text>
+  <g fill="#8A8A8A">
+    <rect x="530" y="250" width="128" height="8" rx="4"/>
+    <rect x="530" y="276" width="112" height="8" rx="4"/>
+    <rect x="530" y="302" width="88" height="8" rx="4"/>
+  </g>
+  <path d="M530 333 H658" fill="none" stroke="#E5E5E5" stroke-opacity="1" stroke-width="2" stroke-linecap="round"/>
+  <g fill="#FFE4D6">
+    <rect x="530" y="354" width="26" height="28" rx="7"/>
+    <rect x="564" y="354" width="26" height="28" rx="7"/>
+    <rect x="598" y="354" width="26" height="28" rx="7"/>
+    <rect x="632" y="354" width="26" height="28" rx="7"/>
+  </g>
+  <use xlink:href="#parcel" transform="translate(534 359) scale(.75)"/>
+  <use xlink:href="#star" transform="translate(568 359) scale(.75)"/>
+  <use xlink:href="#search" transform="translate(602 359) scale(.75)"/>
+  <use xlink:href="#cursor" transform="translate(636 359) scale(.75)"/>
+</svg>

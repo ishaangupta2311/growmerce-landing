@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 590">
+  <title>It joins the store you already run</title>
+  <desc>Five interlocking white pieces surround a cream, dashed jigsaw socket. A continuous storefront is clipped to the placed pieces, leaving its search field missing. An identically sized Growsearch piece approaches that socket from just above and to the right.</desc>
+  <defs>
+    <!-- One cut for both socket and hero: 174 by 146 body, identical 36-unit
+         tab curves, top/bottom tabs and left/right blanks. Translation only. -->
+    <path id="store-piece" d="M0 0 H69 C76 0 76 -4 73 -10 C64 -27 73 -36 87 -36 C101 -36 110 -27 101 -10 C98 -4 98 0 105 0 H156 Q174 0 174 18 V55 C174 62 170 62 164 59 C147 50 138 59 138 73 C138 87 147 96 164 87 C170 84 174 84 174 91 V146 H105 C98 146 98 150 101 156 C110 173 101 182 87 182 C73 182 64 173 73 156 C76 150 76 146 69 146 H0 V91 C0 84 4 84 10 87 C27 96 36 87 36 73 C36 59 27 50 10 59 C4 62 0 62 0 55 V0 Z"/>
+    <!-- Clip one continuous storefront to the exact union of the five placed cells. -->
+    <clipPath id="storefront-placed-pieces" clipPathUnits="userSpaceOnUse">
+      <path transform="translate(0 0)" d="M18 0 H174 V55 C174 62 178 62 184 59 C201 50 210 59 210 73 C210 87 201 96 184 87 C178 84 174 84 174 91 V146 H105 C98 146 98 150 101 156 C110 173 101 182 87 182 C73 182 64 173 73 156 C76 150 76 146 69 146 H0 V18 Q0 0 18 0 Z"/>
+      <path transform="translate(174 0)" d="M0 0 H174 V55 C174 62 178 62 184 59 C201 50 210 59 210 73 C210 87 201 96 184 87 C178 84 174 84 174 91 V146 H105 C98 146 98 150 101 156 C110 173 101 182 87 182 C73 182 64 173 73 156 C76 150 76 146 69 146 H0 V91 C0 84 4 84 10 87 C27 96 36 87 36 73 C36 59 27 50 10 59 C4 62 0 62 0 55 V0 Z"/>
+      <path transform="translate(0 146)" d="M0 0 H69 C76 0 76 4 73 10 C64 27 73 36 87 36 C101 36 110 27 101 10 C98 4 98 0 105 0 H174 V55 C174 62 178 62 184 59 C201 50 210 59 210 73 C210 87 201 96 184 87 C178 84 174 84 174 91 V146 H18 Q0 146 0 128 V0 Z"/>
+      <path transform="translate(174 146)" d="M0 0 H69 C76 0 76 4 73 10 C64 27 73 36 87 36 C101 36 110 27 101 10 C98 4 98 0 105 0 H174 V55 C174 62 178 62 184 59 C201 50 210 59 210 73 C210 87 201 96 184 87 C178 84 174 84 174 91 V146 H0 V91 C0 84 4 84 10 87 C27 96 36 87 36 73 C36 59 27 50 10 59 C4 62 0 62 0 55 V0 Z"/>
+      <path transform="translate(348 146)" d="M0 0 H69 C76 0 76 4 73 10 C64 27 73 36 87 36 C101 36 110 27 101 10 C98 4 98 0 105 0 H174 V128 Q174 146 156 146 H0 V91 C0 84 4 84 10 87 C27 96 36 87 36 73 C36 59 27 50 10 59 C4 62 0 62 0 55 V0 Z"/>
+    </clipPath>
+  </defs>
+  <g transform="translate(54 217)">
+    <use href="#store-piece" transform="translate(348 0)" fill="#FFF4EE"/>
+    <!-- Five white cells retain the same body and complementary seam curves. -->
+    <g fill="#FFFFFF">
+      <path transform="translate(0 0)" d="M18 0 H174 V55 C174 62 178 62 184 59 C201 50 210 59 210 73 C210 87 201 96 184 87 C178 84 174 84 174 91 V146 H105 C98 146 98 150 101 156 C110 173 101 182 87 182 C73 182 64 173 73 156 C76 150 76 146 69 146 H0 V18 Q0 0 18 0 Z"/>
+      <path transform="translate(174 0)" d="M0 0 H174 V55 C174 62 178 62 184 59 C201 50 210 59 210 73 C210 87 201 96 184 87 C178 84 174 84 174 91 V146 H105 C98 146 98 150 101 156 C110 173 101 182 87 182 C73 182 64 173 73 156 C76 150 76 146 69 146 H0 V91 C0 84 4 84 10 87 C27 96 36 87 36 73 C36 59 27 50 10 59 C4 62 0 62 0 55 V0 Z"/>
+      <path transform="translate(0 146)" d="M0 0 H69 C76 0 76 4 73 10 C64 27 73 36 87 36 C101 36 110 27 101 10 C98 4 98 0 105 0 H174 V55 C174 62 178 62 184 59 C201 50 210 59 210 73 C210 87 201 96 184 87 C178 84 174 84 174 91 V146 H18 Q0 146 0 128 V0 Z"/>
+      <path transform="translate(174 146)" d="M0 0 H69 C76 0 76 4 73 10 C64 27 73 36 87 36 C101 36 110 27 101 10 C98 4 98 0 105 0 H174 V55 C174 62 178 62 184 59 C201 50 210 59 210 73 C210 87 201 96 184 87 C178 84 174 84 174 91 V146 H0 V91 C0 84 4 84 10 87 C27 96 36 87 36 73 C36 59 27 50 10 59 C4 62 0 62 0 55 V0 Z"/>
+      <path transform="translate(348 146)" d="M0 0 H69 C76 0 76 4 73 10 C64 27 73 36 87 36 C101 36 110 27 101 10 C98 4 98 0 105 0 H174 V128 Q174 146 156 146 H0 V91 C0 84 4 84 10 87 C27 96 36 87 36 73 C36 59 27 50 10 59 C4 62 0 62 0 55 V0 Z"/>
+    </g>
+    <!-- One webpage spans the grid. The missing top-right cell removes its
+         search field and cuts the hero/product content along the jigsaw profile. -->
+    <g clip-path="url(#storefront-placed-pieces)">
+      <!-- Continuous header: logo, navigation and search placeholder. -->
+      <path d="M0 0 H522 V55 H0 Z" fill="#FFF4EE" fill-opacity="0.5"/>
+      <rect x="22" y="17" width="28" height="22" rx="8" fill="#8A8A8A" fill-opacity="0.65"/>
+      <g fill="#8A8A8A" fill-opacity="0.55">
+        <rect x="72" y="25" width="36" height="6" rx="3"/>
+        <rect x="128" y="25" width="36" height="6" rx="3"/>
+        <rect x="184" y="25" width="36" height="6" rx="3"/>
+        <rect x="240" y="25" width="36" height="6" rx="3"/>
+      </g>
+      <rect x="308" y="14" width="194" height="30" rx="9" fill="#E5E5E5" fill-opacity="0.7"/>
+      <g fill="none" stroke="#8A8A8A" stroke-opacity="1" stroke-width="2.5" stroke-linecap="round">
+        <circle cx="322" cy="27" r="5"/>
+        <path d="M326 31 L331 36"/>
+      </g>
+      <rect x="340" y="26" width="118" height="5" rx="2.5" fill="#8A8A8A" fill-opacity="0.45"/>
+      <!-- A single hero band crosses the vertical cuts and the missing cell. -->
+      <rect x="20" y="64" width="482" height="92" rx="12" fill="#FFE4D6" fill-opacity="0.65"/>
+      <rect x="36" y="82" width="202" height="9" rx="4.5" fill="#8A8A8A" fill-opacity="0.65"/>
+      <rect x="36" y="102" width="264" height="6" rx="3" fill="#8A8A8A" fill-opacity="0.4"/>
+      <rect x="36" y="123" width="40" height="15" rx="5" fill="#FF5A1F"/>
+      <!-- Three product tiles continue across the bottom row as webpage content. -->
+      <g fill="#E5E5E5" fill-opacity="0.7">
+        <rect x="38" y="172" width="80" height="80" rx="10"/>
+        <rect x="212" y="172" width="80" height="80" rx="10"/>
+        <rect x="386" y="172" width="80" height="80" rx="10"/>
+      </g>
+      <g fill="#8A8A8A" fill-opacity="0.6">
+        <rect x="38" y="262" width="66" height="6" rx="3"/>
+        <rect x="212" y="262" width="66" height="6" rx="3"/>
+        <rect x="386" y="262" width="66" height="6" rx="3"/>
+      </g>
+      <g fill="#8A8A8A" fill-opacity="0.4">
+        <rect x="38" y="276" width="30" height="4" rx="2"/>
+        <rect x="212" y="276" width="30" height="4" rx="2"/>
+        <rect x="386" y="276" width="30" height="4" rx="2"/>
+      </g>
+    </g>
+    <!-- Draw each solid seam once. Brand orange at 38% gives a warm, stronger
+         hairline without introducing another color token. Socket seams are dashed. -->
+    <g fill="none" stroke="#FF5A1F" stroke-opacity="0.38" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M348 0 H18 Q0 0 0 18 V274 Q0 292 18 292 H504 Q522 292 522 274 V146"/>
+      <path d="M174 0 V55 C174 62 178 62 184 59 C201 50 210 59 210 73 C210 87 201 96 184 87 C178 84 174 84 174 91 V201 C174 208 178 208 184 205 C201 196 210 205 210 219 C210 233 201 242 184 233 C178 230 174 230 174 237 V292"/>
+      <path d="M0 146 H69 C76 146 76 150 73 156 C64 173 73 182 87 182 C101 182 110 173 101 156 C98 150 98 146 105 146 H243 C250 146 250 150 247 156 C238 173 247 182 261 182 C275 182 284 173 275 156 C272 150 272 146 279 146 H348"/>
+      <path d="M348 146 V201 C348 208 352 208 358 205 C375 196 384 205 384 219 C384 233 375 242 358 233 C352 230 348 230 348 237 V292"/>
+    </g>
+    <!-- Full missing-piece perimeter, including the shared left and bottom seams. -->
+    <use href="#store-piece" transform="translate(348 0)" fill="none" stroke="#8A8A8A" stroke-opacity="1" stroke-width="3" stroke-dasharray="5 7" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- Incoming piece is displaced by (58, -100): one-third of a body width
+       to the right, along the same approach axis as both short motion marks. -->
+  <use href="#store-piece" transform="translate(460 117)" fill="#FFFFFF" stroke="#FF5A1F" stroke-opacity="1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Verbatim Growsearch product mark; evenodd preserves the hat pinch and lens. -->
+  <g transform="translate(508.8136 148) scale(0.84)">
+    <path fill="#18202A" fill-rule="evenodd" d="M52.87,0.17 L56.32,0.17 L58.62,0.75 L60.34,1.78 L61.9,3.56 L63.28,6.55 L64.54,10.69 L67.3,22.41 L67.53,23.56 L67.47,24.2 L64.02,24.66 L63.45,24.89 L60.23,25.46 L56.67,26.49 L56.21,26.49 L55.86,26.72 L54.14,27.07 L53.79,27.3 L52.18,27.64 L38.51,31.67 L33.56,32.93 L27.93,34.08 L22.41,34.77 L17.24,34.77 L15.63,34.54 L14.14,34.08 L13.05,33.22 L12.7,32.53 L13.05,25.63 L13.62,19.89 L13.85,18.85 L13.85,17.82 L14.66,12.53 L15.57,8.85 L16.26,7.13 L16.95,5.98 L18.16,4.66 L20.46,3.28 L22.41,2.7 L24.71,2.36 L26.44,2.36 L26.55,2.24 L31.38,2.36 L34.48,2.7 L37.87,3.33 L37.13,4.08 L30.46,4.66 L24.94,5.57 L22.41,6.38 L20.46,7.53 L19.14,8.85 L18.22,10.46 L17.64,12.64 L17.76,14.02 L18.33,15.06 L19.66,15.92 L22.87,16.03 L25.4,15.34 L28.62,13.74 L30.92,12.13 L36.55,7.41 L40.46,4.66 L42.87,3.28 L47.47,1.32 L50.46,0.52 L52.87,0.17 Z M73.56,25.57 L78.05,25.69 L78.85,25.92 L79.89,26.49 L80.63,27.47 L80.63,28.97 L79.94,30.23 L78.62,31.55 L77.01,32.7 L74.48,33.97 L72.18,34.77 L68.74,35.69 L68.28,35.69 L61.38,37.64 L49.43,41.55 L48.39,42.01 L38.62,45.0 L36.9,45.34 L35.17,45.92 L34.71,45.92 L32.99,46.49 L26.78,47.87 L26.09,47.87 L24.94,48.22 L22.87,48.45 L20.69,48.91 L18.74,49.02 L17.7,49.25 L16.21,49.25 L15.06,49.48 L9.08,49.48 L7.93,49.25 L6.9,49.25 L4.14,48.68 L2.3,47.87 L1.49,47.3 L0.75,46.55 L0.29,45.75 L0.17,45.17 L0.29,43.56 L0.86,42.3 L1.67,41.15 L3.68,39.14 L5.29,37.87 L7.82,36.26 L10.8,34.77 L10.86,36.9 L11.09,38.16 L11.67,39.2 L12.3,39.83 L13.22,40.4 L14.94,40.98 L17.82,41.32 L22.07,41.21 L22.99,40.98 L24.6,40.86 L25.17,40.63 L25.86,40.63 L26.32,40.4 L28.39,40.06 L28.85,39.83 L29.43,39.83 L36.44,37.64 L54.25,30.75 L61.61,28.22 L69.08,26.26 L73.56,25.57 Z M70.23,37.53 L70.63,37.82 L72.01,40.34 L73.39,43.56 L74.31,46.32 L75.34,51.61 L75.46,57.82 L75.11,61.15 L73.74,66.55 L71.78,71.03 L69.14,75.29 L70.57,76.61 L71.72,76.26 L72.53,76.26 L73.56,76.49 L74.83,77.18 L89.48,90.57 L90.06,91.49 L90.52,92.76 L90.63,93.56 L90.52,95.06 L89.71,97.01 L88.28,98.56 L87.59,99.02 L85.63,99.71 L83.91,99.71 L82.64,99.37 L81.61,98.79 L67.3,85.06 L66.72,84.02 L66.49,83.22 L66.49,82.07 L66.61,81.95 L66.49,81.72 L64.83,80.29 L64.25,80.52 L62.07,82.47 L58.74,84.66 L56.09,86.03 L52.76,87.41 L48.39,88.56 L45.06,89.02 L41.38,89.14 L41.26,89.02 L37.47,88.79 L33.79,87.99 L31.61,87.18 L31.26,87.18 L26.9,85.23 L23.91,83.39 L21.15,81.32 L17.76,78.05 L16.38,76.44 L13.97,72.99 L11.55,68.16 L9.94,63.22 L9.37,59.89 L9.25,57.59 L9.14,57.47 L9.25,52.41 L9.43,51.67 L9.89,51.78 L16.09,51.67 L15.92,56.9 L16.26,60.0 L16.95,62.99 L18.33,66.67 L20.17,70.0 L22.13,72.64 L24.48,75.11 L27.82,77.76 L30.57,79.37 L33.22,80.52 L36.67,81.55 L40.57,82.13 L44.25,82.13 L45.29,81.9 L46.32,81.9 L48.97,81.32 L52.87,79.94 L56.67,77.87 L59.54,75.69 L62.01,73.22 L63.16,71.84 L65.69,67.93 L67.3,64.25 L68.1,61.38 L68.68,57.93 L68.68,53.22 L68.45,52.3 L68.45,51.38 L67.64,47.82 L66.49,44.71 L64.89,41.61 L63.51,39.54 L65.17,38.91 L70.23,37.53 Z"/>
+  </g>
+  <g fill="none" stroke="#FF5A1F" stroke-opacity="1" stroke-width="3" stroke-linecap="round">
+    <path d="M637 116 L648.6 96"/>
+    <path d="M654 140 L665.6 120"/>
+  </g>
+</svg>

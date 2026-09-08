@@ -4,41 +4,44 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Arrow from "./Arrow";
-import DemoShot from "./DemoShot";
 import Reveal from "./Reveal";
 import { GROWSEARCH_HOME } from "@/lib/site-urls";
 
-/* Each conviction carries the mock that demonstrates it, so the empty half of
-   the card does some work. The examples in the copy are the same queries the
-   demos on this site actually run. */
+/* Convictions about how we build with AI, not a feature list for Growsearch
+   — /growsearch/features already carries those, and repeating them here
+   under "AI at Growmerce" made the company sound like one product.
+
+   Each one carries a drawn diagram rather than a storefront screenshot: the
+   claims are about how the thing is built, and a picture of six products on
+   a shelf argues for none of them. */
 const ITEMS = [
   {
-    title: "Intent, not keywords",
+    title: "Grounded in your data, or it doesn\u2019t ship",
     body:
-      "Shoppers type sentences, not search terms. \u201CSomething warm for a rainy commute\u201D, \u201Clinen shirt but not white\u201D \u2014 price, attribute and intent get read straight out of the sentence. No filter menus to dig through, and no teaching your customer how to talk to your store.",
-    media: "/img/demos/rainy-commute.webp",
-    alt: "A search for \u201Csomething warm for the rainy commute\u201D returning scarves, beanies and an umbrella",
+      "Every answer is tied to something you actually have \u2014 your catalogue, your reviews, your search logs, what your shoppers actually did. If the model cannot point at a record, it does not get to say it. That rules out a whole class of confident nonsense, and it is why we would rather return nothing than return something invented.",
+    media: "/img/pages/ai-grounded.svg",
+    alt: "Product data, reviews, searches and customer behaviour feeding into one hub, and out of it a single grounded answer",
   },
   {
-    title: "It only talks about what you actually stock",
+    title: "It joins the store you already run",
     body:
-      "The model never invents a product, a price or a promise. Every answer is grounded in your live catalogue \u2014 real SKUs, real stock, real prices, synced from Shopify as they change \u2014 so there is nothing for it to be confidently wrong about.",
-    media: "/img/demos/tech-suggestions.webp",
-    alt: "Storefront results showing live stock and pricing, including a sold-out product and reduced prices",
+      "No replatforming, no migration, no six-week onboarding. What we ship installs onto the stack you have and takes on your theme, your catalogue and your workflow rather than asking you to take on ours. If a tool needs a project plan before it does anything useful, it isn\u2019t finished.",
+    media: "/img/pages/ai-installs.svg",
+    alt: "A storefront cut into jigsaw pieces with the search field missing, and the Growsearch piece dropping into the gap it fits exactly",
   },
   {
-    title: "Speed is part of the answer",
+    title: "Judged on revenue, not on vibes",
     body:
-      "An assistant that thinks for four seconds has already lost the sale. Your native results appear instantly, then AI ranking and semantic matches layer in on top of them. The shopper never sits watching a spinner while a model makes up its mind.",
-    media: "/img/demos/beauty-suggestions.webp",
-    alt: "A storefront search panel already showing suggestions and products before anything has been typed",
+      "Every AI decision reports on itself in the open: what it was asked, what it returned, and whether that ended in a checkout. We would rather hand you a number that disappoints than a demo that dazzles \u2014 the only question worth answering is whether the AI paid for itself this month.",
+    media: "/img/pages/ai-measured.svg",
+    alt: "A dashed trail running from a query to a result, a cart and a checkout, over a rising bar chart",
   },
   {
-    title: "If it doesn\u2019t sell, it\u2019s decoration",
+    title: "A tool that does a job, not a chatbot",
     body:
-      "Every AI decision is tied back to a checkout. Search-attributed revenue, add-to-cart rate, zero-result rate, and the questions shoppers actually asked \u2014 all measured in the open, so you can judge the AI on money rather than on vibes.",
-    media: "/img/demos/linen-shirt.webp",
-    alt: "Search results with an add-to-cart on every product, the step the analytics attribute back to the query",
+      "A chat box waiting to be talked to just moves the work onto your customer. We build AI that does its job in the place it belongs \u2014 narrowing a catalogue, rescuing a dead-end search, telling you which queries are losing money \u2014 so nobody has to learn how to talk to it first.",
+    media: "/img/pages/ai-not-a-chatbot.svg",
+    alt: "An inert chat bubble beside a panel where the list has already been narrowed to the right row",
   },
 ];
 
@@ -111,13 +114,13 @@ export default function AiSection() {
                   }`}
                 >
                   <div className="overflow-hidden">
-                    <DemoShot
+                    <Image
                       src={item.media}
                       alt={item.alt}
-                      width={1386}
-                      height={1135}
+                      width={720}
+                      height={590}
                       sizes="92vw"
-                      className="mb-4 rounded-[18px] bg-peach/40 lg:hidden"
+                      className="mb-4 h-auto w-full rounded-[18px] bg-peach/40 lg:hidden"
                     />
                     <p className="pb-5 text-sm leading-[27px]">{item.body}</p>
                   </div>
