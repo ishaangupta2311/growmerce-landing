@@ -43,6 +43,19 @@ would land on different processes and every visitor would be told their link had
 expired. `token.ts` therefore refuses to sign at all when `NODE_ENV` is
 `production` and the variable is missing.
 
+There is nowhere to obtain this value: generate it. It is an HMAC key, so any
+random string works and the format is not checked.
+
+```
+openssl rand -hex 32
+```
+
+Set it in the host's environment (on Vercel, Settings -> Environment Variables,
+then redeploy — env changes do not reach an already-built deployment), and use a
+different value there than the one in your local `.env`. Rotating it is cheap:
+tokens carry a 15-minute TTL, so the blast radius is whoever is mid-flow at that
+moment, and they need only re-enter their domain.
+
 `CHROME_PATH` — optional. Points the screenshot stage at a specific browser;
 without it, well-known local paths are tried and then `@sparticuz/chromium`.
 
