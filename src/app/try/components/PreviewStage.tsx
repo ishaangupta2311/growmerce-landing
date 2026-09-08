@@ -25,7 +25,8 @@ import {
 import { isAbort, timeoutSignal } from "./net";
 import StoreFrame from "./StoreFrame";
 import GrowsearchWidget from "./GrowsearchWidget";
-import { FIXTURES } from "./fixture";
+import NativeSearchPanel from "./NativeSearchPanel";
+import { FIXTURES, isFixtureKey, type FixtureKey } from "./fixture";
 
 /* Chrome-bar heights for the two canvases; the canvas boxes themselves are
    `.gs-canvas--wide` / `--compact` in globals.css. */
@@ -102,6 +103,10 @@ function fallbackResult(store: string): PreviewResult {
     theme: DEFAULT_THEME,
     themeSource: "default",
     products: [],
+    query: "something warm for the rainy commute",
+    /* We never reached the store, so we never ran its search. Null is the only
+       honest value and the before state stays a bare stand-in. */
+    nativeSearch: null,
     // Never shown; a constant keeps this render deterministic.
     fetchedAt: "1970-01-01T00:00:00.000Z",
   };
@@ -124,6 +129,11 @@ function Canvas({
   compact: boolean;
   withGrowsearch: boolean;
 }) {
+  /* One binding, handed to both panels. The comparison is only fair if each
+     side is answering the identical phrase, so there is deliberately no second
+     place a query could come from — neither component derives one. */
+  const query = result.query;
+
   return (
     <div className={compact ? "gs-canvas gs-canvas--compact" : "gs-canvas gs-canvas--wide"}>
       <div className="gs-inner">
@@ -133,6 +143,24 @@ function Canvas({
           chromeHeight={compact ? COMPACT_CANVAS.chrome : DESKTOP_CANVAS.chrome}
           dimmed={withGrowsearch}
         />
+
+        {/* The store's own search, shown only when we actually ran it. A null
+            `nativeSearch` means we could not ask, and the before state then
+            stays exactly what it was: the bare screenshot. Rendering an empty
+            panel here would be inventing a result. */}
+        {result.nativeSearch ? (
+          <div
+            className="gs-fade pointer-events-none absolute inset-0"
+            style={{ opacity: withGrowsearch ? 0 : 1 }}
+          >
+            <NativeSearchPanel
+              search={result.nativeSearch}
+              query={query}
+              compact={compact}
+            />
+          </div>
+        ) : null}
+
         {/* The widget fades on a wrapper rather than on itself: its entrance
             animation owns its own opacity with `both` fill, so an inline
             opacity on the same element would lose to it and the thing could
@@ -145,6 +173,7 @@ function Canvas({
           <GrowsearchWidget
             products={result.products}
             storeTitle={result.title}
+            query={query}
             compact={compact}
           />
         </div>
@@ -161,9 +190,11 @@ const MODES = [
 /**
  * Two states over one frame.
  *
- * "Before" is the screenshot untouched — no scrim, no widget — because the
- * whole value of a comparison is that one side of it is the truth. "After" is
- * the scrim and the widget. Only opacity changes between them, so the frame is
+ * "Before" is their storefront answering the same question with the search it
+ * already has — undimmed, no Growsearch chrome — because the whole value of a
+ * comparison is that one side of it is the truth. Where we could not run their
+ * search it is the bare screenshot instead, claiming nothing. "After" is the
+ * scrim and the widget. Only opacity changes between them, so the frame is
  * pinned: nothing reflows, nothing resizes, and the page does not jump.
  *
  * It opens on "after". That is the answer they came for, and the widget's
@@ -244,14 +275,35 @@ function StageCaption({
   synthesised: boolean;
 }) {
   /* "Mock-up" is the right word for the after state and the wrong one for the
-     before state, where the screenshot is simply their page. */
+     before state, where what is on screen is their own page and their own
+     search results. Three befores, because the caption has to be exact about
+     which of them the visitor is looking at. */
   if (!withGrowsearch) {
+    const native = result.nativeSearch;
+
+    if (native) {
+      /* Provenance first: this is only worth showing because we really asked
+         their store, and saying so is what makes it credible. */
+      return (
+        <>
+          <span className="font-semibold text-charcoal">
+            {result.store}&apos;s own search, asked
+            &ldquo;{result.query}&rdquo;.
+          </span>{" "}
+          {native.products.length === 0
+            ? "That is the result it returned — we ran the search on your storefront and this is what came back."
+            : `We ran the search on your storefront; these are its results, over the screenshot we took.`}
+        </>
+      );
+    }
+
     return result.screenshot ? (
       <>
         <span className="font-semibold text-charcoal">
           {result.store}, as it is today.
         </span>{" "}
-        The screenshot we took of your storefront, untouched.
+        The screenshot we took of your storefront, untouched. We couldn&apos;t
+        reach your search to ask it anything.
       </>
     ) : (
       <>
@@ -474,8 +526,7 @@ export default function PreviewStage() {
      on NODE_ENV so it can never be reached in production. */
   const fixtureKey = params.get("fixture");
   const fixture =
-    process.env.NODE_ENV !== "production" &&
-    (fixtureKey === "light" || fixtureKey === "dark")
+    process.env.NODE_ENV !== "production" && isFixtureKey(fixtureKey)
       ? fixtureKey
       : null;
 
@@ -507,7 +558,7 @@ function PreviewRun({
 }: {
   store: string;
   token: string;
-  fixture: "light" | "dark" | null;
+  fixture: FixtureKey | null;
 }) {
   /* Two of the three outcomes are known before the first paint — the dev
      fixture and "they arrived with no token" — so they are the initial state

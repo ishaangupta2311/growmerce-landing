@@ -16,19 +16,6 @@ import type { PreviewProduct } from "@/lib/preview/types";
  * a 1440-wide desktop viewport and a 430-wide phone one.
  */
 
-/* Words that make "rainy commute" the honest query to show. Checked against
-   product titles: a query the products cannot answer makes the whole panel
-   read as a stock image. */
-const WEATHERY =
-  /\b(rain|umbrella|coat|jacket|parka|scarf|warm|wool|knit|beanie|glove|waterproof|windproof|boot|commute|hood|sweater|thermal|fleece|cashmere|mitten)/i;
-
-const RAINY = "something warm for the rainy commute";
-const GIFT = "a gift under $50 they'll actually use";
-
-export function pickQuery(products: PreviewProduct[]): string {
-  return products.some((p) => WEATHERY.test(p.title)) ? RAINY : GIFT;
-}
-
 function Sparkle({ size, className }: { size: number; className?: string }) {
   return (
     <svg
@@ -282,15 +269,16 @@ function ProductCard({
 export default function GrowsearchWidget({
   products,
   storeTitle,
+  query,
   compact = false,
 }: {
   products: PreviewProduct[];
   storeTitle: string | null;
+  /** The phrase the server chose. Never derived here — see the note above. */
+  query: string;
   compact?: boolean;
 }) {
   const m = compact ? COMPACT : DESKTOP;
-  const query = pickQuery(products);
-  const rainy = query === RAINY;
 
   const shown = products.slice(0, m.maxProducts);
   const slots: (PreviewProduct | null)[] =
@@ -301,14 +289,13 @@ export default function GrowsearchWidget({
 
   const barRadius = m.barHeight / 2;
 
-  const heading = rainy ? "Warm & cozy picks" : "Picks for you";
+  /* The heading used to be picked from the query, which no longer belongs to
+     this component. Naming the store is better anyway: it says the results
+     came out of their catalogue, which is the claim being made. */
   // Store titles very often end in "Co." — a second full stop reads as a typo.
   const named = storeTitle?.replace(/\.$/, "");
-  const sub = named
-    ? `Matched from ${named}.`
-    : rainy
-      ? "Perfect for rainy days and cold commutes."
-      : "Under $50, and actually worth unwrapping.";
+  const heading = "Picks for you";
+  const sub = named ? `Matched from ${named}.` : "Matched from your catalogue.";
 
   const t = compact
     ? { label: 11, body: 13.5, head: 16, sub: 12, foot: 12.5, bar: 16 }

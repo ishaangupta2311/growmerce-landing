@@ -20,10 +20,12 @@ import { CACHE_TTL_MS, DEGRADED_TTL_MS, readPreviewCache, writePreviewCache } fr
 import { createDeadline } from "./deadline";
 import { extractMeta, extractStylesheetTheme } from "./extract";
 import { fetchSite } from "./fetch-site";
+import { fetchNativeSearch } from "./native-search";
 import { fetchProducts } from "./products";
+import { pickQuery } from "./query";
 import { captureSite } from "./screenshot";
 import { finishTheme } from "./theme";
-import type { PreviewResult, PreviewTheme, PreviewThemeSource } from "./types";
+import type { NativeSearch, PreviewResult, PreviewTheme, PreviewThemeSource } from "./types";
 
 /* Comfortably inside the route's maxDuration of 60, with room left to serialise
    a response that carries a ~200 KB data URL. */
@@ -34,6 +36,7 @@ const FETCH_BUDGET_MS = 20_000;
 const SCREENSHOT_BUDGET_MS = 15_000;
 const STYLESHEET_BUDGET_MS = 6_000;
 const PRODUCTS_BUDGET_MS = 8_000;
+const NATIVE_BUDGET_MS = 6_000;
 
 type Detail = Record<string, string | number | boolean | null>;
 
@@ -144,6 +147,39 @@ export async function buildPreview(host: string): Promise<PreviewResult> {
     logStage(host, "products", startedAt, { ok: false, reason: why(err) });
   }
 
+  /* The question both halves of the preview answer. Picked from the catalogue we
+     just built, and picked once, here — see query.ts. */
+  const query = pickQuery(products);
+
+  startedAt = Date.now();
+  let nativeSearch: NativeSearch | null = null;
+  try {
+    nativeSearch =
+      deadline.spent(1_200) ?
+        null
+      : await fetchNativeSearch(
+          site.finalUrl,
+          site.platform,
+          site.html,
+          query,
+          Math.min(NATIVE_BUDGET_MS, deadline.spendable()),
+        );
+    logStage(host, "native", startedAt, {
+      /* `null` and `0` mean different things here and the log has to keep them
+         apart as carefully as the UI does. */
+      asked: nativeSearch !== null,
+      count: nativeSearch ? nativeSearch.products.length : null,
+      source: nativeSearch?.source ?? null,
+      skipped:
+        deadline.spent(1_200) ? "budget"
+        : site.platform !== "shopify" ? "platform"
+        : nativeSearch ? false
+        : "upstream",
+    });
+  } catch (err) {
+    logStage(host, "native", startedAt, { asked: false, reason: why(err) });
+  }
+
   const merged: Partial<PreviewTheme> = { ...(stylesheet ?? {}), ...computed };
   const themeSource: PreviewThemeSource =
     isUsable(computed) ? "computed"
@@ -165,6 +201,8 @@ export async function buildPreview(host: string): Promise<PreviewResult> {
     theme: finishTheme(themeSource === "default" ? {} : merged),
     themeSource,
     products,
+    query,
+    nativeSearch,
     fetchedAt: new Date().toISOString(),
   };
 
@@ -178,6 +216,7 @@ export async function buildPreview(host: string): Promise<PreviewResult> {
     themeSource,
     screenshot: Boolean(screenshot),
     products: products.length,
+    native: nativeSearch ? nativeSearch.products.length : null,
     ttl: degraded ? DEGRADED_TTL_MS : CACHE_TTL_MS,
   });
 

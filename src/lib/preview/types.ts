@@ -77,8 +77,38 @@ export type PreviewResult = {
   themeSource: PreviewThemeSource;
   /** Up to 8 products; empty array when none could be found. */
   products: PreviewProduct[];
+  /**
+   * The natural-language phrase both halves of the preview are built around:
+   * what the Growsearch mock is answering, and what we typed into the store's
+   * own search to get `nativeSearch`. Chosen server-side precisely so the two
+   * sides cannot drift apart and make an unfair comparison.
+   */
+  query: string;
+  /** What the store's own search returns for `query`, or null if we couldn't ask. */
+  nativeSearch: NativeSearch | null;
   /** ISO timestamp of when the job ran. */
   fetchedAt: string;
+};
+
+/**
+ * The store's existing search, answering the same question we do.
+ *
+ * This is the "before" half of the comparison, and it is only worth showing
+ * because it is real: we ask the storefront's own search endpoint and report
+ * what came back. An empty `products` array is a genuine answer — usually THE
+ * answer, since native search matches keywords and the query is a sentence.
+ * When we cannot ask at all the field is null and the UI must say nothing
+ * rather than imply a result. Never fabricate this.
+ */
+export type NativeSearch = {
+  /** Echoes `PreviewResult.query`, so a consumer holding only this is not lost. */
+  query: string;
+  /** What their search returned, capped at 6. */
+  products: PreviewProduct[];
+  /** Total hits the store reported, when it says; else null. */
+  total: number | null;
+  /** How we asked, so the UI can be specific about what it is showing. */
+  source: "shopify-suggest";
 };
 
 export type PreviewErrorCode =

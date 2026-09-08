@@ -11,6 +11,31 @@ import { BROWSER_HEADERS } from "./fetch-site";
 import { safeFetch } from "./store-url";
 import type { PreviewPlatform, PreviewProduct } from "./types";
 
+/**
+ * One product as a source hands it to us, before any of our rules apply.
+ * Everything that produces products — /products.json, JSON-LD, the storefront's
+ * own search — goes through `buildProducts` so a price, an image and a title
+ * mean the same thing whichever door they came in by.
+ */
+export type RawProduct = {
+  title: unknown;
+  price: unknown;
+  image: unknown;
+  url: unknown;
+  /** Overrides the store-wide currency when the source carries its own. */
+  currency?: unknown;
+};
+
+export type BuildOptions = {
+  /**
+   * Drop products with no image. True for the catalogue grid, where an empty
+   * tile reads as a bug — and deliberately false for native search results,
+   * where discarding a hit would let a filter of ours masquerade as "their
+   * search found nothing".
+   */
+  requireImage: boolean;
+};
+
 const MAX_PRODUCTS = 8;
 /* Collect more than we need: the filter below throws a few away on most stores,
    and a second round trip to top up would cost more than the extra rows. */
@@ -48,7 +73,7 @@ const SYMBOLS: Record<string, string> = {
 };
 
 /** Shopify writes its active currency into an inline script on every page. */
-function detectCurrency(html: string): string | null {
+export function detectCurrency(html: string): string | null {
   const shopify = html.match(/Shopify\.currency\s*=\s*\{[^}]{0,200}?["']?active["']?\s*:\s*["']([A-Z]{3})["']/);
   if (shopify) return shopify[1];
   const jsonLd = html.match(/"priceCurrency"\s*:\s*"([A-Z]{3})"/);
@@ -107,11 +132,7 @@ type ShopifyProduct = {
   product_type?: unknown;
 };
 
-async function fromShopify(
-  origin: string,
-  currency: string | null,
-  timeoutMs: number,
-): Promise<PreviewProduct[]> {
+async function fromShopify(origin: string, timeoutMs: number): Promise<RawProduct[]> {
   const url = new URL(`/products.json?limit=${FETCH_LIMIT}`, origin).toString();
   const result = await safeFetch(url, {
     timeoutMs,
@@ -126,22 +147,19 @@ async function fromShopify(
   const parsed: unknown = JSON.parse(result.body);
   if (!isRecord(parsed) || !Array.isArray(parsed.products)) return [];
 
-  const products: PreviewProduct[] = [];
+  const products: RawProduct[] = [];
   for (const entry of parsed.products as ShopifyProduct[]) {
     if (!isRecord(entry) || typeof entry.title !== "string") continue;
     if (typeof entry.product_type === "string" && NOT_MERCHANDISE.test(entry.product_type)) continue;
 
     const images = Array.isArray(entry.images) ? entry.images : [];
-    const firstImage = isRecord(images[0]) ? images[0].src : null;
-
     const variants = Array.isArray(entry.variants) ? entry.variants : [];
-    const price = isRecord(variants[0]) ? toAmount(variants[0].price) : null;
 
     products.push({
-      title: entry.title.trim().slice(0, 120),
-      price: price === null ? null : formatPrice(price, currency),
-      image: absolute(firstImage, origin),
-      url: typeof entry.handle === "string" ? absolute(`/products/${entry.handle}`, origin) : null,
+      title: entry.title,
+      price: isRecord(variants[0]) ? variants[0].price : null,
+      image: isRecord(images[0]) ? images[0].src : null,
+      url: typeof entry.handle === "string" ? `/products/${entry.handle}` : null,
     });
   }
   return products;
@@ -178,7 +196,7 @@ function offerAmount(offers: unknown): { amount: number | null; currency: string
   return offerAmount(offers.offers);
 }
 
-function collectJsonLdProducts(node: unknown, base: string, out: PreviewProduct[]): void {
+function collectJsonLdProducts(node: unknown, base: string, out: RawProduct[]): void {
   if (out.length >= FETCH_LIMIT) return;
 
   if (Array.isArray(node)) {
@@ -194,10 +212,11 @@ function collectJsonLdProducts(node: unknown, base: string, out: PreviewProduct[
   if (isProduct && typeof node.name === "string") {
     const { amount, currency } = offerAmount(node.offers);
     out.push({
-      title: node.name.trim().slice(0, 120),
-      price: amount === null ? null : formatPrice(amount, currency),
+      title: node.name,
+      price: amount,
+      currency,
       image: pickImage(node.image, base),
-      url: absolute(node.url, base),
+      url: node.url,
     });
     return;
   }
@@ -208,8 +227,8 @@ function collectJsonLdProducts(node: unknown, base: string, out: PreviewProduct[
   }
 }
 
-function fromJsonLd(html: string, base: string): PreviewProduct[] {
-  const out: PreviewProduct[] = [];
+function fromJsonLd(html: string, base: string): RawProduct[] {
+  const out: RawProduct[] = [];
   const blocks = html.match(
     /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi,
   );
@@ -227,6 +246,50 @@ function fromJsonLd(html: string, base: string): PreviewProduct[] {
   return out;
 }
 
+/**
+ * The single place a raw product becomes a `PreviewProduct`. Formatting,
+ * deduping, the add-on filter and the image rule all live here so that the
+ * catalogue and the store's own search are held to identical standards — the
+ * whole "before and after" comparison is worthless if the two sides are
+ * cleaned up differently.
+ */
+export function buildProducts(
+  raws: RawProduct[],
+  base: string,
+  currency: string | null,
+  limit: number,
+  options: BuildOptions = { requireImage: true },
+): PreviewProduct[] {
+  const seen = new Set<string>();
+  const out: PreviewProduct[] = [];
+
+  for (const raw of raws) {
+    if (out.length >= limit) break;
+    if (typeof raw.title !== "string") continue;
+
+    const title = raw.title.trim().slice(0, 120);
+    const key = title.toLowerCase();
+    if (!key || seen.has(key)) continue;
+    if (NOT_MERCHANDISE.test(title)) continue;
+
+    const image = absolute(raw.image, base);
+    if (options.requireImage && !image) continue;
+
+    const amount = toAmount(raw.price);
+    const code = typeof raw.currency === "string" ? raw.currency : currency;
+
+    seen.add(key);
+    out.push({
+      title,
+      price: amount === null ? null : formatPrice(amount, code),
+      image,
+      url: absolute(raw.url, base),
+    });
+  }
+
+  return out;
+}
+
 export async function fetchProducts(
   finalUrl: string,
   platform: PreviewPlatform,
@@ -236,9 +299,9 @@ export async function fetchProducts(
   const origin = new URL(finalUrl).origin;
   const currency = detectCurrency(html);
 
-  let products: PreviewProduct[] = [];
+  let raws: RawProduct[] = [];
   if (platform === "shopify") {
-    products = await fromShopify(origin, currency, Math.min(TIMEOUT_MS, budgetMs)).catch((err: unknown) => {
+    raws = await fromShopify(origin, Math.min(TIMEOUT_MS, budgetMs)).catch((err: unknown) => {
       /* Worth a line: /products.json is rate-limited and occasionally refuses,
          and "no products" otherwise looks like the store having none. */
       console.warn(
@@ -247,19 +310,12 @@ export async function fetchProducts(
       return [];
     });
   }
-  if (products.length === 0) products = fromJsonLd(html, origin);
 
-  const seen = new Set<string>();
-  return products
-    .filter((product) => {
-      const key = product.title.toLowerCase();
-      if (!key || seen.has(key)) return false;
-      if (NOT_MERCHANDISE.test(product.title)) return false;
-      /* The widget is a grid of pictures. A row with nothing to show reads as a
-         bug, so an imageless product is worth less than one fewer tile. */
-      if (!product.image) return false;
-      seen.add(key);
-      return true;
-    })
-    .slice(0, MAX_PRODUCTS);
+  let products = buildProducts(raws, origin, currency, MAX_PRODUCTS);
+  /* Judged on what survived the rules, not on what arrived: a Shopify feed of
+     nothing but gift cards is the same as no feed at all. */
+  if (products.length === 0) {
+    products = buildProducts(fromJsonLd(html, origin), origin, currency, MAX_PRODUCTS);
+  }
+  return products;
 }

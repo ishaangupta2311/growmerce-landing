@@ -34,9 +34,13 @@ type Row = {
   background: string;
   text: string;
   products: number;
+  /** Hit count, or "—" for null: we could not ask at all. Not the same thing. */
+  native: string;
   shotKb: string;
   ms: number;
 };
+
+type Detail = { host: string; query: string; native: string[] | null };
 
 function pad(value: string, width: number): string {
   return value.length >= width ? value.slice(0, width) : value.padEnd(width);
@@ -51,6 +55,7 @@ function printTable(rows: Row[]): void {
     ["background", 11],
     ["text", 9],
     ["products", 8],
+    ["native", 7],
     ["shotKb", 8],
     ["ms", 7],
   ];
@@ -65,6 +70,7 @@ function printTable(rows: Row[]): void {
 async function runHosts(inputs: string[]): Promise<number> {
   await mkdir(OUTPUT_DIR, { recursive: true });
   const rows: Row[] = [];
+  const details: Detail[] = [];
   let failures = 0;
 
   for (const input of inputs) {
@@ -91,6 +97,12 @@ async function runHosts(inputs: string[]): Promise<number> {
         await writeFile(join(OUTPUT_DIR, `${host}.jpg`), bytes);
       }
 
+      details.push({
+        host,
+        query: result.query,
+        native: result.nativeSearch ? result.nativeSearch.products.map((p) => p.title) : null,
+      });
+
       rows.push({
         host,
         platform: result.platform,
@@ -99,6 +111,7 @@ async function runHosts(inputs: string[]): Promise<number> {
         background: result.theme.background,
         text: result.theme.text,
         products: result.products.length,
+        native: result.nativeSearch ? String(result.nativeSearch.products.length) : "—",
         shotKb,
         ms: elapsed,
       });
@@ -111,6 +124,20 @@ async function runHosts(inputs: string[]): Promise<number> {
   if (rows.length > 0) {
     console.log("");
     printTable(rows);
+    console.log('\n"native" is what THEIR search returned. "—" means we could not ask at all.');
+
+    for (const detail of details) {
+      console.log(`\n${detail.host}`);
+      console.log(`  query        "${detail.query}"`);
+      if (detail.native === null) {
+        console.log("  native       (not asked — not Shopify, or the endpoint did not answer)");
+      } else if (detail.native.length === 0) {
+        console.log("  native       we asked; their search found nothing");
+      } else {
+        console.log(`  native       ${detail.native.length} hit(s):`);
+        for (const title of detail.native.slice(0, 2)) console.log(`               · ${title}`);
+      }
+    }
     console.log(`\nscreenshots: ${OUTPUT_DIR}/<host>.jpg`);
   }
   return failures;
