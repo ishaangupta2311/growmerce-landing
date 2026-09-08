@@ -29,7 +29,7 @@ const COLUMNS = [
     heading: "Need help?",
     links: [
       { label: "Help center", href: "/help" },
-      { label: "Getting started", href: "#" },
+      { label: "Getting started", href: "/help#start" },
       { label: "Customer Success", href: "#" },
     ],
   },
