@@ -1,10 +1,10 @@
 /**
  * Lead capture behind the demo-store gate and the "Try it free" form.
  *
- * MOCK. No email platform is wired up yet, so a captured address is validated
- * and then goes nowhere. The flow in front of it is real — the visitor is gated
- * on entering an address either way — but nothing here persists it, so treat
- * leads taken before this is wired as lost.
+ * The address goes to `marketing.lead` via `recordLead` in `src/lib/leads.ts`,
+ * one row per (storefront, email) — a returning visitor is a no-op, a colleague
+ * from the same shop is appended. That file owns the dedup; this one owns the
+ * validation, the budget and the token.
  *
  * It also issues the preview token. `store` is optional: the "See demo" gate
  * sends an email and nothing else, and must keep working exactly as it did.
@@ -12,19 +12,23 @@
  * token that /api/preview requires before it will touch the network. The token
  * is bound to the store, not to the person — it carries nothing about the lead.
  *
+ * The order below is deliberate: budget, then validation, then the write, then
+ * the token. The write comes before the token so a visitor is never handed a
+ * preview we have not tried to record a lead for; the token comes *regardless*
+ * of what the write said, because the database is not allowed to hold the
+ * funnel shut — Supabase pauses a free project after a quiet week, and a
+ * paused database on a Monday morning must cost us a row, not a lead who gave
+ * up on a spinner.
+ *
  * Two things this file must keep doing: never write the visitor's address to a
  * log line (it is a marketing lead, and the log is not where it belongs), and
  * never hand out tokens without a budget — minting them is cheap for us but it
  * is the front door to a route that launches browsers.
- *
- * To make it real, replace the body of `recordLead` with the call to whatever
- * platform you land on (Omnisend, Klaviyo, HubSpot, a Sheet, a database).
- * That function is the only thing that needs to change; the validation, the
- * shape of a lead and the client are all independent of the destination.
  */
 
 import { createHash } from "node:crypto";
 
+import { recordLead } from "@/lib/leads";
 import { clientKey, overBudget } from "@/lib/preview/rate-limit";
 import { normaliseStoreInput } from "@/lib/preview/store-url";
 import { signPreviewToken } from "@/lib/preview/token";
@@ -34,15 +38,6 @@ import type { TrialLeadResponse } from "@/lib/preview/types";
    nothing else — RFC-shaped regexes turn away real addresses. */
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-type Lead = {
-  email: string;
-  /** Which CTA it came from, so we can tell the pages apart. */
-  source: string;
-  /** The store they typed, when the form asked for one. */
-  store?: string;
-  at: string;
-};
-
 /**
  * A stable, non-identifying handle for one address, so two log lines can be tied
  * together without the address being in either of them. Truncated because this
@@ -50,13 +45,6 @@ type Lead = {
  */
 function reference(email: string): string {
   return createHash("sha256").update(email).digest("hex").slice(0, 12);
-}
-
-async function recordLead(lead: Lead): Promise<void> {
-  /* The lead goes to the destination whole; the log gets the reference only. */
-  console.info(
-    `[trial-lead] captured (mock — not stored) ref=${reference(lead.email)} source=${lead.source} store=${lead.store ?? "-"}`,
-  );
 }
 
 /* Generous — this is a form a real person fills in once or twice — but not
@@ -103,18 +91,26 @@ export async function POST(request: Request) {
     }
   }
 
+  const address = email.trim().toLowerCase();
+  const ref = reference(address);
+  const from = typeof source === "string" ? source.slice(0, 64) : "unknown";
+
   try {
-    await recordLead({
-      email: email.trim().toLowerCase(),
-      source: typeof source === "string" ? source.slice(0, 64) : "unknown",
-      ...(host ? { store: host } : {}),
-      at: new Date().toISOString(),
-    });
+    const outcome = await recordLead({ email: address, domain: host, source: from });
+    /* The address is in the row; the log gets the reference only. The outcome
+       word is what lets a quiet week be told apart from a broken form: a run
+       of `unavailable` is the database asleep, a run of `duplicate` is one
+       person retrying. */
+    console.info(`[trial-lead] ${outcome} ref=${ref} source=${from} store=${host ?? "-"}`);
   } catch (err) {
-    /* Swallowed on purpose. Losing a lead is our problem to find in the logs;
-       it is not a reason to hold the demo shut on the visitor, who has already
-       done the thing we asked. The client shows the password either way. */
-    console.error("[trial-lead] could not record lead:", err);
+    /* `recordLead` does not throw — `tryDb` turns every query failure into
+       `unavailable` — but `db()` builds the client *outside* that guard, and a
+       malformed DATABASE_URL throws there. Not a reason to hold the demo shut
+       on a visitor who has done the thing we asked. Only the message is
+       logged: a postgres.js error object carries the query's parameters on
+       it, and this parameter list is the address. */
+    const why = err instanceof Error ? err.message : String(err);
+    console.error(`[trial-lead] could not record lead ref=${ref} — ${why.slice(0, 200)}`);
   }
 
   const response: TrialLeadResponse =
