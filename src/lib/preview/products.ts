@@ -13,9 +13,8 @@ import type { PreviewPlatform, PreviewProduct } from "./types";
 
 /**
  * One product as a source hands it to us, before any of our rules apply.
- * Everything that produces products — /products.json, JSON-LD, the storefront's
- * own search — goes through `buildProducts` so a price, an image and a title
- * mean the same thing whichever door they came in by.
+ * Both sources — /products.json and JSON-LD — go through `buildProducts` so a
+ * price, an image and a title mean the same thing whichever door they came in by.
  */
 export type RawProduct = {
   title: unknown;
@@ -24,16 +23,6 @@ export type RawProduct = {
   url: unknown;
   /** Overrides the store-wide currency when the source carries its own. */
   currency?: unknown;
-};
-
-export type BuildOptions = {
-  /**
-   * Drop products with no image. True for the catalogue grid, where an empty
-   * tile reads as a bug — and deliberately false for native search results,
-   * where discarding a hit would let a filter of ours masquerade as "their
-   * search found nothing".
-   */
-  requireImage: boolean;
 };
 
 const MAX_PRODUCTS = 8;
@@ -248,17 +237,14 @@ function fromJsonLd(html: string, base: string): RawProduct[] {
 
 /**
  * The single place a raw product becomes a `PreviewProduct`. Formatting,
- * deduping, the add-on filter and the image rule all live here so that the
- * catalogue and the store's own search are held to identical standards — the
- * whole "before and after" comparison is worthless if the two sides are
- * cleaned up differently.
+ * deduping, the add-on filter and the image rule all live here so that
+ * /products.json and JSON-LD are held to identical standards.
  */
 export function buildProducts(
   raws: RawProduct[],
   base: string,
   currency: string | null,
   limit: number,
-  options: BuildOptions = { requireImage: true },
 ): PreviewProduct[] {
   const seen = new Set<string>();
   const out: PreviewProduct[] = [];
@@ -272,8 +258,9 @@ export function buildProducts(
     if (!key || seen.has(key)) continue;
     if (NOT_MERCHANDISE.test(title)) continue;
 
+    /* The widget draws these as a grid; an imageless tile reads as a bug. */
     const image = absolute(raw.image, base);
-    if (options.requireImage && !image) continue;
+    if (!image) continue;
 
     const amount = toAmount(raw.price);
     const code = typeof raw.currency === "string" ? raw.currency : currency;

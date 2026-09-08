@@ -40,7 +40,7 @@ type Row = {
   ms: number;
 };
 
-type Detail = { host: string; query: string; native: string[] | null };
+type Detail = { host: string; query: string; native: string | null };
 
 function pad(value: string, width: number): string {
   return value.length >= width ? value.slice(0, width) : value.padEnd(width);
@@ -90,6 +90,10 @@ async function runHosts(inputs: string[]): Promise<number> {
       const result = await buildPreview(host);
       const elapsed = Date.now() - startedAt;
 
+      /* Both captures land on disk under OUTPUT_DIR. Reading the numbers is
+         not the point of this script — looking at the two images side by side
+         is, because a screenshot of a bot-challenge page passes every
+         assertion a size check could make. */
       let shotKb = "—";
       if (result.screenshot) {
         const bytes = Buffer.from(result.screenshot.split(",")[1] ?? "", "base64");
@@ -97,10 +101,21 @@ async function runHosts(inputs: string[]): Promise<number> {
         await writeFile(join(OUTPUT_DIR, `${host}.jpg`), bytes);
       }
 
+      let nativeKb = "—";
+      if (result.nativeSearch) {
+        const bytes = Buffer.from(result.nativeSearch.screenshot.split(",")[1] ?? "", "base64");
+        nativeKb = `${Math.round(bytes.byteLength / 1024)}k`;
+        await writeFile(join(OUTPUT_DIR, `${host}.search.jpg`), bytes);
+      }
+
+      /* The search capture is now an image, so the only thing worth printing
+         is where their own search box sent us — on a store running SearchTap
+         or Algolia that visibly is not Shopify's /search, which is the whole
+         reason we stopped guessing at the endpoint. */
       details.push({
         host,
         query: result.query,
-        native: result.nativeSearch ? result.nativeSearch.products.map((p) => p.title) : null,
+        native: result.nativeSearch ? result.nativeSearch.url : null,
       });
 
       rows.push({
@@ -111,7 +126,7 @@ async function runHosts(inputs: string[]): Promise<number> {
         background: result.theme.background,
         text: result.theme.text,
         products: result.products.length,
-        native: result.nativeSearch ? String(result.nativeSearch.products.length) : "—",
+        native: nativeKb,
         shotKb,
         ms: elapsed,
       });
@@ -124,21 +139,22 @@ async function runHosts(inputs: string[]): Promise<number> {
   if (rows.length > 0) {
     console.log("");
     printTable(rows);
-    console.log('\n"native" is what THEIR search returned. "—" means we could not ask at all.');
+    console.log('\n"native" is the size of the shot of THEIR search page. "—" means we could not ask.');
 
     for (const detail of details) {
       console.log(`\n${detail.host}`);
       console.log(`  query        "${detail.query}"`);
       if (detail.native === null) {
-        console.log("  native       (not asked — not Shopify, or the endpoint did not answer)");
-      } else if (detail.native.length === 0) {
-        console.log("  native       we asked; their search found nothing");
+        console.log("  native       (not asked — no search box we could drive, or a challenge page)");
       } else {
-        console.log(`  native       ${detail.native.length} hit(s):`);
-        for (const title of detail.native.slice(0, 2)) console.log(`               · ${title}`);
+        /* Whether their search found anything is a question for the image, not
+           for this script. Printing a hit count here is what let the old
+           version report six confident results for a query the store had
+           never actually matched. */
+        console.log(`  native       captured at ${detail.native}`);
       }
     }
-    console.log(`\nscreenshots: ${OUTPUT_DIR}/<host>.jpg`);
+    console.log(`\nscreenshots: ${OUTPUT_DIR}/<host>.jpg and <host>.search.jpg — look at both`);
   }
   return failures;
 }

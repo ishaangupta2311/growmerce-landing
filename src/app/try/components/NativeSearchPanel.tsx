@@ -1,186 +1,83 @@
 import type { NativeSearch } from "@/lib/preview/types";
-import { COMPACT, DESKTOP } from "./GrowsearchWidget";
 
 /**
  * The store's own search, answering the same question — the "before" half of
  * the comparison.
  *
- * Everything here is real: the server typed `query` into the storefront's own
- * search endpoint and this renders what came back, including nothing. That is
- * why the copy is flat. An empty result is the ordinary outcome when a shopper
- * types a sentence at a keyword index, and it makes the point on its own; a
- * caption needling them about it would turn a fact into a sales pitch, and
- * they would be right to distrust the rest of the page after reading it.
+ * A photograph, not a reconstruction. The server typed `query` into the
+ * storefront's own search box in a real browser and screenshotted whatever the
+ * store showed a shopper; this draws that image into the storefront area of
+ * the frame, in place of the homepage capture, and draws nothing else. The
+ * previous version rendered the results as our own product cards, and
+ * boat-lifestyle.com caught it: we were quoting a Shopify endpoint their
+ * shoppers never touch (they run SearchTap), and that endpoint returns six
+ * tidy products for a nonsense term, so the panel flattered the very search
+ * we are meant to replace. Anything redrawn here — even a search-bar chrome
+ * around the image — is a step back toward that, so there is none.
  *
- * It is deliberately plainer than the Growsearch panel: a bordered input, a
- * bare grid, no assistant, no sparkles, no counts we were not given. It still
- * wears the store's `--gs-*` variables so it reads as their site — the
- * difference between the two states should be the search, not the branding.
+ * It sits exactly where StoreFrame puts the homepage screenshot: below the
+ * chrome bar, inside the 1px border, same corner radius, same cover-and-crop.
+ * Toggling therefore swaps one capture for another at identical size and the
+ * frame never moves. The frame's numbers are repeated rather than imported
+ * because this layer is a sibling of StoreFrame, not a child, and the frame
+ * does not export them.
  *
- * Position is taken from the same metrics the Growsearch widget uses, so the
- * toggle swaps like for like rather than moving things around.
+ * The image carries real alt text, unlike the Growsearch widget beside it,
+ * which is decorative. This is the one thing on the canvas that is *their*
+ * page rather than our drawing of one, and a reader deserves to be told so.
  */
 export default function NativeSearchPanel({
   search,
+  store,
   query,
   compact = false,
+  chromeHeight,
 }: {
   search: NativeSearch;
+  /** The normalised host, for the alt text. */
+  store: string;
   /** Passed in rather than read off `search`, so it is the same binding the
       Growsearch panel gets and the two cannot drift. */
   query: string;
   compact?: boolean;
+  /** StoreFrame's chrome-bar height; the capture begins directly under it. */
+  chromeHeight: number;
 }) {
-  const m = compact ? COMPACT : DESKTOP;
-  const products = search.products.slice(0, 6);
-  const cols = compact ? 2 : 3;
-
-  const t = compact
-    ? { bar: 14, head: 13, body: 12.5, title: 12.5, price: 13, pad: 14 }
-    : { bar: 20, head: 16, body: 15, title: 14, price: 15.5, pad: 24 };
+  /* StoreFrame rounds its outer edge to 20 (14 compact) with a 1px border, so
+     the storefront area inside it has a radius one less. */
+  const radius = (compact ? 14 : 20) - 1;
 
   return (
     <div
-      className="absolute"
-      style={{ left: m.left, top: m.top, width: m.width }}
-      /* Decorative, like the Growsearch panel: the caption under the frame is
-         what a screen reader is given. */
-      aria-hidden
+      className="absolute overflow-hidden"
+      style={{
+        top: chromeHeight + 1,
+        left: 1,
+        right: 1,
+        bottom: 1,
+        borderBottomLeftRadius: radius,
+        borderBottomRightRadius: radius,
+        background: "var(--gs-bg)",
+      }}
     >
-      {/* Search field — a plain box, the shape a default theme ships. */}
-      <div
-        className="flex items-center"
-        style={{
-          marginInline: m.barInset,
-          height: m.barHeight,
-          paddingInline: compact ? 14 : 20,
-          gap: compact ? 10 : 14,
-          borderRadius: "var(--gs-radius)",
-          background: "var(--gs-surface)",
-          border: "1px solid var(--gs-border)",
-          boxShadow: "0 10px 24px -18px rgba(0,0,0,0.45)",
-        }}
-      >
-        <p
-          className="min-w-0 flex-1 truncate"
-          style={{ fontSize: t.bar, color: "var(--gs-text)" }}
-        >
-          {query}
-        </p>
-        <svg
-          width={compact ? 15 : 20}
-          height={compact ? 15 : 20}
-          viewBox="0 0 24 24"
-          fill="none"
-          aria-hidden
-          className="shrink-0"
-          style={{ color: "var(--gs-muted)" }}
-        >
-          <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="2" />
-          <path
-            d="m16 16 4.5 4.5"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
-
-      {/* Results */}
-      <div
-        style={{
-          marginTop: m.barGap,
-          padding: t.pad,
-          borderRadius: "var(--gs-radius)",
-          background: "var(--gs-surface)",
-          border: "1px solid var(--gs-border)",
-          boxShadow: "0 18px 40px -30px rgba(0,0,0,0.5)",
-        }}
-      >
-        {products.length === 0 ? (
-          <>
-            <p
-              className="font-semibold"
-              style={{ fontSize: t.head, color: "var(--gs-text)" }}
-            >
-              No results found for &ldquo;{query}&rdquo;.
-            </p>
-            <p
-              style={{
-                fontSize: t.body,
-                marginTop: 8,
-                color: "var(--gs-muted)",
-              }}
-            >
-              Check your spelling or try a different search term.
-            </p>
-          </>
-        ) : (
-          <>
-            <p style={{ fontSize: t.head, color: "var(--gs-text)" }}>
-              {search.total === null
-                ? `Results for “${query}”`
-                : `${search.total} ${search.total === 1 ? "result" : "results"} for “${query}”`}
-            </p>
-            <div
-              className="grid"
-              style={{
-                marginTop: compact ? 12 : 18,
-                gap: compact ? 12 : 18,
-                gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-              }}
-            >
-              {products.map((product, i) => (
-                <div key={product.url ?? product.title ?? `native-${i}`}>
-                  <div
-                    style={{
-                      height: compact ? 88 : 132,
-                      background:
-                        "color-mix(in srgb, var(--gs-text) 8%, var(--gs-surface))",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {product.image ? (
-                      /* eslint-disable-next-line @next/next/no-img-element -- the
-                         visitor's own storefront CDN on a domain we only learn at
-                         request time; there is no loader to give next/image. */
-                      <img
-                        src={product.image}
-                        alt=""
-                        className="size-full object-cover"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    ) : null}
-                  </div>
-                  <p
-                    className="line-clamp-2"
-                    style={{
-                      fontSize: t.title,
-                      lineHeight: 1.35,
-                      marginTop: 8,
-                      color: "var(--gs-text)",
-                    }}
-                  >
-                    {product.title}
-                  </p>
-                  {product.price ? (
-                    <p
-                      style={{
-                        fontSize: t.price,
-                        marginTop: 4,
-                        color: "var(--gs-muted)",
-                      }}
-                    >
-                      {product.price}
-                    </p>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+      {/* The phone canvas is tall and narrow, so `cover` has to cut a
+          1440-wide capture down to a 430-wide strip. StoreFrame anchors the
+          homepage strip top-left because that is where a logo and headline
+          live; a results page is laid out the other way round. Its payload —
+          the query echoed in the box, the "No results" line or the count, the
+          first products — sits in a centred column, and on an engine with a
+          facet rail the left edge is nothing but filters. Anchored left, the
+          fixture at 390px showed the wordmark, half a search box and no
+          answer; anchored centre it shows the answer. Desktop needs no crop
+          worth arguing over: the capture is the frame's exact size. */}
+      {/* eslint-disable-next-line @next/next/no-img-element -- a data: URL
+          built by the preview job, so there is no remote asset for next/image
+          to optimise and no domain to whitelist. */}
+      <img
+        src={search.screenshot}
+        alt={`${store}'s own search results for “${query}”, screenshotted in a browser`}
+        className="absolute inset-0 size-full object-cover object-top"
+      />
     </div>
   );
 }

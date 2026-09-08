@@ -46,8 +46,23 @@ const BUCKETS: { test: RegExp; query: string }[] = [
   },
 ];
 
-/** Used whenever the catalogue does not say clearly enough what it is. */
-const FALLBACK = "a gift under $50 they'll actually use";
+/**
+ * Used whenever the catalogue does not say clearly enough what it is.
+ *
+ * Deliberately carries no currency. This phrase is typed into the merchant's
+ * own search box and printed back to them, and it used to say "under $50" —
+ * which we showed to boat-lifestyle.com, an Indian store pricing everything in
+ * rupees. A budget the shopper cannot have meant is a keyword-search problem
+ * we invented, not one we solve, and it reads as though we never looked at the
+ * store. A budget stated in words is the same unanswerable-by-keywords
+ * constraint without naming a unit we do not know.
+ *
+ * No apostrophe, either. The phrase is typed into the merchant's search box and
+ * echoed back on their own results page, and sugarcosmetics.com double-escapes
+ * it: "isn't" rendered as "isn&#039;t" in the screenshot we show them. Their
+ * bug, but it lands in our evidence and reads as ours.
+ */
+const FALLBACK = "a thoughtful gift for someone on a budget";
 
 export function pickQuery(products: PreviewProduct[]): string {
   const titles = products.map((product) => product.title);

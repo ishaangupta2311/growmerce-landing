@@ -84,7 +84,7 @@ export type PreviewResult = {
    * sides cannot drift apart and make an unfair comparison.
    */
   query: string;
-  /** What the store's own search returns for `query`, or null if we couldn't ask. */
+  /** A screenshot of the store's own search answering `query`; null if we couldn't ask. */
   nativeSearch: NativeSearch | null;
   /** ISO timestamp of when the job ran. */
   fetchedAt: string;
@@ -93,22 +93,34 @@ export type PreviewResult = {
 /**
  * The store's existing search, answering the same question we do.
  *
- * This is the "before" half of the comparison, and it is only worth showing
- * because it is real: we ask the storefront's own search endpoint and report
- * what came back. An empty `products` array is a genuine answer — usually THE
- * answer, since native search matches keywords and the query is a sentence.
- * When we cannot ask at all the field is null and the UI must say nothing
- * rather than imply a result. Never fabricate this.
+ * This is the "before" half of the comparison, and it is a photograph, not a
+ * reconstruction. We drive the storefront's own search box in a real browser —
+ * type the query, submit it, go wherever the store sends a shopper — and
+ * screenshot what lands. Nothing here is re-rendered in our own styling.
+ *
+ * The previous version asked Shopify's `/search/suggest.json` and drew the
+ * results as our own cards. Two things killed it. boat-lifestyle.com does not
+ * use Shopify search at all (SearchTap does), so we were quoting an endpoint no
+ * shopper ever touches while naming the merchant's domain over it. And that
+ * endpoint returns six products for `zzzqqqxyzzy nonsense term`, so the panel
+ * flattered whatever search the store already had — an argument against us,
+ * made with fabricated confidence, on the one screen meant to sell the product.
+ *
+ * `null` means we could not ask: no browser, no search box we could find, a bot
+ * challenge instead of a results page, or no time left. The UI then shows no
+ * before-panel at all. There is deliberately no fallback rendering — a mock of
+ * a merchant's own search, shown to that merchant, is the exact failure this
+ * type exists to prevent.
  */
 export type NativeSearch = {
   /** Echoes `PreviewResult.query`, so a consumer holding only this is not lost. */
   query: string;
-  /** What their search returned, capped at 6. */
-  products: PreviewProduct[];
-  /** Total hits the store reported, when it says; else null. */
-  total: number | null;
-  /** How we asked, so the UI can be specific about what it is showing. */
-  source: "shopify-suggest";
+  /** Their search results page as a data URL (image/jpeg), full viewport. */
+  screenshot: string;
+  /** Where their own search took us. Proof of what the screenshot shows. */
+  url: string;
+  /** How we got there: we used their search box, the way a shopper would. */
+  source: "storefront-search";
 };
 
 export type PreviewErrorCode =

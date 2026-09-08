@@ -20,7 +20,6 @@ import { CACHE_TTL_MS, DEGRADED_TTL_MS, readPreviewCache, writePreviewCache } fr
 import { createDeadline } from "./deadline";
 import { extractMeta, extractStylesheetTheme } from "./extract";
 import { fetchSite } from "./fetch-site";
-import { fetchNativeSearch } from "./native-search";
 import { fetchProducts } from "./products";
 import { pickQuery } from "./query";
 import { captureSite } from "./screenshot";
@@ -28,15 +27,17 @@ import { finishTheme } from "./theme";
 import type { NativeSearch, PreviewResult, PreviewTheme, PreviewThemeSource } from "./types";
 
 /* Comfortably inside the route's maxDuration of 60, with room left to serialise
-   a response that carries a ~200 KB data URL. */
+   a response that now carries two ~200 KB data URLs. */
 const TOTAL_BUDGET_MS = 45_000;
 const RESERVE_MS = 3_000;
 
 const FETCH_BUDGET_MS = 20_000;
-const SCREENSHOT_BUDGET_MS = 15_000;
+/* Two page loads — the storefront, then its search answering our query — plus
+   the launch. The old 15 s covered one; this is what the browser stage gets
+   when the fetch and the catalogue were quick, which they nearly always are. */
+const SCREENSHOT_BUDGET_MS = 28_000;
 const STYLESHEET_BUDGET_MS = 6_000;
 const PRODUCTS_BUDGET_MS = 8_000;
-const NATIVE_BUDGET_MS = 6_000;
 
 type Detail = Record<string, string | number | boolean | null>;
 
@@ -85,22 +86,58 @@ export async function buildPreview(host: string): Promise<PreviewResult> {
     logStage(host, "meta", startedAt, { ok: false, reason: why(err) });
   }
 
+  /* The catalogue comes before the browser now: the query we type into the
+     store's own search is picked from it, and the browser needs that query. */
+  startedAt = Date.now();
+  let products: PreviewResult["products"] = [];
+  try {
+    products =
+      deadline.spent(1_000) ?
+        []
+      : await fetchProducts(
+          site.finalUrl,
+          site.platform,
+          site.html,
+          Math.min(PRODUCTS_BUDGET_MS, deadline.spendable()),
+        );
+    logStage(host, "products", startedAt, { count: products.length, source: site.platform });
+  } catch (err) {
+    logStage(host, "products", startedAt, { ok: false, reason: why(err) });
+  }
+
+  /* The question both halves of the preview answer. Picked from the catalogue we
+     just built, and picked once, here — see query.ts. */
+  const query = pickQuery(products);
+
   startedAt = Date.now();
   let computed: Partial<PreviewTheme> = {};
   let screenshot: string | null = null;
+  let nativeSearch: NativeSearch | null = null;
   try {
     const capture =
       deadline.spent(3_000) ?
         null
-      : await captureSite(site.finalUrl, Math.min(SCREENSHOT_BUDGET_MS, deadline.spendable()));
+      : await captureSite(
+          site.finalUrl,
+          query,
+          Math.min(SCREENSHOT_BUDGET_MS, deadline.spendable()),
+        );
     if (capture) {
       screenshot = capture.screenshot;
       computed = capture.theme;
+      nativeSearch = capture.nativeSearch;
     }
     logStage(host, "screenshot", startedAt, {
       ok: Boolean(capture),
       bytes: screenshot?.length ?? 0,
       colours: Object.keys(computed).length,
+    });
+    logStage(host, "native", startedAt, {
+      /* A photograph or nothing, so there is no count to keep apart from null
+         any more — but the path is worth a line: it is the proof of whose
+         search answered. The query string stays out, as every query does. */
+      asked: nativeSearch !== null,
+      path: nativeSearch ? new URL(nativeSearch.url).pathname : null,
     });
   } catch (err) {
     logStage(host, "screenshot", startedAt, { ok: false, reason: why(err) });
@@ -128,56 +165,6 @@ export async function buildPreview(host: string): Promise<PreviewResult> {
     } catch (err) {
       logStage(host, "stylesheet", startedAt, { ok: false, reason: why(err) });
     }
-  }
-
-  startedAt = Date.now();
-  let products: PreviewResult["products"] = [];
-  try {
-    products =
-      deadline.spent(1_000) ?
-        []
-      : await fetchProducts(
-          site.finalUrl,
-          site.platform,
-          site.html,
-          Math.min(PRODUCTS_BUDGET_MS, deadline.spendable()),
-        );
-    logStage(host, "products", startedAt, { count: products.length, source: site.platform });
-  } catch (err) {
-    logStage(host, "products", startedAt, { ok: false, reason: why(err) });
-  }
-
-  /* The question both halves of the preview answer. Picked from the catalogue we
-     just built, and picked once, here — see query.ts. */
-  const query = pickQuery(products);
-
-  startedAt = Date.now();
-  let nativeSearch: NativeSearch | null = null;
-  try {
-    nativeSearch =
-      deadline.spent(1_200) ?
-        null
-      : await fetchNativeSearch(
-          site.finalUrl,
-          site.platform,
-          site.html,
-          query,
-          Math.min(NATIVE_BUDGET_MS, deadline.spendable()),
-        );
-    logStage(host, "native", startedAt, {
-      /* `null` and `0` mean different things here and the log has to keep them
-         apart as carefully as the UI does. */
-      asked: nativeSearch !== null,
-      count: nativeSearch ? nativeSearch.products.length : null,
-      source: nativeSearch?.source ?? null,
-      skipped:
-        deadline.spent(1_200) ? "budget"
-        : site.platform !== "shopify" ? "platform"
-        : nativeSearch ? false
-        : "upstream",
-    });
-  } catch (err) {
-    logStage(host, "native", startedAt, { asked: false, reason: why(err) });
   }
 
   const merged: Partial<PreviewTheme> = { ...(stylesheet ?? {}), ...computed };
@@ -216,7 +203,7 @@ export async function buildPreview(host: string): Promise<PreviewResult> {
     themeSource,
     screenshot: Boolean(screenshot),
     products: products.length,
-    native: nativeSearch ? nativeSearch.products.length : null,
+    native: Boolean(nativeSearch),
     ttl: degraded ? DEGRADED_TTL_MS : CACHE_TTL_MS,
   });
 

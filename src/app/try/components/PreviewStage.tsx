@@ -66,6 +66,27 @@ function errorTitle(code: PreviewErrorCode | null, store: string): string {
   }
 }
 
+/**
+ * The part of the capture URL worth printing: host and path, no query string.
+ *
+ * The query string is the search phrase URL-encoded, which the caption has
+ * already quoted in plain words; repeating it as `q=something+warm+for…` is
+ * noise. The path is the part that carries information — it is what shows a
+ * merchant on SearchTap or Algolia that we photographed *their* engine and not
+ * Shopify's `/search`. Null when the URL will not parse or is not a web URL:
+ * the job follows a merchant-controlled redirect to get here, and the caption
+ * links to it, so anything but http(s) is dropped rather than rendered.
+ */
+function captureLocation(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.protocol !== "https:" && u.protocol !== "http:") return null;
+    return `${u.host}${u.pathname === "/" ? "" : u.pathname}`;
+  } catch {
+    return null;
+  }
+}
+
 type State =
   | { status: "loading" }
   | { status: "ready"; result: PreviewResult }
@@ -107,7 +128,7 @@ function fallbackResult(store: string): PreviewResult {
     products: [],
     query: "something warm for the rainy commute",
     /* We never reached the store, so we never ran its search. Null is the only
-       honest value and the before state stays a bare stand-in. */
+       honest value, and with it there is no before state and no toggle. */
     nativeSearch: null,
     // Never shown; a constant keeps this render deterministic.
     fetchedAt: "1970-01-01T00:00:00.000Z",
@@ -146,19 +167,25 @@ function Canvas({
           dimmed={withGrowsearch}
         />
 
-        {/* The store's own search, shown only when we actually ran it. A null
-            `nativeSearch` means we could not ask, and the before state then
-            stays exactly what it was: the bare screenshot. Rendering an empty
-            panel here would be inventing a result. */}
+        {/* The store's own search, shown only when we actually photographed
+            it. A null `nativeSearch` means we could not ask — no browser, no
+            search box, a bot challenge — and then nothing is drawn here at
+            all; Stage also drops the toggle, so this state is never on show.
+            Hidden from readers while it is faded out: opacity 0 leaves an
+            image in the accessibility tree, and its alt would be announced
+            over a stage that is visibly showing something else. */}
         {result.nativeSearch ? (
           <div
             className="gs-fade pointer-events-none absolute inset-0"
             style={{ opacity: withGrowsearch ? 0 : 1 }}
+            aria-hidden={withGrowsearch}
           >
             <NativeSearchPanel
               search={result.nativeSearch}
+              store={result.store}
               query={query}
               compact={compact}
+              chromeHeight={compact ? COMPACT_CANVAS.chrome : DESKTOP_CANVAS.chrome}
             />
           </div>
         ) : null}
@@ -192,12 +219,18 @@ const MODES = [
 /**
  * Two states over one frame.
  *
- * "Before" is their storefront answering the same question with the search it
- * already has — undimmed, no Growsearch chrome — because the whole value of a
- * comparison is that one side of it is the truth. Where we could not run their
- * search it is the bare screenshot instead, claiming nothing. "After" is the
- * scrim and the widget. Only opacity changes between them, so the frame is
- * pinned: nothing reflows, nothing resizes, and the page does not jump.
+ * "Before" is a screenshot of their own search answering the same question —
+ * undimmed, no Growsearch chrome — because the whole value of a comparison is
+ * that one side of it is the truth. "After" is the scrim and the widget. Only
+ * opacity changes between them, so the frame is pinned: nothing reflows,
+ * nothing resizes, and the page does not jump.
+ *
+ * Where we could not photograph their search there is no "before" and no
+ * toggle. An earlier version kept the control and showed the untouched
+ * homepage under "Your store today", which compares nothing — the visitor
+ * asked about search, and a tab that answers with a homepage reads as either a
+ * bug or something being hidden. With one state there is nothing to switch,
+ * so the stage simply is the Growsearch mock-up.
  *
  * It opens on "after". That is the answer they came for, and the widget's
  * entrance animation already reads as it landing on their storefront; the
@@ -211,38 +244,45 @@ function Stage({
   result: PreviewResult;
   synthesised?: boolean;
 }) {
-  const [withGrowsearch, setWithGrowsearch] = useState(true);
+  const [wantsGrowsearch, setWantsGrowsearch] = useState(true);
   const groupId = useId();
+
+  /* Derived, not just state: a result with nothing to compare against can
+     never be shown in the before state, whatever the button was last set to. */
+  const comparable = result.nativeSearch !== null;
+  const withGrowsearch = comparable ? wantsGrowsearch : true;
 
   return (
     <div>
-      <div
-        role="group"
-        aria-labelledby={groupId}
-        className="mb-4 inline-flex rounded-full border border-line bg-cream p-1"
-      >
-        <span id={groupId} className="sr-only">
-          Compare your storefront with and without Growsearch
-        </span>
-        {MODES.map((mode) => {
-          const active = (mode.id === "after") === withGrowsearch;
-          return (
-            <button
-              key={mode.id}
-              type="button"
-              aria-pressed={active}
-              onClick={() => setWithGrowsearch(mode.id === "after")}
-              className={`font-poppins rounded-full px-4 py-2 text-[13px] font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:px-5 sm:text-[14px] ${
-                active
-                  ? "bg-brand text-white"
-                  : "text-body-mute hover:text-charcoal"
-              }`}
-            >
-              {mode.label}
-            </button>
-          );
-        })}
-      </div>
+      {comparable ? (
+        <div
+          role="group"
+          aria-labelledby={groupId}
+          className="mb-4 inline-flex rounded-full border border-line bg-cream p-1"
+        >
+          <span id={groupId} className="sr-only">
+            Compare your store&apos;s own search with Growsearch
+          </span>
+          {MODES.map((mode) => {
+            const active = (mode.id === "after") === withGrowsearch;
+            return (
+              <button
+                key={mode.id}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setWantsGrowsearch(mode.id === "after")}
+                className={`font-poppins rounded-full px-4 py-2 text-[13px] font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:px-5 sm:text-[14px] ${
+                  active
+                    ? "bg-brand text-white"
+                    : "text-body-mute hover:text-charcoal"
+                }`}
+              >
+                {mode.label}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
 
       <div className="gs-stage w-full" style={themeVars(result.theme)}>
         <Canvas result={result} compact={false} withGrowsearch={withGrowsearch} />
@@ -252,10 +292,12 @@ function Stage({
       {/* Live, so switching is announced rather than only visible. The height
           is reserved to the taller of the two captions — measured, not
           guessed — because they are different lengths and the page must not
-          move under the control that changed it. */}
+          move under the control that changed it. On the light fixture the
+          before caption is 118px at 390px wide and 52px at 1440; the after
+          caption is 96px and 52px. */}
       <p
         aria-live="polite"
-        className="mt-5 min-h-[6rem] text-[14.5px] leading-relaxed text-body-mute sm:min-h-[3.25rem]"
+        className="mt-5 min-h-[7.5rem] text-[14.5px] leading-relaxed text-body-mute sm:min-h-[3.25rem]"
       >
         <StageCaption
           result={result}
@@ -277,43 +319,50 @@ function StageCaption({
   synthesised: boolean;
 }) {
   /* "Mock-up" is the right word for the after state and the wrong one for the
-     before state, where what is on screen is their own page and their own
-     search results. Three befores, because the caption has to be exact about
-     which of them the visitor is looking at. */
-  if (!withGrowsearch) {
-    const native = result.nativeSearch;
+     before state, where what is on screen is a photograph of their own page.
+     The before caption only exists when there is a photograph — Stage never
+     shows the before state without one — so a null here falls through to the
+     after copy rather than inventing a third thing to say. */
+  const native = withGrowsearch ? null : result.nativeSearch;
 
-    if (native) {
-      /* Provenance first: this is only worth showing because we really asked
-         their store, and saying so is what makes it credible. */
-      return (
-        <>
-          <span className="font-semibold text-charcoal">
-            {result.store}&apos;s own search, asked
-            &ldquo;{result.query}&rdquo;.
-          </span>{" "}
-          {native.products.length === 0
-            ? "That is the result it returned — we ran the search on your storefront and this is what came back."
-            : `We ran the search on your storefront; these are its results, over the screenshot we took.`}
-        </>
-      );
-    }
+  if (native) {
+    const capturedAt = captureLocation(native.url);
 
-    return result.screenshot ? (
+    /* Provenance first: this is only worth showing because we really drove
+       their search, and saying how is what makes it credible. The old caption
+       said "these are its results" over cards we had drawn ourselves; this
+       one can say "screenshot" because it is one. The address is the proof —
+       it is where their own search box sent us, and on a store running
+       SearchTap or Algolia it visibly is not Shopify's /search. It is also the
+       only place the host is printed: leading with it as well pushed the
+       caption a line past its reserved height on both canvases. */
+    return (
       <>
         <span className="font-semibold text-charcoal">
-          {result.store}, as it is today.
+          Your own search, asked &ldquo;{result.query}&rdquo;.
         </span>{" "}
-        The screenshot we took of your storefront, untouched. We couldn&apos;t
-        reach your search to ask it anything.
-      </>
-    ) : (
-      <>
-        <span className="font-semibold text-charcoal">
-          A stand-in for {result.store}.
-        </span>{" "}
-        We couldn&apos;t take a screenshot, so this is a sketch of a storefront
-        rather than yours.
+        We typed that into your search box and screenshotted the page it
+        answered with &mdash; nothing redrawn.
+        {capturedAt ? (
+          <>
+            {" "}
+            Captured at{" "}
+            <a
+              href={native.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              /* `anywhere`, not `break-all`: a host has hyphens and dots to
+                 break at, and break-all ignored them and split
+                 "northwind-and-c|o" at 390px. This only breaks when the
+                 line would otherwise overflow. */
+              className="font-semibold [overflow-wrap:anywhere] text-charcoal underline underline-offset-4 transition-colors hover:text-brand"
+            >
+              {capturedAt}
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+            .
+          </>
+        ) : null}
       </>
     );
   }
