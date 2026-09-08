@@ -84,42 +84,72 @@ export type PreviewResult = {
    * sides cannot drift apart and make an unfair comparison.
    */
   query: string;
-  /** A screenshot of the store's own search answering `query`; null if we couldn't ask. */
+  /** A screenshot of the store's own search box, empty; null if we couldn't open one. */
   nativeSearch: NativeSearch | null;
   /** ISO timestamp of when the job ran. */
   fetchedAt: string;
 };
 
 /**
- * The store's existing search, answering the same question we do.
+ * What the store's search looks like today — the "before" half of the
+ * comparison.
  *
- * This is the "before" half of the comparison, and it is a photograph, not a
- * reconstruction. We drive the storefront's own search box in a real browser —
- * type the query, submit it, go wherever the store sends a shopper — and
- * screenshot what lands. Nothing here is re-rendered in our own styling.
+ * A photograph, never a reconstruction, and deliberately not an experiment. We
+ * open the storefront's own search the way a shopper does — click the search
+ * control, let the drawer or modal or inline field appear — and screenshot it
+ * empty. We do not type anything and we do not submit anything.
  *
- * The previous version asked Shopify's `/search/suggest.json` and drew the
- * results as our own cards. Two things killed it. boat-lifestyle.com does not
- * use Shopify search at all (SearchTap does), so we were quoting an endpoint no
- * shopper ever touches while naming the merchant's domain over it. And that
- * endpoint returns six products for `zzzqqqxyzzy nonsense term`, so the panel
- * flattered whatever search the store already had — an argument against us,
- * made with fabricated confidence, on the one screen meant to sell the product.
+ * Not running a query is the whole design, and it buys three things. It is
+ * honest by construction: an empty box makes no claim about results, so there
+ * is nothing to overstate. It always works, because the failure modes that made
+ * the previous version return nothing — SearchTap spinning past our wait, a bot
+ * challenge fired by submitting, a results page that never rendered — all
+ * belong to the submit step we no longer take. And it keeps us from running
+ * traffic through a merchant's search engine to make a point about it.
  *
- * `null` means we could not ask: no browser, no search box we could find, a bot
- * challenge instead of a results page, or no time left. The UI then shows no
- * before-panel at all. There is deliberately no fallback rendering — a mock of
- * a merchant's own search, shown to that merchant, is the exact failure this
- * type exists to prevent.
+ * What it gives up is worth naming. Asking their search a real question
+ * produced the strongest evidence this product can show: sugarcosmetics.com
+ * answered "No results found for 'a thoughtful gift for someone on a budget'"
+ * and then offered 326 results for "gift" instead — the argument for Growsearch
+ * made by the merchant's own storefront. That is gone. The comparison is now
+ * look and feel: a plain box that waits for keywords, against an assistant that
+ * takes a sentence.
+ *
+ * So the caption must never suggest we asked their search anything. That would
+ * be the same lie the original panel told — it rendered Shopify
+ * `/search/suggest.json` results as our own product cards, on a store
+ * (boat-lifestyle.com) that runs SearchTap and never touches that endpoint,
+ * using an API that returns six products for `zzzqqqxyzzy nonsense term`.
+ *
+ * `null` means we could not photograph anything: no browser on the machine, or
+ * no search control we could find and open. The UI then shows no before-panel,
+ * which is now rare rather than routine.
  */
 export type NativeSearch = {
-  /** Echoes `PreviewResult.query`, so a consumer holding only this is not lost. */
-  query: string;
-  /** Their search results page as a data URL (image/jpeg), full viewport. */
+  /** Their search UI, open and empty, at 1440x900, as a desktop shopper meets it. */
   screenshot: string;
-  /** Where their own search took us. Proof of what the screenshot shows. */
+  /**
+   * The same thing at phone width, or null if we could not get one.
+   *
+   * Not a nicety. The phone canvas is 342px against a 1440px capture, and no
+   * crop of a desktop shot survives that: bulk.com's search overlay is ~500px
+   * wide, so a 342px window centred on it still cuts off the magnifier, the
+   * caret and the placeholder — every part that says "search". Stores also
+   * serve a genuinely different search on a phone, usually full-width, which
+   * is both what a phone shopper actually sees and what fits this frame.
+   */
+  screenshotPhone: string | null;
+  /**
+   * Where the search UI sits in that capture, as fractions of width and height
+   * (0–1). The phone canvas shows a ~430px-wide strip of a 1440px shot, so the
+   * crop has to be aimed: centred, the strip landed in the middle of an empty
+   * field and rendered as two white bands with no search box in them. The
+   * client anchors on this instead of guessing a corner.
+   */
+  focus: { x: number; y: number };
+  /** The page the search was opened on. */
   url: string;
-  /** How we got there: we used their search box, the way a shopper would. */
+  /** How we got it: their own search control, operated the way a shopper would. */
   source: "storefront-search";
 };
 

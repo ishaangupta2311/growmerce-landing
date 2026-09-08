@@ -9,16 +9,17 @@
  * exception the caller has to interpret — and to hold a hard wall-clock budget,
  * because a preview page that never lands is worse than one with no screenshot.
  *
- * The same browser takes a second picture: the store's own search answering
- * our query. That one is driven the way a shopper would drive it — find the
- * box, type, press Enter, go where the store goes — and it is a photograph or
- * nothing. See `captureSearch` for why nothing is a perfectly good answer.
+ * The same browser takes a second picture: the store's own search, open and
+ * empty. That one is reached the way a shopper reaches it — find the box, or
+ * the icon that reveals it, and look — and it is a photograph or nothing. See
+ * `captureSearch` for why nothing is a perfectly good answer.
  */
 
 import { existsSync } from "node:fs";
 
 import puppeteer, {
   type Browser,
+  type ElementHandle,
   type HTTPRequest,
   type HTTPResponse,
   type Page,
@@ -36,34 +37,39 @@ const NAV_TIMEOUT_MS = 12_000;
 const NETWORK_IDLE_MS = 4_000;
 const MODAL_BUDGET_MS = 300;
 
-/* The search page loads the storefront a second time, then a results page on
-   top. Below this there is not enough left to do both, and starting is worse
-   than skipping: a half-run leaves a page mid-navigation for the deadline to
-   kill, and the homepage shot we already have is the one worth returning. */
-const SEARCH_MIN_BUDGET_MS = 7_000;
+/* The search stage loads the storefront a second time and then opens a
+   drawer: a load, a few clicks, one shot. Below this there is not enough left
+   for the load, and starting is worse than skipping: a half-run leaves a page
+   mid-navigation for the deadline to kill, and the homepage shot we already
+   have is the one worth returning. Measured at 4.8–6.6 s end to end (load,
+   one toggle, shot) across sugarcosmetics, burgerbae, skullcandy, bulk,
+   allbirds and barefootbuttons; the old submit-and-wait version needed 7 s
+   just to be allowed to start and up to 15 s more for SearchTap to answer. */
+const SEARCH_MIN_BUDGET_MS = 4_000;
 /* Second load of the same origin, so the cache is warm and this can be shorter. */
 const SEARCH_NAV_TIMEOUT_MS = 10_000;
-/* How long a store gets to answer Enter with a navigation before we conclude
-   it rendered results in place instead. SearchTap and Algolia both do that. */
-const SUBMIT_WAIT_MS = 4_000;
 /* A drawer or modal sliding open. Longer than any theme's transition. */
 const DRAWER_SETTLE_MS = 700;
-/* How long a results page that went quiet before it drew anything gets to
-   finish. SearchTap sits on a spinner well past network idle when the query is
-   a sentence rather than a keyword — boat-lifestyle.com timed out here at 8 s
-   and returned no panel at all, and sugarcosmetics.com (same engine) needed
-   9 s for the whole stage.
-   That failure is the expensive direction. A store whose search cannot answer
-   a sentence is precisely the store worth showing the merchant: sugarcosmetics
-   answered with "No results found for ... showing 326 result(s) for "gift"
-   instead", which is the argument for the product, made by their own
-   storefront. Timing out one second early turns that into a blank panel and we
-   lose the sale we were making. The stage has 28 s and observed full-pipeline
-   runs finish in 19.6–24.4 s of 45 s, so the ceiling is affordable; Walmart's
-   forever-skeleton still costs exactly one wait. */
-const ANSWER_WAIT_MS = 15_000;
 /* Header icons we will click before giving up on finding a search box. */
 const TOGGLE_ATTEMPTS = 3;
+/* The phone pass: same page, narrower. An iPhone 14/15 at its own pixel
+   density, so the shot is what a phone shopper sees and is already the shape
+   of the phone canvas — no crop of a 1440px shot can be, bulk.com's ~500px
+   overlay lost its magnifier and placeholder to any 342px window.
+   Deliberately without `isMobile` and `hasTouch`: flipping either makes
+   Puppeteer reload the page to apply it, and on a locked page that reload is
+   aborted into chrome-error:// — measured, every store came back
+   "no-search-box" in under a second. Width is what the theme's media queries
+   key off, and width alone is a resize in place. */
+const PHONE_VIEWPORT = { width: 390, height: 844, deviceScaleFactor: 2 };
+/* Bounded on its own, not just by what is left: it is the last thing in the
+   stage and the desktop shot is already in hand, so overrunning here can only
+   cost the whole capture to gain a second image. Measured at 0.5–1.7 s on
+   top of the desktop pass (allbirds 0.5, bulk 0.7, sugarcosmetics 1.7). */
+const PHONE_BUDGET_MS = 6_000;
+const PHONE_MIN_BUDGET_MS = 3_000;
+/* A theme's resize handlers re-laying out the header for the new width. */
+const REFLOW_SETTLE_MS = 500;
 
 /* Well-known locations, in the order a developer machine is likely to have them. */
 const MAC_CANDIDATES = [
@@ -92,7 +98,7 @@ export type CaptureResult = {
   /** data:image/jpeg;base64,… or null when the shot itself failed. */
   screenshot: string | null;
   theme: BrowserTheme;
-  /** Their search answering our query, or null — never a substitute. */
+  /** Their search UI, open and empty, or null — never a substitute. */
   nativeSearch: NativeSearch | null;
 };
 
@@ -606,13 +612,6 @@ type GuardedPage = {
   lock: () => void;
   /** Status of the last main-frame document, so a 403/404 is never mistaken for a page. */
   documentStatus: () => number | null;
-  /**
-   * Main-frame documents served so far. Comparing before and after is the one
-   * reliable way to know a real navigation happened: `waitForNavigation` is on
-   * a timer and a store that draws suggestions first and navigates second can
-   * outlast it, and a URL change alone is also what pushState looks like.
-   */
-  documents: () => number;
 };
 
 /**
@@ -625,14 +624,12 @@ async function openPage(browser: Browser): Promise<GuardedPage> {
   const verdicts: HostVerdicts = new Map();
   let locked = false;
   let status: number | null = null;
-  let documents = 0;
   await page.setRequestInterception(true);
   page.on("request", (request) => void handleRequest(request, page, () => locked, verdicts));
   page.on("response", (response: HTTPResponse) => {
     const request = response.request();
     if (request.isNavigationRequest() && request.frame() === page.mainFrame()) {
       status = response.status();
-      documents += 1;
     }
   });
   await page.setExtraHTTPHeaders({ "accept-language": "en-US,en;q=0.9" });
@@ -642,7 +639,6 @@ async function openPage(browser: Browser): Promise<GuardedPage> {
       locked = true;
     },
     documentStatus: () => status,
-    documents: () => documents,
   };
 }
 
@@ -792,25 +788,56 @@ function findSearchInput(page: Page): Promise<boolean> {
 }
 
 /**
- * Click the likeliest "open search" control not yet tried. An in-page click,
- * not a mouse event: a magnifier tucked under a sticky promo bar is still the
- * control the shopper uses, and `elementFromPoint` would hand us the bar.
+ * Click the likeliest "open search" control not yet tried.
+ *
+ * A real mouse click when the control is what a mouse would land on, and an
+ * in-page `click()` when it is not. Both are needed. Flatsome (WooCommerce's
+ * most-used theme) opens its search lightbox only for a real pointer —
+ * barefootbuttons.com's magnifier ignored the synthetic click and the store
+ * came back "no search box" with the icon in plain sight. And a magnifier
+ * tucked under a sticky promo bar is still the control the shopper uses, but
+ * a mouse click there hits the bar, so the covered case keeps the synthetic
+ * one. `elementFromPoint` decides, with the same tolerance `findSearchInput`
+ * gives a box whose icon floats over its own centre.
+ *
  * Anchors navigate exactly as they would for a shopper — if the theme's script
  * prevents that and opens a drawer, we get the drawer; if not, the search page.
+ *
+ * `kind` picks what we are looking for. "search" is the magnifier; "menu" is
+ * the hamburger, which on a phone is often where the magnifier lives — the
+ * header collapses to logo, burger and cart, and search moves into the
+ * drawer the burger opens.
  */
-function openSearchToggle(page: Page): Promise<boolean> {
-  return page.evaluate((selector) => {
+async function clickToggle(page: Page, kind: "search" | "menu"): Promise<boolean> {
+  const wanted =
+    kind === "search" ?
+      {
+        label: "search",
+        naming: "search",
+        /* "Close search", "Clear search" and a "Research" nav item all match
+           the word and none of them opens anything. */
+        not: "close|cancel|clear|reset|research",
+      }
+    : {
+        label: "^\\s*(?:open )?(?:menu|navigation|nav|hamburger)\\s*$",
+        naming:
+          "hamburger|burger|menu-toggle|menu-icon|icon--menu|icon-menu|menu-drawer|mobile-nav|mobile-menu|nav-toggle|toggle-nav|js-menu|menu-button|menu-open|drawer-toggle",
+        not: "close|cancel|search|cart|account|login|currency|language",
+      };
+  const point = await page.evaluate((selector, want) => {
     const TRIED = "data-growsearch-tried";
-    const SEARCH = /search/i;
-    /* "Close search", "Clear search" and a "Research" nav item all match the
-       word and none of them opens anything. */
-    const NOT_A_TOGGLE = /close|cancel|clear|reset|research/i;
+    const SEARCH = new RegExp(want.label, "i");
+    const NAMED = new RegExp(want.naming, "i");
+    const NOT_A_TOGGLE = new RegExp(want.not, "i");
 
     let best: HTMLElement | null = null;
     let bestRank = Number.POSITIVE_INFINITY;
     for (const el of Array.from(document.querySelectorAll<HTMLElement>(selector)).slice(0, 600)) {
       if (el.hasAttribute(TRIED)) continue;
-      const text = (el.textContent ?? "").trim();
+      /* innerText, not textContent: Dawn's icon <summary>s carry an inline
+         <style>, and as textContent Skullcandy's hamburger is 200 characters
+         of CSS that fails the length test before its label is ever read. */
+      const text = el.innerText.trim();
       if (text.length > 60) continue;
       const label = `${el.getAttribute("aria-label") ?? ""} ${el.getAttribute("title") ?? ""} ${text}`;
       const naming =
@@ -818,7 +845,7 @@ function openSearchToggle(page: Page): Promise<boolean> {
         ` ${el.getAttribute("aria-controls") ?? ""} ${el.getAttribute("name") ?? ""}` +
         ` ${el.getAttribute("placeholder") ?? ""}`;
       const labelled = SEARCH.test(label);
-      if (!labelled && !SEARCH.test(naming)) continue;
+      if (!labelled && !NAMED.test(naming)) continue;
       if (NOT_A_TOGGLE.test(label)) continue;
 
       const box = el.getBoundingClientRect();
@@ -841,64 +868,40 @@ function openSearchToggle(page: Page): Promise<boolean> {
       }
     }
 
-    if (!best) return false;
-    (best as HTMLElement).setAttribute(TRIED, "");
-    (best as HTMLElement).click();
-    return true;
-  }, SEARCH_TOGGLE_SELECTOR);
-}
+    if (!best) return null;
+    const el = best as HTMLElement;
+    el.setAttribute(TRIED, "");
+    const box = el.getBoundingClientRect();
+    const x = Math.min(Math.max(box.left + box.width / 2, 0), innerWidth - 1);
+    const y = Math.min(Math.max(box.top + box.height / 2, 0), innerHeight - 1);
+    const hit = document.elementFromPoint(x, y);
+    const reachable =
+      hit !== null && (hit === el || el.contains(hit) || el.parentElement?.contains(hit) === true);
+    if (reachable) return { x, y };
+    el.click();
+    return { x: -1, y: -1 };
+  }, SEARCH_TOGGLE_SELECTOR, wanted);
 
-/** Enough of the page to tell "something happened" from "nothing did". */
-type Fingerprint = { url: string; text: number; nodes: number };
-
-function fingerprint(page: Page): Promise<Fingerprint> {
-  return page.evaluate(() => ({
-    url: location.href,
-    text: document.body ? document.body.innerText.length : 0,
-    nodes: document.getElementsByTagName("*").length,
-  }));
-}
-
-/* Thresholds sit above what a rotating hero or a ticking promo bar moves and
-   well below what a results grid — or an honest "0 results for …" — adds. */
-function changed(before: Fingerprint, after: Fingerprint): boolean {
-  return (
-    before.url !== after.url ||
-    Math.abs(before.text - after.text) >= 80 ||
-    Math.abs(before.nodes - after.nodes) >= 15
-  );
-}
-
-/**
- * Whether a navigated page is showing an answer at all. Every results page
- * we have met says one of two things outside the search box: the word
- * "result" — "Showing 322 Result(s)", "We found 2 results", "No results
- * found" — or the query itself, echoed back. (`innerText` skips input values,
- * so the query still sitting in the box does not count.)
- *
- * Walmart's search says neither. It is a skeleton — grey bars where the grid
- * will go — until an API call PerimeterX never lets a headless browser
- * complete, so the network goes quiet with the placeholders still up and
- * enough header text to pass any "is there content" test. A picture of that
- * is not their search any more than a bot wall is.
- */
-function showsAnswer(page: Page, query: string): Promise<boolean> {
-  const needle = query.toLowerCase().split(/\s+/).filter(Boolean).slice(0, 3).join(" ");
-  return page.evaluate((echo) => {
-    const text = (document.body ? document.body.innerText : "").replace(/\s+/g, " ").toLowerCase();
-    return /\bresults?\b/.test(text) || (echo.length > 0 && text.includes(echo));
-  }, needle);
+  if (!point) return false;
+  if (point.x >= 0) await page.mouse.click(point.x, point.y);
+  return true;
 }
 
 /** Why the page in front of us is not the store's search, or null if it is. */
 async function refusal(guarded: GuardedPage): Promise<"challenge" | "error" | null> {
   /* Same reasoning as fetch-site.ts: a 403 is the edge turning us away and a
-     404 is not a results page, whatever either of them looks like. */
+     404 is not a storefront, whatever either of them looks like. */
   const status = guarded.documentStatus();
-  const { title, text } = await guarded.page.evaluate(() => ({
+  const { href, title, text } = await guarded.page.evaluate(() => ({
+    href: location.href,
     title: document.title,
     text: document.body ? document.body.innerText.slice(0, 800) : "",
   }));
+  /* What the navigation guard's abort actually leaves behind: not the page
+     we were on, but Chrome's own "This site can't be reached", under the
+     store's title. Measured, not assumed — a locked page whose anchor was
+     clicked is at chrome-error://chromewebdata/ afterwards. */
+  if (href.startsWith("chrome-error://")) return "error";
   if (CHALLENGE_TEXT.test(`${title}\n${text}`)) return "challenge";
   if (status !== null && status >= 400) {
     return status === 401 || status === 403 || status === 429 ? "challenge" : "error";
@@ -908,73 +911,162 @@ async function refusal(guarded: GuardedPage): Promise<"challenge" | "error" | nu
 }
 
 /**
- * Fire the submit and wait for the store to do whatever it does with a query:
- * navigate to a results page (Shopify's /search, WooCommerce's /?s=), or draw
- * results into the page it is on (SearchTap, Algolia, most predictive-search
- * apps). Both are what the shopper sees. The only failure is nothing at all,
- * and that is the caller's call, from the fingerprint and the document count.
+ * Clear whatever is sitting on top of the search we just opened, and nothing
+ * else.
+ *
+ * `dismissOverlays` cannot run on this page: its last pass hides any big
+ * pinned element named like a modal, and the open search modal is exactly
+ * that. But the second page load brings its own interruptions — bulk.com put
+ * a cookie card over its open search suggestions ("That's ok" matches no
+ * accept phrase, so the homepage pass had hidden it rather than clicked it,
+ * and nothing was remembered), and allbirds.com's /search greeted us with
+ * "Where are we shipping to?". So this is the narrow version, in two passes.
+ *
+ * First, by name: elements that declare themselves dialogs or are named as a
+ * pop-up, only if they do not contain the box we are photographing, and only
+ * if they are not named as search themselves.
+ *
+ * Then, by position: whatever `elementFromPoint` returns at the box's centre
+ * when it is not the box. Allbirds' geo dialog is a `div.fixed.inset-0` with
+ * no role and no name — nothing to match — but it is in front of the box,
+ * and that is the one fact that matters. Its outermost pinned ancestor that
+ * still excludes the box is what gets hidden, so the wrapper painting the
+ * scrim goes with the card. Anything that contains the box is never a
+ * candidate, and a drawer's backdrop is beside the box, not over it.
+ *
+ * Either way the close or accept button is clicked first, so the script that
+ * owns the thing can take its own scrim away, then it is hidden regardless.
+ * The open drawer, its backdrop and the state class on <body> holding it
+ * open are all left alone — those are the picture.
  */
-async function awaitSearchResponse(
-  page: Page,
-  before: Fingerprint,
-  left: () => number,
-  trigger: () => Promise<void>,
-): Promise<void> {
-  let done = false;
-  const navigation = page
-    .waitForNavigation({
-      waitUntil: "domcontentloaded",
-      timeout: Math.min(SUBMIT_WAIT_MS, left()),
-    })
-    .then(
-      () => {},
-      () => {},
+async function clearObstructions(page: Page): Promise<void> {
+  /* Same rule as readComputedTheme: no named functions inside the page. */
+  await page.evaluate(() => {
+    const target = document.querySelector<HTMLElement>("[data-growsearch-target]");
+    if (!target) return;
+    const NAMED =
+      /cookie|consent|gdpr|privacy|popup|pop-up|newsletter|subscribe|lightbox|welcome-?mat|geo|country|region|localization|localisation|interstitial/i;
+    const SEARCH = /search/i;
+    const ACCEPT =
+      /^(accept|allow|agree|i agree|got it|ok|okay|that'?s (?:ok|fine)|close|no thanks|not now|confirm|continue|understood|dismiss)\b/i;
+
+    const suspects = new Set<HTMLElement>(
+      document.querySelectorAll<HTMLElement>(
+        '[role="dialog"], [role="alertdialog"], [aria-modal="true"], dialog[open],' +
+          ' [class*="cookie" i], [class*="consent" i], [class*="popup" i], [class*="newsletter" i],' +
+          ' [id*="cookie" i], [id*="consent" i], [id*="popup" i], [id*="newsletter" i]',
+      ),
     );
+    for (const el of suspects) {
+      if (el.contains(target) || target.contains(el)) continue;
+      const naming = `${el.className} ${el.id}`;
+      if (SEARCH.test(naming)) continue;
+      const role = el.getAttribute("role");
+      const declared =
+        role === "dialog" || role === "alertdialog" || el.getAttribute("aria-modal") === "true";
+      if (!declared && !NAMED.test(naming)) continue;
 
-  await trigger();
+      const style = getComputedStyle(el);
+      if (style.display === "none" || style.visibility === "hidden") continue;
+      const box = el.getBoundingClientRect();
+      if (box.width < 40 || box.height < 20 || box.top > innerHeight || box.bottom < 0) continue;
 
-  /* Poll for an in-place render so a store that never navigates does not cost
-     the whole navigation timeout. The poll throws while a navigation is
-     committing — the context it is asking is being torn down — and that is
-     just "not yet". */
-  const rendered = (async () => {
-    const until = Date.now() + Math.min(SUBMIT_WAIT_MS, left());
-    while (!done && Date.now() < until) {
-      await sleep(300);
-      const now = await fingerprint(page).catch(() => null);
-      if (now && changed(before, now)) return;
+      for (const button of Array.from(
+        el.querySelectorAll<HTMLElement>('button, [role="button"], [type="button"], [type="submit"]'),
+      ).slice(0, 12)) {
+        const label = `${button.getAttribute("aria-label") ?? ""} ${button.getAttribute("title") ?? ""}`;
+        const text = (button.textContent ?? "").trim();
+        if (/^\s*(close|dismiss)\b/i.test(label) || ACCEPT.test(text)) {
+          button.click();
+          break;
+        }
+      }
+      if (el instanceof HTMLDialogElement && el.open) el.close();
+
+      /* The card is often a child of the fixed wrapper that paints the scrim;
+         hide the outermost pinned ancestor that still excludes our box. */
+      let top: HTMLElement = el;
+      for (let up = el.parentElement; up && up !== document.body; up = up.parentElement) {
+        if (up.contains(target)) break;
+        if (getComputedStyle(up).position === "fixed") top = up;
+      }
+      top.style.setProperty("display", "none", "important");
     }
-  })();
 
-  await Promise.race([navigation, rendered]);
-  done = true;
-  /* Results arrive by XHR in the in-place case and as subresources in the
-     other; either way the grid is not on screen until the network goes quiet. */
-  await page
-    .waitForNetworkIdle({ idleTime: 500, timeout: Math.min(NETWORK_IDLE_MS, left()) })
-    .catch(() => {});
+    /* Pass two. Bounded, because each round hides one layer and a modal and
+       its scrim are two. */
+    for (let round = 0; round < 3; round += 1) {
+      const box = target.getBoundingClientRect();
+      const hit = document.elementFromPoint(
+        Math.min(Math.max(box.left + box.width / 2, 0), innerWidth - 1),
+        Math.min(Math.max(box.top + box.height / 2, 0), innerHeight - 1),
+      );
+      /* The same tolerance findSearchInput gives a magnifier floating over
+         the box's own centre. */
+      if (
+        !(hit instanceof HTMLElement) ||
+        hit === target ||
+        target.contains(hit) ||
+        target.parentElement?.contains(hit) === true
+      ) {
+        break;
+      }
+      let top: HTMLElement | null = null;
+      let inside = false;
+      for (let up: HTMLElement | null = hit; up && up !== document.body; up = up.parentElement) {
+        if (up.contains(target)) {
+          inside = true;
+          break;
+        }
+        if (getComputedStyle(up).position === "fixed") top = up;
+      }
+      if (inside || !top) break;
+      const cover = top.getBoundingClientRect();
+      /* A sticky header the box sits under is in the way too, but hiding it
+         would redraw their storefront; a quarter of the viewport is more than
+         any header and less than any modal. */
+      if ((cover.width * cover.height) / (innerWidth * innerHeight) < 0.25) break;
+      for (const button of Array.from(
+        top.querySelectorAll<HTMLElement>('button, [role="button"], [type="button"], [type="submit"]'),
+      ).slice(0, 12)) {
+        const label = `${button.getAttribute("aria-label") ?? ""} ${button.getAttribute("title") ?? ""}`;
+        const text = (button.textContent ?? "").trim();
+        if (/^\s*(close|dismiss)\b/i.test(label) || ACCEPT.test(text)) {
+          button.click();
+          break;
+        }
+      }
+      top.style.setProperty("display", "none", "important");
+    }
+  });
 }
 
 type SearchAttempt = { search: NativeSearch | null; outcome: string };
 
 /**
- * The store's own search, answering our query, photographed.
+ * The store's own search, open and empty, photographed.
  *
- * Driven the way a shopper drives it: load the storefront, find the box or the
- * icon that reveals it, type, press Enter, and screenshot wherever that leads.
- * Nothing is fetched from a guessed endpoint and nothing is redrawn — the
- * previous version quoted /search/suggest.json, which boAt's shoppers never
- * touch, and drew its six-hits-for-anything answer as tidy cards.
+ * Reached the way a shopper reaches it: load the storefront, find the box or
+ * click the icon that reveals it, and look. Nothing is typed and nothing is
+ * submitted. The version before this one typed a sentence picked from the
+ * catalogue and pressed Enter, and every failure it had lived in that step:
+ * SearchTap spinning past a 15 s wait, boAt's bot wall raised by the extra
+ * request, Walmart's skeleton grid that never fills for a headless browser.
+ * It was also a coin flip. The sentence was a guess at an arbitrary catalogue,
+ * and a vague one — "a gift for someone who has everything" — finds
+ * *something* on most stores, so some of the time the picture argued for the
+ * search we exist to replace. An empty box makes no claim, so there is
+ * nothing to overstate, and it asks nothing of their engine at all.
  *
  * Every exit but the last returns null, and null is a good answer. It means
  * the UI shows nothing, which is always better than showing the merchant a
- * bot wall, an error page, or a picture of the homepage with a query typed
- * into it, and calling any of those their search.
+ * bot wall, an error page, or the untouched homepage and calling any of them
+ * their search. Nothing is ever drawn: if their UI did not open, there is
+ * nothing to photograph.
  */
 async function captureSearch(
   browser: Browser,
   url: string,
-  query: string,
   budgetMs: number,
 ): Promise<SearchAttempt> {
   const endsAt = Date.now() + budgetMs;
@@ -999,114 +1091,200 @@ async function captureSearch(
   const walled = await refusal(guarded);
   if (walled) return none(walled);
 
-  /* Deliberately no overlay dismissal before the search. Its last pass hides
-     any pinned element named like a modal that has a big box, which on plenty
-     of themes is the closed full-screen search modal — display:none'd, the
+  /* Deliberately no overlay dismissal on this page. Its last pass hides any
+     pinned element named like a modal that has a big box, which on plenty of
+     themes is the closed full-screen search modal — display:none'd, the
      toggle below would open nothing. Consent state was already accepted on
      the homepage page and lives in the shared context, so the banner is gone
-     anyway; what is left is dealt with once the results page has landed. */
-  let found = await findSearchInput(page).catch(() => false);
-  for (let attempt = 0; !found && attempt < TOGGLE_ATTEMPTS && left() > 2_500; attempt += 1) {
-    const clicked = await openSearchToggle(page).catch(() => false);
-    if (!clicked) break;
-    await sleep(DRAWER_SETTLE_MS);
-    found = await findSearchInput(page).catch(() => false);
-    if (!found) {
-      /* An anchor toggle navigated, and the box we want is on the page that
-         is still arriving. */
-      await page
-        .waitForNetworkIdle({ idleTime: 500, timeout: Math.min(NETWORK_IDLE_MS, left()) })
-        .catch(() => {});
-      found = await findSearchInput(page).catch(() => false);
-    }
-  }
-  if (!found) return none("no-search-box");
+     anyway. */
+  const opened = await openSearch(page, left, "desktop");
+  if (!opened.found) return none("no-search-box");
 
-  const input = await page.$("[data-growsearch-target]");
-  if (!input) return none("no-search-box");
-  if (left() < 2_500) return none("budget");
-
-  /* Taken before typing, not before Enter: on a store whose Enter is a no-op
-     because results already appeared as you typed, what appeared is the answer
-     the shopper gets, and it must not read as "nothing happened". */
-  const before = await fingerprint(page);
-  const documentsBefore = guarded.documents();
-  await input.evaluate((el) => {
-    if (el instanceof HTMLInputElement) el.value = "";
-  });
-  await input.focus();
-  await page.keyboard.type(query, { delay: 8 });
-
-  await awaitSearchResponse(page, before, left, () => page.keyboard.press("Enter"));
-  if (!changed(before, await fingerprint(page).catch(() => before))) {
-    /* Some forms only listen to their own button. Press that, and if the page
-       still does not move we are looking at the homepage with a query typed
-       into it, which is not their search. */
-    const pressed = await page
-      .evaluate(() => {
-        const box = document.querySelector<HTMLInputElement>("[data-growsearch-target]");
-        const form = box?.form ?? box?.closest("form") ?? null;
-        if (!form) return false;
-        const button = form.querySelector<HTMLElement>('[type="submit"], button:not([type="button"])');
-        if (button) button.click();
-        else form.requestSubmit();
-        return true;
-      })
-      .catch(() => false);
-    if (!pressed) return none("no-response");
-    await awaitSearchResponse(page, before, left, async () => {});
-    if (!changed(before, await fingerprint(page).catch(() => before))) return none("no-response");
-  }
-  /* "Navigated" also covers a pushed URL whose path left the storefront's:
-     SearchTap takes boAt from / to /pages/searchtap-search without ever
-     loading a document, and what it draws there is a results page in every
-     sense that matters below — it is in the document flow, and it says how
-     many results. Measured against the URL we started from, not the one we
-     typed into: Allbirds' search icon client-routes to /search first, so by
-     typing time the path has already moved. A drawer that pushes only `?q=`
-     onto the storefront's own path is left alone. */
-  const navigated =
-    guarded.documents() > documentsBefore ||
-    new URL(page.url()).pathname !== new URL(url).pathname;
-
-  lock();
+  /* An anchor toggle goes wherever it would take a shopper, so the page the
+     box is on need not be the one that passed the check above — and a /search
+     that meets a headless browser with a 404 or a bot wall can still have a
+     box in its header. The page in the shot is the one to judge. */
   const refused = await refusal(guarded).catch(() => "error" as const);
   if (refused) return none(refused);
 
-  /* Only a navigated page is judged on whether it answered. In-place results
-     are a drawer over the storefront, which says "result" nowhere, and the
-     fingerprint has already proved something appeared. */
-  if (navigated) {
-    /* Keep enough back to still take the shot when the answer does arrive. */
-    const until = Date.now() + Math.min(ANSWER_WAIT_MS, left() - 1_500);
-    let answered = await showsAnswer(page, query).catch(() => true);
-    while (!answered && Date.now() < until) {
-      await sleep(500);
-      answered = await showsAnswer(page, query).catch(() => true);
-    }
-    if (!answered) return none("no-answer");
-  }
+  const input = await page.$("[data-growsearch-target]");
+  if (!input) return none("no-search-box");
 
-  if (navigated) {
-    await withDeadline(dismissOverlays(page), MODAL_BUDGET_MS, "overlay dismissal").catch(() => {});
-    await sleep(300);
-  }
+  /* From here nothing may move the main frame: this page is the picture. */
+  lock();
+  await presentBox(page, input);
+
+  /* Where the box is, for the client's crop. Read now, after everything that
+     could move it, and as fractions so the client need not know the viewport.
+     A box we cannot measure is not a reason to lose the shot: the header band
+     is where storefront search lives, so aim there and say so in the log. */
+  const box = await input.boundingBox().catch(() => null);
+  const focus =
+    box && box.width > 0 && box.height > 0 ?
+      {
+        x: Math.min(1, Math.max(0, (box.x + box.width / 2) / VIEWPORT.width)),
+        y: Math.min(1, Math.max(0, (box.y + box.height / 2) / VIEWPORT.height)),
+      }
+    : { x: 0.5, y: 0.15 };
+
   if (left() < 1_000) return none("budget");
+  const screenshot = await shoot(page);
+  if (!screenshot) return none("screenshot-failed");
+  /* Read now: the phone pass below may move the page, and the shot is of here. */
+  const shotUrl = page.url();
 
-  const bytes = await page
-    .screenshot({ type: "jpeg", quality: 70, fullPage: false })
-    .catch(() => null);
-  if (!bytes) return none("screenshot-failed");
+  /* The phone shot comes last and on the same page, and nothing about it may
+     cost us what is already in hand: it is bounded on its own clock, every
+     failure inside it is null, and a null is a fine result — the client
+     crops the desktop shot instead. */
+  let phone: PhoneAttempt = { shot: null, outcome: "skipped:budget" };
+  if (left() > PHONE_MIN_BUDGET_MS) {
+    const phoneEndsAt = Date.now() + Math.min(PHONE_BUDGET_MS, left());
+    const phoneLeft = () => Math.max(0, phoneEndsAt - Date.now());
+    phone = await withDeadline(capturePhone(guarded, phoneLeft), phoneLeft(), "phone pass").catch(
+      (err: unknown): PhoneAttempt => ({ shot: null, outcome: `error: ${terse(err)}` }),
+    );
+  }
 
   return {
     search: {
-      query,
-      screenshot: `data:image/jpeg;base64,${Buffer.from(bytes).toString("base64")}`,
-      url: page.url(),
+      screenshot,
+      screenshotPhone: phone.shot,
+      focus,
+      url: shotUrl,
       source: "storefront-search",
     },
-    outcome: navigated ? "navigated" : "in-place",
+    outcome: `${describe(opened)}${box ? "" : " focus=fallback"} phone=${phone.outcome}`,
   };
+}
+
+type Opened = { found: boolean; toggles: number; menu: boolean };
+
+/** For the log line: what discovery did, whether or not it worked. */
+function describe(opened: Opened): string {
+  return `${opened.menu ? "menu+" : ""}${opened.toggles === 0 ? "inline" : `toggled:${opened.toggles}`}`;
+}
+
+/**
+ * Find the search box, or click things until it appears. Shared by both
+ * passes; the phone one is allowed one more move, because a phone header
+ * usually has no magnifier at all until the hamburger is open.
+ */
+async function openSearch(
+  page: Page,
+  left: () => number,
+  pass: "desktop" | "phone",
+): Promise<Opened> {
+  let found = await findSearchInput(page).catch(() => false);
+  let toggles = 0;
+  let menu = false;
+
+  const tryToggles = async (): Promise<void> => {
+    for (let n = 0; !found && n < TOGGLE_ATTEMPTS && left() > 1_500; n += 1) {
+      const clicked = await clickToggle(page, "search").catch(() => false);
+      if (!clicked) break;
+      toggles += 1;
+      await sleep(DRAWER_SETTLE_MS);
+      found = await findSearchInput(page).catch(() => false);
+      if (!found) {
+        /* An anchor toggle navigated, and the box we want is on the page that
+           is still arriving. */
+        await page
+          .waitForNetworkIdle({ idleTime: 500, timeout: Math.min(NETWORK_IDLE_MS, left()) })
+          .catch(() => {});
+        found = await findSearchInput(page).catch(() => false);
+      }
+    }
+  };
+
+  await tryToggles();
+  if (!found && pass === "phone" && left() > 1_500) {
+    menu = await clickToggle(page, "menu").catch(() => false);
+    if (menu) {
+      await sleep(DRAWER_SETTLE_MS);
+      found = await findSearchInput(page).catch(() => false);
+      await tryToggles();
+    }
+  }
+  return { found, toggles, menu };
+}
+
+/**
+ * Click and focus, as the shopper's own click would. A drawer's box has both
+ * already; an inline header box has neither, and they are what make it read
+ * as open rather than as furniture — Skullcandy's field lights up white with
+ * a caret, other themes widen it or draw "popular searches" under it. The
+ * click is dispatched in-page rather than sent as a mouse event because
+ * plenty of themes float the magnifier over the input's own centre, and a
+ * mouse click there submits an empty search. The value is cleared rather
+ * than typed into, because empty is the promise the caption makes.
+ */
+async function presentBox(page: Page, input: ElementHandle<Element>): Promise<void> {
+  await input
+    .evaluate((el) => {
+      if (el instanceof HTMLInputElement) el.value = "";
+      if (el instanceof HTMLElement) el.click();
+    })
+    .catch(() => {});
+  await input.focus().catch(() => {});
+  /* Focus styling, and whatever the theme draws on focus, settling. */
+  await sleep(250);
+  await clearObstructions(page).catch(() => {});
+}
+
+async function shoot(page: Page): Promise<string | null> {
+  const bytes = await page
+    .screenshot({ type: "jpeg", quality: 70, fullPage: false })
+    .catch(() => null);
+  return bytes ? `data:image/jpeg;base64,${Buffer.from(bytes).toString("base64")}` : null;
+}
+
+type PhoneAttempt = { shot: string | null; outcome: string };
+
+/**
+ * The same search at phone width, on the page we already have open.
+ *
+ * Narrowing the viewport is a resize, not a load: the theme's own media
+ * queries and resize handlers swap in the phone header, and the search we
+ * opened either survives the reflow (a drawer that goes full-width) or is
+ * hidden with the desktop header it belonged to. So the discovery runs again
+ * from scratch — marks cleared, because the desktop toggle may be exactly the
+ * right control here too, or a mobile-only twin of it may be.
+ *
+ * The page is locked by now, which is a real constraint rather than a
+ * formality: a mobile toggle that is an anchor to /search gets its navigation
+ * aborted and the page turns into Chrome's error page. `refusal` knows what
+ * that looks like, and that is a null, never a shot.
+ */
+async function capturePhone(guarded: GuardedPage, left: () => number): Promise<PhoneAttempt> {
+  const { page } = guarded;
+  const fail = (outcome: string): PhoneAttempt => ({ shot: null, outcome });
+
+  await page.setViewport(PHONE_VIEWPORT);
+  await sleep(REFLOW_SETTLE_MS);
+  await page
+    .evaluate(() => {
+      for (const el of Array.from(document.querySelectorAll("[data-growsearch-tried]"))) {
+        el.removeAttribute("data-growsearch-tried");
+      }
+    })
+    .catch(() => {});
+
+  const opened = await openSearch(page, left, "phone");
+  /* Say what was tried: "no box after the hamburger opened" is a different
+     store from "no hamburger", and skullcandy.com is the first kind — its
+     phone search is a bar parked above the viewport that nothing reveals. */
+  if (!opened.found) return fail(`no-search-box(${describe(opened)})`);
+  const refused = await refusal(guarded).catch(() => "error" as const);
+  if (refused) return fail(refused);
+  const input = await page.$("[data-growsearch-target]");
+  if (!input) return fail("no-search-box");
+
+  await presentBox(page, input);
+  if (left() < 500) return fail("budget");
+  const shot = await shoot(page);
+  if (!shot) return fail("screenshot-failed");
+  return { shot, outcome: describe(opened) };
 }
 
 function toTheme(raw: RawComputed): BrowserTheme {
@@ -1209,16 +1387,15 @@ async function shutdown(browser: Browser): Promise<void> {
   for (const stream of [child?.stdin, child?.stdout, child?.stderr]) stream?.destroy();
 }
 
-/** Strip query strings before a puppeteer error reaches the log: the URL it names carries our query. */
+/* Strip query strings before a puppeteer error reaches the log. The URL a
+   navigation error names is merchant-controlled and can carry anything — it
+   used to carry the sentence we typed into their search, which is why this
+   exists, and there is no reason to start logging whatever is there now. */
 function terse(err: unknown): string {
   return (err instanceof Error ? err.message : String(err)).replace(/\?\S*/g, "").slice(0, 160);
 }
 
-export async function captureSite(
-  url: string,
-  query: string,
-  budgetMs: number,
-): Promise<CaptureResult | null> {
+export async function captureSite(url: string, budgetMs: number): Promise<CaptureResult | null> {
   const budget = Math.min(TOTAL_BUDGET_MS, budgetMs);
   if (budget < 3_000) return null; // not enough left to be worth a browser
 
@@ -1259,7 +1436,7 @@ export async function captureSite(
     } else {
       const searchStartedAt = Date.now();
       const attempt = await withDeadline(
-        captureSearch(browser, url, query, left()),
+        captureSearch(browser, url, left()),
         left(),
         "native search stage",
       ).catch((err: unknown): SearchAttempt => ({ search: null, outcome: `error: ${terse(err)}` }));

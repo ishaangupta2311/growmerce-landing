@@ -117,11 +117,7 @@ export async function buildPreview(host: string): Promise<PreviewResult> {
     const capture =
       deadline.spent(3_000) ?
         null
-      : await captureSite(
-          site.finalUrl,
-          query,
-          Math.min(SCREENSHOT_BUDGET_MS, deadline.spendable()),
-        );
+      : await captureSite(site.finalUrl, Math.min(SCREENSHOT_BUDGET_MS, deadline.spendable()));
     if (capture) {
       screenshot = capture.screenshot;
       computed = capture.theme;

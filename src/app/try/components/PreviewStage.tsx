@@ -69,13 +69,14 @@ function errorTitle(code: PreviewErrorCode | null, store: string): string {
 /**
  * The part of the capture URL worth printing: host and path, no query string.
  *
- * The query string is the search phrase URL-encoded, which the caption has
- * already quoted in plain words; repeating it as `q=something+warm+for…` is
- * noise. The path is the part that carries information — it is what shows a
- * merchant on SearchTap or Algolia that we photographed *their* engine and not
- * Shopify's `/search`. Null when the URL will not parse or is not a web URL:
- * the job follows a merchant-controlled redirect to get here, and the caption
- * links to it, so anything but http(s) is dropped rather than rendered.
+ * The capture is taken on whatever page the search control was opened on —
+ * the homepage, or a collection if that is where we landed — and the path is
+ * the part that says which. A query string on that page is UTM and variant
+ * noise, not provenance, and an earlier version that printed the whole URL
+ * pushed the caption a line past its reserved height. Null when the URL will
+ * not parse or is not a web URL: the job follows a merchant-controlled
+ * redirect to get here, and the caption links to it, so anything but http(s)
+ * is dropped rather than rendered.
  */
 function captureLocation(url: string): string | null {
   try {
@@ -127,8 +128,8 @@ function fallbackResult(store: string): PreviewResult {
     themeSource: "default",
     products: [],
     query: "something warm for the rainy commute",
-    /* We never reached the store, so we never ran its search. Null is the only
-       honest value, and with it there is no before state and no toggle. */
+    /* We never reached the store, so we never opened its search. Null is the
+       only honest value, and with it there is no before state and no toggle. */
     nativeSearch: null,
     // Never shown; a constant keeps this render deterministic.
     fetchedAt: "1970-01-01T00:00:00.000Z",
@@ -152,9 +153,12 @@ function Canvas({
   compact: boolean;
   withGrowsearch: boolean;
 }) {
-  /* One binding, handed to both panels. The comparison is only fair if each
-     side is answering the identical phrase, so there is deliberately no second
-     place a query could come from — neither component derives one. */
+  /* The query belongs to the Growsearch half only. The before panel never
+     sees it: we do not type into the merchant's search, because we cannot
+     pick a phrase that is fair to an arbitrary catalogue — a vague one made
+     their search look perfectly adequate on some stores and argued against
+     us — so the before half is their search box empty, and nothing here may
+     imply otherwise. */
   const query = result.query;
 
   return (
@@ -168,12 +172,12 @@ function Canvas({
         />
 
         {/* The store's own search, shown only when we actually photographed
-            it. A null `nativeSearch` means we could not ask — no browser, no
-            search box, a bot challenge — and then nothing is drawn here at
-            all; Stage also drops the toggle, so this state is never on show.
-            Hidden from readers while it is faded out: opacity 0 leaves an
-            image in the accessibility tree, and its alt would be announced
-            over a stage that is visibly showing something else. */}
+            it. A null `nativeSearch` means we could not open one — no browser,
+            or no search control we could find — and then nothing is drawn
+            here at all; Stage also drops the toggle, so this state is never
+            on show. Hidden from readers while it is faded out: opacity 0
+            leaves an image in the accessibility tree, and its alt would be
+            announced over a stage that is visibly showing something else. */}
         {result.nativeSearch ? (
           <div
             className="gs-fade pointer-events-none absolute inset-0"
@@ -183,7 +187,6 @@ function Canvas({
             <NativeSearchPanel
               search={result.nativeSearch}
               store={result.store}
-              query={query}
               compact={compact}
               chromeHeight={compact ? COMPACT_CANVAS.chrome : DESKTOP_CANVAS.chrome}
             />
@@ -219,7 +222,7 @@ const MODES = [
 /**
  * Two states over one frame.
  *
- * "Before" is a screenshot of their own search answering the same question —
+ * "Before" is a screenshot of their own search box, opened and left empty —
  * undimmed, no Growsearch chrome — because the whole value of a comparison is
  * that one side of it is the truth. "After" is the scrim and the widget. Only
  * opacity changes between them, so the frame is pinned: nothing reflows,
@@ -319,7 +322,7 @@ function StageCaption({
   synthesised: boolean;
 }) {
   /* "Mock-up" is the right word for the after state and the wrong one for the
-     before state, where what is on screen is a photograph of their own page.
+     before state, where what is on screen is a photograph of their own search.
      The before caption only exists when there is a photograph — Stage never
      shows the before state without one — so a null here falls through to the
      after copy rather than inventing a third thing to say. */
@@ -328,21 +331,25 @@ function StageCaption({
   if (native) {
     const capturedAt = captureLocation(native.url);
 
-    /* Provenance first: this is only worth showing because we really drove
+    /* Provenance first: this is only worth showing because we really opened
        their search, and saying how is what makes it credible. The old caption
        said "these are its results" over cards we had drawn ourselves; this
-       one can say "screenshot" because it is one. The address is the proof —
-       it is where their own search box sent us, and on a store running
-       SearchTap or Algolia it visibly is not Shopify's /search. It is also the
-       only place the host is printed: leading with it as well pushed the
-       caption a line past its reserved height on both canvases. */
+       one can say "screenshot" because it is one, and it says "nothing typed"
+       because an empty box makes no claim and the copy must not make one for
+       it — `result.query` is deliberately absent here. The argument is look
+       and feel: a box that waits for a keyword against an assistant that
+       takes a sentence, so the second line points at the other state rather
+       than passing judgement on this one. The address is the only place the
+       host is printed: leading with it as well pushed the caption a line past
+       its reserved height on both canvases. */
     return (
       <>
         <span className="font-semibold text-charcoal">
-          Your own search, asked &ldquo;{result.query}&rdquo;.
+          Your own search, as a shopper first meets it.
         </span>{" "}
-        We typed that into your search box and screenshotted the page it
-        answered with &mdash; nothing redrawn.
+        We opened it and took a screenshot &mdash; nothing typed, nothing
+        redrawn. The box waits for a keyword; Growsearch takes the whole
+        sentence.
         {capturedAt ? (
           <>
             {" "}
@@ -450,7 +457,7 @@ function LoadingPanel({ store, step }: { store: string; step: number }) {
         Building your preview of {store}
       </h2>
       <p className="mt-3 max-w-[52ch] text-[15.5px] leading-relaxed text-body-mute">
-        This takes about fifteen seconds. We&apos;re reading the public page
+        This takes about twenty seconds. We&apos;re reading the public page
         only &mdash; nothing is being installed and nothing changes.
       </p>
       <div className="mt-8" aria-live="polite">

@@ -1,19 +1,20 @@
 import type { NativeSearch } from "@/lib/preview/types";
 
 /**
- * The store's own search, answering the same question — the "before" half of
- * the comparison.
+ * The store's own search, open and empty — the "before" half of the
+ * comparison.
  *
- * A photograph, not a reconstruction. The server typed `query` into the
- * storefront's own search box in a real browser and screenshotted whatever the
- * store showed a shopper; this draws that image into the storefront area of
- * the frame, in place of the homepage capture, and draws nothing else. The
- * previous version rendered the results as our own product cards, and
- * boat-lifestyle.com caught it: we were quoting a Shopify endpoint their
- * shoppers never touch (they run SearchTap), and that endpoint returns six
- * tidy products for a nonsense term, so the panel flattered the very search
- * we are meant to replace. Anything redrawn here — even a search-bar chrome
- * around the image — is a step back toward that, so there is none.
+ * A photograph, not a reconstruction. The server clicked the storefront's
+ * search control in a real browser, let whatever drawer or modal or field
+ * appeared settle, and screenshotted it with nothing typed; this draws that
+ * image into the storefront area of the frame, in place of the homepage
+ * capture, and draws nothing else. The first version of this panel rendered
+ * Shopify's `/search/suggest.json` as our own product cards, and
+ * boat-lifestyle.com caught it: they run SearchTap, so no shopper ever sees
+ * that endpoint, and it returns six tidy products for a nonsense term, so the
+ * panel flattered the very search we are meant to replace. Anything redrawn
+ * here — even a search-bar chrome around the image — is a step back toward
+ * that, so there is none.
  *
  * It sits exactly where StoreFrame puts the homepage screenshot: below the
  * chrome bar, inside the 1px border, same corner radius, same cover-and-crop.
@@ -24,21 +25,20 @@ import type { NativeSearch } from "@/lib/preview/types";
  *
  * The image carries real alt text, unlike the Growsearch widget beside it,
  * which is decorative. This is the one thing on the canvas that is *their*
- * page rather than our drawing of one, and a reader deserves to be told so.
+ * page rather than our drawing of one, and a reader deserves to be told so —
+ * and told what it is. It is an empty box, so the alt says an empty box; a
+ * screen reader describing it as "search results" would be the suggest.json
+ * lie again, in the accessibility tree.
  */
 export default function NativeSearchPanel({
   search,
   store,
-  query,
   compact = false,
   chromeHeight,
 }: {
   search: NativeSearch;
   /** The normalised host, for the alt text. */
   store: string;
-  /** Passed in rather than read off `search`, so it is the same binding the
-      Growsearch panel gets and the two cannot drift. */
-  query: string;
   compact?: boolean;
   /** StoreFrame's chrome-bar height; the capture begins directly under it. */
   chromeHeight: number;
@@ -60,23 +60,39 @@ export default function NativeSearchPanel({
         background: "var(--gs-bg)",
       }}
     >
-      {/* The phone canvas is tall and narrow, so `cover` has to cut a
-          1440-wide capture down to a 430-wide strip. StoreFrame anchors the
-          homepage strip top-left because that is where a logo and headline
-          live; a results page is laid out the other way round. Its payload —
-          the query echoed in the box, the "No results" line or the count, the
-          first products — sits in a centred column, and on an engine with a
-          facet rail the left edge is nothing but filters. Anchored left, the
-          fixture at 390px showed the wordmark, half a search box and no
-          answer; anchored centre it shows the answer. Desktop needs no crop
-          worth arguing over: the capture is the frame's exact size. */}
+      {/* Two canvases, two captures, and the phone one is not a nicety.
+          Desktop is easy: the shot is the frame's exact size, so `cover` is a
+          no-op and the position is inert.
+          The phone canvas is 342px against a 1440px capture. No crop of the
+          desktop shot survives that — bulk.com's overlay is ~500px wide, so a
+          342px window aimed dead at the box still cut off the magnifier, the
+          caret and the placeholder, every part that says "search". Tried with
+          `cover` (which upscales to ~1146px first, magnifying as well as
+          clipping) and with native pixels; both lost it. So the job takes a
+          second shot at phone width, where a store serves the search a phone
+          shopper actually gets — usually a full-width sheet that fits here
+          properly.
+          When that pass fails (Skullcandy hides its mobile input off-screen in
+          a bar the hamburger does not open) we fall back to cropping the
+          desktop shot at the reported focus point. Worse, but still their
+          search, which beats an empty panel. */}
       {/* eslint-disable-next-line @next/next/no-img-element -- a data: URL
           built by the preview job, so there is no remote asset for next/image
           to optimise and no domain to whitelist. */}
       <img
-        src={search.screenshot}
-        alt={`${store}'s own search results for “${query}”, screenshotted in a browser`}
-        className="absolute inset-0 size-full object-cover object-top"
+        src={(compact && search.screenshotPhone) || search.screenshot}
+        alt={`${store}'s own search box, open and empty, screenshotted in a browser`}
+        className="absolute inset-0 size-full object-cover"
+        style={
+          /* `focus` describes the desktop capture, so it only applies when we
+             are actually cropping that one. The phone shot is already the
+             right shape and wants the default. */
+          compact && search.screenshotPhone ?
+            undefined
+          : {
+              objectPosition: `${Math.round(search.focus.x * 100)}% ${Math.round(search.focus.y * 100)}%`,
+            }
+        }
       />
     </div>
   );
