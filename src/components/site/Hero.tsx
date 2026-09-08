@@ -3,44 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import DemoStoreButton from "./DemoStoreButton";
 
-const CANDLES = [
-  { x: 16, open: 112, close: 150, low: 158, high: 96, up: false },
-  { x: 52, open: 84, close: 128, low: 140, high: 70, up: false },
-  { x: 88, open: 82, close: 126, low: 138, high: 68, up: false },
-  { x: 124, open: 44, close: 92, low: 104, high: 30, up: true },
-  { x: 160, open: 24, close: 66, low: 78, high: 12, up: false },
-  { x: 196, open: 62, close: 104, low: 116, high: 50, up: false },
-  { x: 232, open: 34, close: 74, low: 86, high: 22, up: true },
-  { x: 268, open: 70, close: 118, low: 130, high: 58, up: true },
-  { x: 304, open: 30, close: 78, low: 92, high: 18, up: true },
-];
-
-/* Decorative market chart from the Figma hero card, drawn as SVG so it stays
-   crisp. Candles alternate charcoal/orange over peach gridlines.
-
-   `wide` spreads the candles apart instead of squashing them, which is how a
-   1.9:1 chart becomes a 3.2:1 band without the candles losing their shape —
-   flattening the y axis buries every wick inside its own body. The mobile
-   hero wants a band: at its native proportions a full-width chart card is
-   taller than the photograph it sits under. */
-function CandleChart({ className, wide = false }: { className?: string; wide?: boolean }) {
-  const spread = wide ? 1.7 : 1;
-  const w = 336 * spread;
-  return (
-    <svg viewBox={`0 0 ${w} 180`} fill="none" aria-hidden className={className}>
-      {[24, 60, 96, 132, 168].map((y) => (
-        <line key={y} x1="4" x2={w - 4} y1={y} y2={y} stroke="#FFD6C2" strokeWidth="1.5" />
-      ))}
-      {CANDLES.map((c) => (
-        <g key={c.x} stroke={c.up ? "#FF5A1F" : "#171717"} fill={c.up ? "#FF5A1F" : "#171717"}>
-          <line x1={c.x * spread + 10} x2={c.x * spread + 10} y1={c.high} y2={c.low} strokeWidth="2.5" />
-          <rect x={c.x * spread} y={c.open} width="20" height={Math.max(6, c.close - c.open)} rx="2.5" />
-        </g>
-      ))}
-    </svg>
-  );
-}
-
 /* Where two blocks of the staircase meet, the outline turns back on itself.
    `border-radius` can only round a corner outward, so the inward arc is drawn
    instead: a small orange tile with a transparent disc bitten out of one
@@ -67,11 +29,11 @@ function InsetCorner({ disc, style }: { disc: "bottom left" | "top right"; style
    tucked into the step on the left, and one gutter width repeated at every
    place the two shapes pass each other — headline to photo top, photo arm to
    the middle block, middle block to the photo's notch, photo to the last
-   block, and headline to the chart card. Because the photo's cut-out is baked
-   into the asset, its own proportions drive the rest: the block height equals
-   the notch depth, and the photo's arm width places the middle block. Keep
-   `public/img/pages/hero-shopping-desk.png` and these numbers in step — the
-   asset is 712x534 with a 336px arm and a 180px notch.
+   block, and headline to the mockup card. Because the collage's cut-out is
+   baked into the asset, its own proportions drive the rest: the block height
+   equals the notch depth, and the collage's arm width places the middle block.
+   Keep `public/img/pages/hero-search-mockup.png` and these numbers in step —
+   the asset is 712x534 with a 336px arm and a 180px notch.
 
    Everything is a container-query unit rather than `vw` so the type and the
    boxes stay locked to each other: sized in `vw` they drift apart once the
@@ -106,17 +68,17 @@ export default function Hero() {
           className="@container relative hidden w-full lg:block"
           style={{ aspectRatio: `100 / ${TOP + BAR_H + GUTTER + PHOTO.height}`, "--inset": "0.87cqw" } as CSSProperties}
         >
-          {/* The cut-out photo. Its top edge sits a gutter below the first
+          {/* The cut-out collage. Its top edge sits a gutter below the first
               block and its notch a gutter below the second, which the asset's
               own proportions guarantee at every width. */}
           <Image
-            src="/img/pages/hero-shopping-desk.png"
-            alt="A shopping trolley of parcels on a desk beside a laptop showing an online store"
+            src="/img/pages/hero-search-mockup.png"
+            alt="A Growmerce search for “gift for someone who loves coffee” returning coffee products, beside a trolley of parcels"
             width={712}
             height={534}
             priority
             sizes="(min-width: 1024px) 44vw, 100vw"
-            className="hero-enter-scale absolute h-auto"
+            className="hero-enter-scale absolute h-auto [filter:drop-shadow(0_14px_26px_rgba(96,44,14,0.13))]"
             style={{
               left: `${PHOTO.left}cqw`,
               top: `${TOP + BAR_H + GUTTER}cqw`,
@@ -125,20 +87,26 @@ export default function Hero() {
             }}
           />
 
-          {/* Chart card — a gutter clear of the first block's right edge and of
-              the last block's top edge, so it sits in the same grid. */}
-          <div
-            className="hero-enter-scale absolute rounded-[1.3cqw] bg-[#fae2d2] p-[1.2cqw]"
+          {/* The laptop, cut out rather than sitting on a card: a gutter clear
+              of the first block's right edge, and running out to the stage's
+              own right edge — the same line the subtext below it ends on. Its
+              height follows from the asset, which keeps a gutter's worth of
+              air above the last block. */}
+          <Image
+            src="/img/pages/hero-revenue-macbook.png"
+            alt="A laptop showing search revenue climbing to $142,592"
+            width={495}
+            height={333}
+            priority
+            sizes="(min-width: 1024px) 28vw, 60vw"
+            className="hero-enter-scale absolute h-auto"
             style={{
               left: `${BARS[0].left + BARS[0].width + GUTTER}cqw`,
               top: `${TOP}cqw`,
-              width: `${RIGHT - (BARS[0].left + BARS[0].width + GUTTER)}cqw`,
-              height: `${2 * BAR_H - GUTTER}cqw`,
+              width: `${100 - (BARS[0].left + BARS[0].width + GUTTER)}cqw`,
               animationDelay: "230ms",
             }}
-          >
-            <CandleChart className="h-full w-full" />
-          </div>
+          />
 
           {/* The three headline blocks. Each is exactly one line box tall, so
               the block hugs the words rather than floating in the middle of a
@@ -256,28 +224,36 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* The photo is cut out for the desktop stage, so the crop starts
-              below its transparent corner. It rides up onto the panel, and
-              the chart hangs off its far corner — two overlaps instead of
-              three tiles stacked in a column. */}
+          {/* The collage is cut out for the desktop stage, so the crop starts
+              below its transparent corner — which lands exactly on the search
+              mockup, the half of the collage worth showing in one column. It
+              rides up onto the panel, and the laptop hangs off its far corner
+              — two overlaps instead of three tiles stacked in a column. */}
           <div className="hero-enter-scale relative -mt-16 px-6" style={{ animationDelay: "380ms" }}>
-            <div className="overflow-hidden rounded-[18px] shadow-[0_26px_50px_-28px_rgba(96,44,14,0.6)]" style={{ aspectRatio: "712 / 354" }}>
+            {/* Cut-out art, so the crop box carries no card of its own — the
+                shadow hangs off the mockup's own edges instead. */}
+            <div style={{ aspectRatio: "712 / 354" }}>
               <Image
-                src="/img/pages/hero-shopping-desk.png"
-                alt="A shopping trolley of parcels on a desk beside a laptop showing an online store"
+                src="/img/pages/hero-search-mockup.png"
+                alt="A Growmerce search for “gift for someone who loves coffee” returning coffee products"
                 width={712}
                 height={534}
                 sizes="100vw"
-                className="h-full w-full origin-bottom scale-[1.04] object-cover object-bottom"
+                className="h-full w-full object-cover object-bottom [filter:drop-shadow(0_14px_24px_rgba(96,44,14,0.16))]"
               />
             </div>
 
-            <div className="absolute right-6 -bottom-8 w-[58%] rounded-[18px] bg-[#fae2d2] px-4 py-3 shadow-[0_18px_36px_-20px_rgba(96,44,14,0.7)] ring-4 ring-white">
-              <CandleChart wide className="h-auto w-full" />
-            </div>
+            <Image
+              src="/img/pages/hero-revenue-macbook.png"
+              alt="A laptop showing search revenue climbing to $142,592"
+              width={495}
+              height={333}
+              sizes="54vw"
+              className="absolute right-3 -bottom-10 h-auto w-[54%]"
+            />
           </div>
-          {/* Clears the chart card's overhang. */}
-          <div aria-hidden className="h-8" />
+          {/* Clears the laptop's overhang. */}
+          <div aria-hidden className="h-10" />
         </div>
       </div>
     </section>

@@ -65,7 +65,8 @@ Lives in `src/components/site/`. Page agents MUST import these and MUST NOT edit
 ## Assets on disk
 
 `/brand/logo.svg` · `/img/logos/logo-{shopify,bigcommerce,wordpress,woocommerce}.svg`
-`/img/pages/hero-shopping-desk.png` (home hero photo) · `pricing-web.png`
+`/img/pages/hero-search-mockup.png` (home hero collage, cut out for the
+headline staircase) · `hero-revenue-macbook.png` (home hero card) · `pricing-web.png`
 (pricing-band icon web) · `unit-opens.png` (solutions) · `combines-it-all.png`
 (features) · `about-screenshot.png`, `about-image2.png` (about) ·
 `growsearch-badge.png` · `/img/smart-search-mock.png` (product UI mock) ·
