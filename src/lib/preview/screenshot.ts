@@ -137,11 +137,32 @@ function executablePath(): Promise<string | null> {
     );
     if (local) return local;
 
+    /* Serverless. This is the branch that runs in production and the one we
+       cannot watch, so it says which path it took either way — a preview that
+       silently degrades to "stylesheet colours, no screenshot" on every store
+       looks identical to a store that blocked us, and the two need completely
+       different fixes. `@sparticuz/chromium` reads its ~100 MB binary out of
+       .br files in its own bin/ by computed path, which is exactly the shape
+       of dependency a static file tracer can miss, so "the package imported
+       but the binary is not on disk" is a real and otherwise invisible
+       outcome. */
     try {
       const { default: chromium } = await import("@sparticuz/chromium");
-      return await chromium.executablePath();
+      const path = await chromium.executablePath();
+      if (!path || !existsSync(path)) {
+        console.warn(
+          `[preview] @sparticuz/chromium resolved to ${path ?? "nothing"}, which is not on disk — ` +
+            "the browser binary was not deployed with the function.",
+        );
+        return null;
+      }
+      console.info(`[preview] using the serverless Chromium at ${path}`);
+      return path;
     } catch (err) {
-      console.warn("[preview] no Chrome available:", err instanceof Error ? err.message : err);
+      console.warn(
+        "[preview] no Chrome available:",
+        err instanceof Error ? err.message : err,
+      );
       return null;
     }
   })();
@@ -1202,7 +1223,14 @@ export async function captureSite(
   if (budget < 3_000) return null; // not enough left to be worth a browser
 
   const executable = await executablePath();
-  if (!executable) return null;
+  if (!executable) {
+    /* Returning null here used to be the quietest failure in the pipeline: the
+       stage logged ok=false with no reason, because nothing threw. It is also
+       the likeliest one in production, where the browser is a binary that has
+       to have been deployed rather than one that is simply installed. */
+    console.warn("[preview] skipping capture — no usable browser on this machine");
+    return null;
+  }
 
   const startedAt = Date.now();
   /* Half the budget at most on queueing — arriving at the capture with no time
