@@ -23,6 +23,9 @@
 # misc
 .DS_Store
 *.pem
+# Downloaded archives — the voiceover takes arrive from Gemini as an
+# Archive.zip and it is the unpacked audio beside it that ships.
+*.zip
 
 # debug
 npm-debug.log*
