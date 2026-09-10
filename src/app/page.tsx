@@ -1,5 +1,6 @@
 import Navbar from "@/components/site/Navbar";
 import Hero from "@/components/site/Hero";
+import HomeIntro from "@/components/site/HomeIntro";
 import PlatformStrip from "@/components/site/PlatformStrip";
 import Fighting from "@/components/site/Fighting";
 import Growsearch from "@/components/site/Growsearch";
@@ -17,6 +18,7 @@ export default function Home() {
       <Navbar />
       <main className="font-bricolage">
         <Hero />
+        <HomeIntro />
         <PlatformStrip />
         <Fighting />
         <Growsearch />
