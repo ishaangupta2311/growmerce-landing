@@ -1,0 +1,309 @@
+/**
+ * An end-to-end check of the affiliate ledger, against the real database.
+ *
+ *   npm run smoke:affiliate
+ *
+ * The flags in that script are both load-bearing. `--env-file` reads
+ * DATABASE_URL, which Next.js would supply but tsx does not. `--conditions`
+ * picks the `react-server` entry of the `server-only` package: its default
+ * entry throws on import, which is exactly what it is for, and this script is
+ * server code borrowing server modules rather than a client sneaking in.
+ *
+ * It creates two scratch partners — one agency, one influencer — feeds the
+ * ingest the events the Growsearch app will send, and asserts that the money
+ * comes out right. Everything it makes is prefixed `smoke-` and deleted again
+ * at the end, including on failure.
+ *
+ * Why this exists rather than a unit test of `applyCharge`: the rules in
+ * `commission.ts` are pure and easy to be confident about. What is *not* easy
+ * to be confident about is whether the constraints, the transaction and the
+ * event log actually enforce them — whether replaying a charge really is a
+ * no-op, whether the partial unique index really does stop an influencer being
+ * paid twice. Those only fail against Postgres, so the check has to run there.
+ *
+ * Requires `DATABASE_URL` and the `affiliate` schema from
+ * `migrations/0002_affiliate.sql`. It writes to the live database, so it is a
+ * developer tool and not something to point at production casually — though it
+ * touches nothing outside the rows it creates.
+ */
+
+import { randomUUID } from "node:crypto";
+
+import { db } from "../src/lib/db";
+import {
+  amountsDue,
+  recordPayout,
+  replaySkippedCharges,
+  setCommissionRate,
+  setPartnerStatus,
+} from "../src/lib/affiliate/admin-store";
+import { clearMaturedCommissions, ingest, parseEvent } from "../src/lib/affiliate/ingest";
+import { commissionsFor, payoutsFor, referralsFor, totalsFor } from "../src/lib/affiliate/store";
+
+const sql = db();
+if (!sql) {
+  console.error("DATABASE_URL is not set.");
+  process.exit(1);
+}
+
+/** Unique per run, so two people can run this at once without colliding. */
+const RUN = randomUUID().slice(0, 8);
+const AGENCY_CODE = `SMOKEAG${RUN.slice(0, 4)}`.toUpperCase();
+const CREATOR_CODE = `SMOKEIN${RUN.slice(0, 4)}`.toUpperCase();
+const HELD_CODE = `SMOKEHD${RUN.slice(0, 4)}`.toUpperCase();
+const AGENCY_SHOP = `smoke-agency-${RUN}.myshopify.com`;
+const CREATOR_SHOP = `smoke-creator-${RUN}.myshopify.com`;
+const HELD_SHOP = `smoke-held-${RUN}.myshopify.com`;
+
+let failures = 0;
+
+function check(label: string, actual: unknown, expected: unknown) {
+  const ok = JSON.stringify(actual) === JSON.stringify(expected);
+  if (!ok) failures++;
+  console.log(`${ok ? "  ok  " : "  FAIL"}  ${label}`);
+  if (!ok) console.log(`        expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+}
+
+/** One event, with a fresh id unless we are deliberately testing a replay. */
+async function send(event: Record<string, unknown>, id = randomUUID()) {
+  return ingest(parseEvent({ id, ...event }));
+}
+
+const userIds: string[] = [];
+
+async function makePartner(
+  kind: "agency" | "influencer",
+  code: string,
+  rateBps: number,
+  status: "pending" | "approved" = "approved",
+) {
+  /* The partner table has a foreign key to Supabase's own `auth.users`, so a
+     scratch partner needs a scratch login to hang off. Inserted directly
+     because the alternative is driving the sign-up API from a script. */
+  const userId = randomUUID();
+  userIds.push(userId);
+  await sql!`
+    insert into auth.users (id, email, instance_id, aud, role)
+    values (${userId}, ${`smoke-${RUN}-${code}@example.invalid`},
+            '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated')
+  `;
+
+  const [partner] = await sql!<{ id: string }[]>`
+    insert into affiliate.partner
+      (user_id, kind, name, company, email, status, commission_rate_bps, approved_at)
+    values (${userId}, ${kind}, ${`Smoke ${kind}`}, ${`Smoke ${code} Co`},
+            ${`smoke-${RUN}-${code}@example.invalid`}, ${status}, ${rateBps},
+            ${status === "approved" ? new Date() : null})
+    returning id
+  `;
+  await sql!`
+    insert into affiliate.code (partner_id, code, label) values (${Number(partner.id)}, ${code}, 'smoke')
+  `;
+  return Number(partner.id);
+}
+
+async function cleanup() {
+  /* Partners cascade to codes, referrals, commissions and payouts; deleting the
+     auth user cascades to the partner. Events have no owner, so they go by the
+     shops they name. */
+  await sql!`delete from affiliate.event where shop in (${AGENCY_SHOP}, ${CREATOR_SHOP}, ${HELD_SHOP})`;
+  if (userIds.length > 0) await sql!`delete from auth.users where id in ${sql!(userIds)}`;
+}
+
+async function main() {
+  console.log(`affiliate smoke — run ${RUN}\n`);
+
+  const agencyId = await makePartner("agency", AGENCY_CODE, 2000);
+  const creatorId = await makePartner("influencer", CREATOR_CODE, 3000);
+
+  console.log("attribution");
+  check(
+    "an unknown code is ignored rather than applied",
+    (await send({ type: "referral.linked", shop: AGENCY_SHOP, code: "NOSUCHCODE" })).detail,
+    "unknown_code",
+  );
+  check(
+    "a known code attributes the store",
+    (await send({ type: "referral.linked", shop: AGENCY_SHOP, code: AGENCY_CODE, shopName: "Smoke Agency Co" })).status,
+    "applied",
+  );
+  check(
+    "a second code cannot take a store that already belongs to someone",
+    (await send({ type: "referral.linked", shop: AGENCY_SHOP, code: CREATOR_CODE })).detail,
+    "shop_already_referred",
+  );
+
+  const replayId = randomUUID();
+  await send({ type: "referral.linked", shop: CREATOR_SHOP, code: CREATOR_CODE }, replayId);
+  check(
+    "replaying an event id is a no-op",
+    (await send({ type: "referral.linked", shop: CREATOR_SHOP, code: CREATOR_CODE }, replayId)).status,
+    "duplicate",
+  );
+
+  console.log("\nthe agency rule — every charge, every month");
+  await send({
+    type: "charge.succeeded", shop: AGENCY_SHOP, chargeId: `smoke-${RUN}-a1`,
+    amountCents: 4900, currency: "USD",
+  });
+  await send({
+    type: "charge.succeeded", shop: AGENCY_SHOP, chargeId: `smoke-${RUN}-a2`,
+    amountCents: 4900, currency: "USD",
+  });
+  const agencyLedger = await commissionsFor(agencyId);
+  check("two charges produce two commissions", agencyLedger.length, 2);
+  check("each is 20% of $49.00", agencyLedger.map((c) => c.amountCents), [980, 980]);
+  check("both are recurring", agencyLedger.map((c) => c.kind), ["recurring", "recurring"]);
+
+  check(
+    "the same charge under a new event id is not paid twice",
+    (await send({
+      type: "charge.succeeded", shop: AGENCY_SHOP, chargeId: `smoke-${RUN}-a1`,
+      amountCents: 4900, currency: "USD",
+    })).detail,
+    "charge_already_credited",
+  );
+
+  console.log("\nthe influencer rule — the first charge only");
+  await send({
+    type: "charge.succeeded", shop: CREATOR_SHOP, chargeId: `smoke-${RUN}-c1`,
+    amountCents: 4900, currency: "USD",
+  });
+  check(
+    "the second month earns nothing",
+    (await send({
+      type: "charge.succeeded", shop: CREATOR_SHOP, chargeId: `smoke-${RUN}-c2`,
+      amountCents: 4900, currency: "USD",
+    })).detail,
+    "already_paid_once",
+  );
+  const creatorLedger = await commissionsFor(creatorId);
+  check("exactly one commission", creatorLedger.length, 1);
+  check("worth 30% of the first charge", creatorLedger[0]?.amountCents, 1470);
+  check("recorded as one-time", creatorLedger[0]?.kind, "one_time");
+
+  console.log("\nrefunds");
+  await send({ type: "charge.refunded", shop: AGENCY_SHOP, chargeId: `smoke-${RUN}-a2` });
+  const afterRefund = await commissionsFor(agencyId);
+  check(
+    "the reversed row is kept, not deleted",
+    afterRefund.filter((c) => c.status === "reversed").length,
+    1,
+  );
+  const agencyTotals = await totalsFor(agencyId);
+  check("a reversal leaves the balance the other charge earned", agencyTotals[0]?.lifetimeCents, 980);
+
+  console.log("\nthe dashboard's view");
+  const referrals = await referralsFor(agencyId, "USD");
+  check("the store is listed once", referrals.length, 1);
+  check("its name came through the event", referrals[0]?.shopName, "Smoke Agency Co");
+  check("a charge marks it subscribed without a separate event", referrals[0]?.status, "active");
+  check("earnings shown are net of the reversal", referrals[0]?.earnedCents, 980);
+
+  console.log("\nthe admin side — approving, replaying, paying");
+
+  /* A partner still in the queue. Their store pays us before anybody gets
+     round to the application, which is the case that used to lose money
+     silently: `applyCharge` refuses outright and only the event log remembers. */
+  const heldId = await makePartner("agency", HELD_CODE, 2000, "pending");
+  await send({ type: "referral.linked", shop: HELD_SHOP, code: HELD_CODE });
+  check(
+    "a charge for an unapproved partner earns nothing",
+    (await send({
+      type: "charge.succeeded", shop: HELD_SHOP, chargeId: `smoke-${RUN}-h1`,
+      amountCents: 9900, currency: "USD",
+    })).detail,
+    "partner_not_approved",
+  );
+  check("and writes no commission", (await commissionsFor(heldId)).length, 0);
+
+  await setPartnerStatus(heldId, "approved");
+  check("approving replays the held charge", await replaySkippedCharges(heldId), {
+    replayed: 1,
+    earned: 1,
+  });
+  check("which is now worth 20% of $99.00", (await commissionsFor(heldId))[0]?.amountCents, 1980);
+  check(
+    "replaying again pays nothing more",
+    (await replaySkippedCharges(heldId)).earned,
+    0,
+  );
+
+  /* Age the commission past the refund window and run the same sweep the cron
+     runs, so there is something genuinely owed to pay. */
+  await sql!`
+    update affiliate.commission set created_at = now() - interval '40 days'
+    where partner_id = ${heldId} and status = 'pending'
+  `;
+  await clearMaturedCommissions();
+
+  const due = (await amountsDue()).find((row) => row.partnerId === heldId);
+  check("it shows up as owed", due?.owedCents, 1980);
+  check("as one commission", due?.commissionCount, 1);
+
+  check(
+    "a payout for a figure that has moved is refused",
+    (await recordPayout({
+      partnerId: heldId, currency: "USD", method: "bank",
+      reference: null, note: null, expectedCents: 1234,
+    })),
+    { ok: false, reason: "amount_moved", actualCents: 1980 },
+  );
+
+  const paid = await recordPayout({
+    partnerId: heldId, currency: "USD", method: "bank",
+    reference: `SMOKE-${RUN}`, note: null, expectedCents: 1980,
+  });
+  check("a payout for the real figure settles it", paid.ok && paid.amountCents, 1980);
+  check("covering one commission", paid.ok && paid.commissionCount, 1);
+  check("recorded against the partner", (await payoutsFor(heldId)).length, 1);
+  check(
+    "the same payout cannot be recorded twice",
+    await recordPayout({
+      partnerId: heldId, currency: "USD", method: "bank",
+      reference: null, note: null, expectedCents: 1980,
+    }),
+    { ok: false, reason: "nothing_owed" },
+  );
+
+  const settled = await commissionsFor(heldId);
+  check("the commission is now paid", settled[0]?.status, "paid");
+  check("and counts as paid, not owed", (await totalsFor(heldId))[0]?.approvedCents, 0);
+
+  await setCommissionRate(heldId, 1000);
+  check(
+    "changing the rate does not rewrite what was already earned",
+    (await commissionsFor(heldId))[0]?.rateBps,
+    2000,
+  );
+
+  console.log("\ncancellation");
+  await send({ type: "subscription.cancelled", shop: AGENCY_SHOP });
+  check(
+    "a charge after cancellation earns nothing",
+    (await send({
+      type: "charge.succeeded", shop: AGENCY_SHOP, chargeId: `smoke-${RUN}-a3`,
+      amountCents: 4900, currency: "USD",
+    })).detail,
+    "referral_cancelled",
+  );
+}
+
+/* Wrapped rather than awaited at the top level: tsx compiles these scripts to
+   CommonJS, which has no top-level await. */
+async function run() {
+  try {
+    await main();
+  } catch (err) {
+    failures++;
+    console.error("\nthrew:", err);
+  } finally {
+    await cleanup();
+    await sql!.end();
+  }
+
+  console.log(failures === 0 ? "\nall checks passed" : `\n${failures} check(s) failed`);
+  process.exit(failures === 0 ? 0 : 1);
+}
+
+void run();

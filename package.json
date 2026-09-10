@@ -6,12 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "smoke:affiliate": "node --env-file=.env --conditions=react-server --import tsx scripts/affiliate-smoke.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",
     "@sparticuz/chromium": "^147.0.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.116.0",
     "lenis": "^1.3.26",
     "next": "16.3.0",
     "node-html-parser": "^9.0.4",
@@ -19,6 +22,7 @@
     "puppeteer-core": "^25.10.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
     "three": "^0.185.1",
     "zustand": "^5.0.14"
   },

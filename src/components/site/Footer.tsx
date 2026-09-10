@@ -22,6 +22,7 @@ const COLUMNS = [
     heading: "Explore more",
     links: [
       { label: "Pricing", href: "/pricing" },
+      { label: "Affiliate program", href: "/affiliates" },
       { label: "Coming soon", href: "#" },
     ],
   },
