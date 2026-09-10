@@ -8,10 +8,11 @@ import DemoStoreButton from "./DemoStoreButton";
 import { GROWSEARCH_HOME } from "@/lib/site-urls";
 
 const CHECKLIST = [
-  "Understands natural language and intent.",
-  "Matches products meaning, not keywords.",
-  "Considers attributes, synonyms and context.",
+  "Understands natural language and shopper intent, no keyword-matching required.",
+  "Matches products by meaning, not just exact titles or tags.",
+  "Corrects typos and reads synonyms, so no search comes back empty.",
   "Personalized ranking for every shopper.",
+  "Discovery that converts shoppers.",
 ];
 
 function CircleTick() {

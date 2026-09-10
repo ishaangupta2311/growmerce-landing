@@ -16,32 +16,39 @@ import { GROWSEARCH_HOME } from "@/lib/site-urls";
    a shelf argues for none of them. */
 const ITEMS = [
   {
+    title: "Intent, not keywords",
+    body:
+      "Shoppers type sentences, not search terms — \"something warm for a rainy commute\" or \"linen shirt but not white.\" Growsearch reads the price, the attribute, and the intent straight out of that sentence. There are no filter menus to dig through, and your customer never has to learn how to talk to your store.",
+    media: "/img/pages/ai-not-a-chatbot.svg",
+    alt: "A shopper's natural-language intent being understood by the search experience",
+  },
+  {
     title: "Grounded in your data, or it doesn\u2019t ship",
     body:
-      "Every answer is tied to something you actually have \u2014 your catalogue, your reviews, your search logs, what your shoppers actually did. If the model cannot point at a record, it does not get to say it. That rules out a whole class of confident nonsense, and it is why we would rather return nothing than return something invented.",
+      "Every answer we return is tied to something you actually have in your catalog — real SKUs, real stock, real prices, synced from Shopify as they change. If the model can't point to an actual record, it can't say it. We would rather return nothing than return something invented.",
     media: "/img/pages/ai-grounded.svg",
-    alt: "Product data, reviews, searches and customer behaviour feeding into one hub, and out of it a single grounded answer",
+    alt: "Product data feeding into one grounded search answer",
   },
   {
     title: "It joins the store you already run",
     body:
-      "No replatforming, no migration, no six-week onboarding. What we ship installs onto the stack you have and takes on your theme, your catalogue and your workflow rather than asking you to take on ours. If a tool needs a project plan before it does anything useful, it isn\u2019t finished.",
+      "There's no replatforming, no migration, and no six-week onboarding process. Growsearch installs onto the stack you already have and adapts to your theme, your catalog, and your workflow, instead of asking you to rebuild around ours. If a tool needs a project plan before it does anything useful, it isn't finished yet.",
     media: "/img/pages/ai-installs.svg",
-    alt: "A storefront cut into jigsaw pieces with the search field missing, and the Growsearch piece dropping into the gap it fits exactly",
+    alt: "Growsearch fitting into an existing storefront",
+  },
+  {
+    title: "Speed is part of the answer",
+    body:
+      "An AI assistant that takes four seconds to think has already lost the sale. Your native search results appear instantly, and AI ranking and semantic matches layer in right on top of them, so your shopper is never sitting there watching a spinner while a model makes up its mind.",
+    media: "/img/pages/ai-measured.svg",
+    alt: "Fast search results appearing before deeper AI refinement",
   },
   {
     title: "Judged on revenue, not on vibes",
     body:
-      "Every AI decision reports on itself in the open: what it was asked, what it returned, and whether that ended in a checkout. We would rather hand you a number that disappoints than a demo that dazzles \u2014 the only question worth answering is whether the AI paid for itself this month.",
+      "Every AI decision we make reports on itself in the open — what it was asked, what it returned, and whether that ended in a checkout. We track search-attributed revenue, add-to-cart rate, and zero-result rate so you can judge the AI on revenue, not on a demo.",
     media: "/img/pages/ai-measured.svg",
-    alt: "A dashed trail running from a query to a result, a cart and a checkout, over a rising bar chart",
-  },
-  {
-    title: "A tool that does a job, not a chatbot",
-    body:
-      "A chat box waiting to be talked to just moves the work onto your customer. We build AI that does its job in the place it belongs \u2014 narrowing a catalogue, rescuing a dead-end search, telling you which queries are losing money \u2014 so nobody has to learn how to talk to it first.",
-    media: "/img/pages/ai-not-a-chatbot.svg",
-    alt: "An inert chat bubble beside a panel where the list has already been narrowed to the right row",
+    alt: "A search journey measured from query to checkout",
   },
 ];
 

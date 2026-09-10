@@ -11,24 +11,36 @@ export type FaqItem = { q: string; a: string };
 /* Figma repeats a placeholder "What is GrowSearch?"; these are the real ones. */
 const HOME_FAQ: FaqItem[] = [
   {
-    q: "What is Growsearch?",
-    a: "Growsearch replaces your store's search bar with one that understands sentences instead of keywords. Shoppers can ask for “skincare under $10” or “warm but not bulky” and get real, in-stock products back — and you get analytics showing exactly which searches turned into checkouts.",
+    q: "What is Growsearch, and how is it different from Shopify's native search?",
+    a: "Growsearch replaces your store's default search bar with one that understands full sentences, not just keywords. Shoppers can ask for \"skincare under $10\" or \"warm but not bulky\" and get real, in-stock products back — something Shopify's built-in search can't do — and you get analytics showing exactly which searches turned into checkouts.",
   },
   {
     q: "What happens when a shopper searches for something you don't stock?",
-    a: "Never a dead end. Typos get corrected, intent gets read, and the nearest real shelf gets offered instead of an empty page — “we don't have kava drinks, but you might like these Kratom Seltzers.” Every zero-result term is also logged for you as a buying list.",
+    a: "Never a dead end. Typos get corrected, intent gets read, and the nearest real shelf gets offered instead of an empty page — \"we don't have Kava drinks, but you might like these Kratom Seltzers.\" Every zero-result term is also logged as a buying list for you.",
+  },
+  {
+    q: "Does Growsearch replace my Shopify search bar, or run alongside it?",
+    a: "It replaces the search bar itself; shoppers use the exact box they always have, now running on Growsearch instead of Shopify's keyword matching. Your theme, checkout, and catalog stay exactly where they are.",
+  },
+  {
+    q: "Is Growsearch an AI shopping assistant, or just a search upgrade?",
+    a: "Both, in one bar. Shoppers can search normally or ask a full question and get an assistant-style answer grounded in your real stock, with no separate chat window to open.",
   },
   {
     q: "How long does setup take?",
-    a: "Install from the Shopify App Store and the search bar matches your existing theme automatically, so there's nothing to design. Your catalogue indexes itself from Shopify webhooks and stays current as products change. No replatforming, no developer, no six-week onboarding. WooCommerce is next.",
+    a: "Install from the Shopify App Store, and the search bar matches your existing theme automatically — nothing to design. Your catalog indexes itself from Shopify webhooks and stays current as products change. No replatforming, no developer, no six-week onboarding.",
   },
   {
     q: "How do I know it's actually making me money?",
-    a: "Because it reports on itself. You see search-attributed checkouts, add-to-cart rate from results, click-through rate, zero-result rate and full query-to-purchase journey replays — so the AI is judged on revenue, not on vibes.",
+    a: "Because it reports on itself. You see search-attributed checkouts, add-to-cart rate from results, click-through rate, zero-result rate, and full query-to-purchase journey replays, so the AI is judged on revenue.",
+  },
+  {
+    q: "How is Growsearch different from Klevu or Searchspring?",
+    a: "Growsearch is built for stores that want AI search live in minutes, not a re-platforming project: flat pricing from $49/month, install straight from the Shopify App Store, no revenue share, and no seat minimums. Klevu and Searchspring serve larger, more complex catalogs and price accordingly.",
   },
   {
     q: "What does it cost, and can I try it first?",
-    a: "Plans start at $49/month and every plan includes a 14-day free trial with no credit card required. Pricing is a simple monthly number you can cancel — no revenue share and no seat minimums.",
+    a: "Plans start at $49/month, and every plan includes a 15-day free trial, no credit card required. Pricing is a simple monthly number you can cancel, with no revenue share and no seat minimums.",
   },
 ];
 

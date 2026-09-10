@@ -143,8 +143,8 @@ const SEGMENTS = [
   },
   {
     icon: Globe,
-    title: "Global Businesses",
-    body: "Shoppers ask in their own words, and rarely the ones your merchandiser typed. Natural-language search takes the phrasing as it comes.",
+    title: "Growth-Stage Retailers",
+    body: "Your merchandising team writes product titles one way; your customers search a completely different way. Growsearch closes that gap by matching what shoppers mean, not the exact words your team chose.",
   },
   {
     icon: Gem,

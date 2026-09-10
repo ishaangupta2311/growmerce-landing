@@ -5,20 +5,20 @@ const CARDS = [
   {
     icon: "/img/icon-search-circle.svg",
     bare: false,
-    title: "Category",
-    body: "Every AI platform promises the same thing. You get a login screen, a sign-up form, and \"coming soon.\"",
+    title: "The search box lies to you",
+    body: "Native search matches keywords, not intent. A shopper searching \"gift for my mom\" gets nothing, even if you sell exactly that. Every missed match is revenue you already paid to acquire.",
   },
   {
     icon: "/img/icon-workflow.svg",
     bare: true,
-    title: "Operational",
-    body: "The tools that actually work are good at just one thing. Almost nobody connects them to how ecommerce teams really work day to day.",
+    title: "\"AI-powered\" usually means a login screen",
+    body: "Most tools promise natural language search and ship a dashboard nobody opens. Almost none connect what shoppers are typing to how your store actually performs.",
   },
   {
     icon: "/img/icon-wallet.svg",
     bare: true,
-    title: "Economic",
-    body: "You're expected to do more with the same team and the same budget. This quarter, not next year.",
+    title: "You're expected to do more with less",
+    body: "Same team, same budget, this quarter, not \"next release.\" Growsearch has to prove itself in your numbers, not a case study from someone else's store.",
   },
 ];
 
@@ -27,12 +27,10 @@ export default function Fighting() {
     <section id="about" className="mx-auto max-w-[1370px] px-6 pt-24">
       <Reveal>
         <h2 className="text-[clamp(2.5rem,5.5vw,5rem)] font-bold leading-[1.2]">
-          What are <span className="text-brand-bright">we fighting</span>?
+          What Is <span className="text-brand-bright">Growmerce Fighting?</span>
         </h2>
         <p className="mt-4 max-w-[1197px] text-[clamp(1.25rem,2.2vw,2rem)] leading-[1.4]">
-          Growmerce isn&apos;t fighting one product. It&apos;s fighting the way
-          brands usually try to grow by hiring more, buying more tools, or just
-          waiting.
+          Nearly a third of ecommerce searches end in nothing: the shopper types, gets zero useful results, and leaves. Growmerce isn&apos;t fighting one product. It&apos;s fighting that default: hiring more, buying more disconnected tools, or waiting for traffic to convert on its own.
         </p>
       </Reveal>
 
