@@ -10,7 +10,9 @@ import styles from "./StorefrontReveal.module.css";
 /**
  * Unit 01 — the shutter comes up as the reader scrolls, and Growsearch is what
  * is behind it: the product presented as a boxed good, with its own facts
- * panel. The box and the facts are the /v/5 shelf, restyled to the brand.
+ * panel. The box and the facts began as the shelf in the Sticker Bazaar
+ * design study — /v/5, since deleted, so read it out of git history —
+ * restyled to the brand.
  *
  * The section pins rather than hijacking the scroll: the page keeps moving at
  * the reader's own speed, and the shutter is simply bound to how far through
@@ -18,7 +20,8 @@ import styles from "./StorefrontReveal.module.css";
  * already up and the whole thing renders as a static storefront.
  */
 
-/* Straight off the back of the box on /v/5 — same four facts, same wording. */
+/* Straight off the back of the box in the Sticker Bazaar study — same four
+   facts, same wording. That page is gone; this is now where they live. */
 const FACTS = [
   {
     name: "Never zero results",
