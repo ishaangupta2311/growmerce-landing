@@ -58,9 +58,19 @@ export function db(): Sql | null {
     /* Supavisor's transaction mode hands a different backend to each
        statement, so a prepared statement from an earlier one is not there. */
     prepare: false,
-    /* One invocation does at most a couple of small queries. A wide pool per
-       instance is what exhausts the server's limit under concurrency. */
-    max: 3,
+    /* **This must be larger than the most queries any one page issues at once.**
+       Not for speed — for correctness. postgres.js does not queue the overflow
+       here: with `prepare: false` against Supavisor, issuing more concurrent
+       queries than `max` deadlocks the client. The extra queries never run,
+       never time out and never reject, so the page hangs forever and the only
+       symptom is a spinner.
+
+       It was 3, which was fine until a page did four things in one
+       `Promise.all`. The affiliate admin overview fans out to six. Ten leaves
+       room without being a wide pool — and since the URL is Supavisor's
+       transaction pooler, these are multiplexed onto far fewer real backends,
+       which is the whole reason to be on it. */
+    max: 10,
     idle_timeout: 20,
     /* Nothing here is worth making a visitor wait on. The preview job has its
        own deadline and a slow database must not eat into it. */
