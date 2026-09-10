@@ -46,7 +46,6 @@ const BAR_H = 10.77; // = the photo's notch depth, and 1.5x the type size
 const TYPE = 7.18;
 const PAD = 0.27 * TYPE;
 const TOP = 5.2;
-const RIGHT = 97.4; // right edge of the last block and of the chart card
 
 const PHOTO = { left: 2.2, width: 42.6, height: 31.95 };
 const BARS = [
