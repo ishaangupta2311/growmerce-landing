@@ -12,7 +12,7 @@ import PricingPlans from "@/components/site/PricingPlans";
 import AllPlans from "./components/AllPlans";
 import DemoStoreButton from "@/components/site/DemoStoreButton";
 import InstallOnShopify from "@/components/site/InstallOnShopify";
-import { GROWSEARCH_FEATURES } from "@/lib/site-urls";
+import { GROWSEARCH_FEATURES, SHOPIFY_LISTING_LIVE } from "@/lib/site-urls";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -66,9 +66,14 @@ export default function PricingPage() {
             Bordered, because the loud action on this page is still the plan
             they choose above it. */}
         <div className="mx-auto mt-8 flex max-w-[1370px] flex-col items-center px-6">
-          <InstallOnShopify className="max-[430px]:w-full" />
-          <p className="mt-3 text-center text-[14px] text-muted">
-            Opens the Shopify App Store in a new tab.
+          <InstallOnShopify className="max-[430px]:w-full" source="pricing" />
+          {/* The caption has to match what the button actually does, so it
+              turns over with the flag rather than promising a tab that only
+              opens once the listing is live. */}
+          <p className="mt-3 max-w-[38ch] text-center text-[14px] text-muted">
+            {SHOPIFY_LISTING_LIVE
+              ? "Opens the Shopify App Store in a new tab."
+              : "The listing is in review — we'll send your install link the day it's live."}
           </p>
         </div>
 
