@@ -125,7 +125,7 @@ export default function PricingPage() {
               </div>
               <div className="flex flex-wrap items-center gap-4 [&>a]:max-[430px]:w-full">
                 <Link
-                  href="mailto:admin@growmerce.ai"
+                  href="/contact"
                   className="cta-primary"
                 >
                   Talk to sales

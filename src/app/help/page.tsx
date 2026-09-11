@@ -8,8 +8,6 @@ import Arrow from "@/components/site/Arrow";
 import { FaqList } from "@/components/site/Faq";
 import { HELP_TOPICS } from "@/lib/faqs";
 
-const CONTACT = "admin@growmerce.ai";
-
 const TOTAL = HELP_TOPICS.reduce((n, t) => n + t.items.length, 0);
 
 export const metadata: Metadata = {
@@ -124,8 +122,8 @@ export default function HelpPage() {
               builds Growsearch is the person who answers.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 [&>*]:max-[430px]:w-full">
-              <Link href={`mailto:${CONTACT}`} className="cta-primary">
-                Email us
+              <Link href="/contact" className="cta-primary">
+                Contact us
                 <Arrow className="cta-arrow size-5" />
               </Link>
               <DemoStoreButton className="cta-secondary" source="help-centre" />
