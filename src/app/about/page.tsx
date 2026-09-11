@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import CtaPair from "@/components/site/CtaPair";
@@ -7,7 +6,6 @@ import Faq from "@/components/site/Faq";
 import { ABOUT_FAQ } from "@/lib/faqs";
 import ProveItBand from "@/components/site/ProveItBand";
 import Reveal from "@/components/site/Reveal";
-import Arrow from "@/components/site/Arrow";
 import { PlatformLogos } from "@/components/site/PlatformStrip";
 import { GROWSEARCH_HOME } from "@/lib/site-urls";
 import ToolDock from "./components/ToolDock";
@@ -171,22 +169,6 @@ export default function AboutPage() {
         </section>
 
         <ProveItBand />
-
-        {/* Custom plan CTA */}
-        <Reveal className="mx-auto max-w-[1370px] px-6 pb-16">
-          <div className="flex flex-col items-center justify-between gap-6 rounded-[22px] bg-peach/60 px-8 py-8 sm:flex-row">
-            <p className="text-[clamp(1.125rem,2vw,1.625rem)] font-extrabold">
-              Not sure which plan fits your catalogue?
-            </p>
-            <Link
-              href="/pricing"
-              className="cta-primary"
-            >
-              Get my custom plan
-              <Arrow className="size-5" />
-            </Link>
-          </div>
-        </Reveal>
 
         {/* Updates */}
         <section aria-labelledby="updates-title" className="mx-auto max-w-[1370px] px-6 pb-16">
