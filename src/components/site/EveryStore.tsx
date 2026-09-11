@@ -333,7 +333,7 @@ export default function EveryStore() {
         </p>
 
         <div className="mt-12 space-y-10">
-          {SEARCH_PROBLEMS.map((problem, i) => (
+          {SEARCH_PROBLEMS.map((problem) => (
             <article key={problem.title} className="border-t border-brand/15 pt-6">
               <h3 className="text-[clamp(1.25rem,2vw,1.75rem)] font-bold text-charcoal">{problem.title}</h3>
               <p className="mt-3 max-w-[980px] text-[clamp(1.05rem,1.7vw,1.35rem)] leading-[1.6] text-body-mute">{problem.body}</p>
