@@ -41,26 +41,7 @@ const HOW_WE_WORK = [
   },
   {
     title: "Built in public",
-    body: "Founder-led from Delhi, serving stores worldwide. Progress gets posted as it happens, and you get a straight answer when something isn't ready yet.",
-  },
-];
-
-const HOW_WE_WORK_DETAILS = [
-  {
-    title: "Built in public",
-    body: "Founder-led from Delhi, serving stores worldwide. We post progress as it happens, and you get a straight answer when something isn't ready yet.",
-  },
-  {
-    title: "You talk to the person who built it",
-    body: "No ticket queue, no tiered support, no chatbot reading a script. When something breaks, or you have a question, you're talking to someone who can actually see the code and fix it.",
-  },
-  {
-    title: "Shipped as it's ready, not on a release calendar",
-    body: "Updates go out in small pieces as soon as they're tested, not bundled into a quarterly roadmap. You'll see a fix in your store before you'd see it in a changelog.",
-  },
-  {
-    title: "Every request gets read by a human who can act on it",
-    body: "Feature requests and bug reports go straight to the person building Growsearch, not into a backlog that gets revisited once a year.",
+    body: "Founder-led and serving stores worldwide. Progress gets posted as it happens, and you get a straight answer when something isn't ready yet.",
   },
 ];
 
@@ -213,16 +194,6 @@ export default function AboutPage() {
                   <p className="mt-3 text-[clamp(1rem,1.4vw,1.125rem)] leading-relaxed text-body-mute">
                     {item.body}
                   </p>
-                </article>
-              </Reveal>
-            ))}
-          </div>
-          <div className="mt-20 space-y-4 rounded-[30px] bg-cream p-6 sm:p-8 lg:p-10">
-            {HOW_WE_WORK_DETAILS.map((item, i) => (
-              <Reveal key={item.title} delay={i * 70}>
-                <article className="border-t border-brand/15 py-6 first:border-t-0 first:pt-0 last:pb-0">
-                  <h3 className="text-[clamp(1.35rem,2.2vw,1.9rem)] font-extrabold">{item.title}</h3>
-                  <p className="mt-3 max-w-[78ch] text-[clamp(1rem,1.5vw,1.2rem)] leading-relaxed text-body-mute">{item.body}</p>
                 </article>
               </Reveal>
             ))}

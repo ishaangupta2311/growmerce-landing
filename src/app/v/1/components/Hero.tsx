@@ -12,7 +12,7 @@ const LEDGER_ROWS = [
   {
     no: "02",
     label: "Desk",
-    value: "Delhi — serving global ecommerce",
+    value: "Serving global ecommerce",
   },
   {
     no: "03",

@@ -16,7 +16,7 @@ const LINKS = [
 const NOTICES = [
   "Open late for early access",
   "First shop lit: Growsearch",
-  "Built in Delhi, serving global ecommerce",
+  "Built in public, serving global ecommerce",
   "Founder answers the demo calls",
   "Install tonight — no migration",
 ];

@@ -41,7 +41,7 @@ export default function Hero() {
             style={{ animationDelay: "60ms" }}
           >
             <Sparkle className={`${styles.twinkle} size-3 text-[#ffc46b]`} />
-            An ecommerce AI studio · Delhi → global
+            An ecommerce AI studio · built for global ecommerce
           </p>
 
           <h1

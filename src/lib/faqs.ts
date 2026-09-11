@@ -143,7 +143,7 @@ const ABOUT_FAQ: FaqItem[] = [
   },
   {
     q: "Who is behind it?",
-    a: "It's founder-led out of Delhi, serving stores globally. The person who writes the code is the person who answers your demo call — which is an advantage while we're small, and we intend to keep it as long as possible.",
+    a: "It's founder-led and serves stores globally. The person who writes the code is the person who answers your demo call — which is an advantage while we're small, and we intend to keep it as long as possible.",
   },
   {
     q: "What's next after Growsearch?",
