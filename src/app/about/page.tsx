@@ -144,36 +144,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section aria-labelledby="hold-title" className="mx-auto max-w-[1370px] px-6 py-16 lg:py-24">
-          <Reveal>
-            <p className="font-poppins text-[13px] font-extrabold tracking-[0.2em] text-brand uppercase">
-              Our standard
-            </p>
-            <h2 id="hold-title" className="mt-3 text-[clamp(2rem,3.6vw,3.25rem)] font-extrabold tracking-tight">
-              What We Hold To
-            </h2>
-            <p className="mt-3 max-w-[72ch] text-[clamp(1.0625rem,1.6vw,1.25rem)] leading-relaxed text-body-mute">
-              Five things we won&rsquo;t compromise on as Growmerce grows; check
-              them against Growsearch any time.
-            </p>
-          </Reveal>
-          <div className="mt-10 grid gap-4 md:grid-cols-2">
-            {[
-              ["01", "Grounded in your catalog", "Every result Growsearch shows comes from your live Shopify inventory. Nothing invented, nothing out of stock, nothing that isn't real."],
-              ["02", "Judged on revenue", "Every tool reports on itself: search-attributed checkouts, add-to-cart rate, zero-result rate. If it isn't moving those numbers, it isn't earning its place in your store."],
-              ["03", "Installs into the Shopify store you run today", "No replatforming, no migration, no AI team to hire. If you can install a Shopify app, you can run Growsearch."],
-              ["04", "Priced like an honest bill, not a negotiation", "A flat monthly number you can cancel any time. No revenue share, no seat minimums, no \"let's talk pricing\" call."],
-              ["05", "One tool at a time, and the next one earns its name", "Growsearch is first. The next tool gets built, named, and shipped only once it has real customers proving it works, not before."],
-            ].map(([number, title, body]) => (
-              <article key={number} className="rounded-[22px] border border-peach bg-cream px-6 py-7 transition-[transform,box-shadow] duration-300 hover-lift [--lift:4px] hover:shadow-glow sm:px-8">
-                <span className="font-poppins text-[12px] font-extrabold tracking-[0.16em] text-brand">{number}</span>
-                <h3 className="mt-3 text-[clamp(1.25rem,2vw,1.65rem)] leading-tight font-extrabold">{title}</h3>
-                <p className="mt-3 text-[16px] leading-relaxed text-body-mute">{body}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
         {/* How we work */}
         <section aria-labelledby="how-title" className="mx-auto max-w-[1370px] px-6 py-16 lg:py-24">
           <Reveal>
