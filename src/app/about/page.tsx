@@ -103,11 +103,12 @@ export default function AboutPage() {
             className="hero-enter mx-auto mt-7 max-w-[68ch] text-[clamp(1.0625rem,1.6vw,1.5rem)] leading-relaxed text-body-mute"
             style={{ animationDelay: "160ms" }}
           >
-            AI became table stakes for online stores before most owners had
-            anyone to build it. What&rsquo;s on offer is either a narrow gadget or
-            a platform you&rsquo;d have to migrate onto. Growmerce is the
-            practical middle: small, sharp tools that install into the store you
-            already run &mdash; and prove themselves in your own numbers.
+            AI is now expected on every online store. Getting it shouldn&rsquo;t
+            require a narrow one-trick app or a full platform migration.
+            Growmerce builds focused AI tools that install directly into the
+            Shopify store you already run. Growsearch, our AI-powered search
+            app, is the first one, and it has to earn its place in your own
+            sales numbers.
           </p>
           <CtaPair
             className="mt-10 justify-center"
@@ -115,25 +116,6 @@ export default function AboutPage() {
             secondaryHref={GROWSEARCH_HOME}
             secondaryLabel="See all our products"
           />
-        </section>
-
-        <section className="mx-auto max-w-[1370px] px-6 pb-20 lg:pb-28">
-          <Reveal>
-            <p className="font-poppins text-[13px] font-extrabold tracking-[0.2em] text-brand uppercase">
-              Why Growmerce exists
-            </p>
-            <h2 className="mt-4 max-w-[1000px] text-[clamp(2rem,4.5vw,4.5rem)] leading-[1.02] font-extrabold tracking-tight text-balance">
-              We build AI tools store owners actually <span className="text-brand">keep</span>
-            </h2>
-            <p className="mt-6 max-w-[70ch] text-[clamp(1.0625rem,1.6vw,1.35rem)] leading-relaxed text-body-mute">
-              AI is now expected on every online store. Getting it shouldn&rsquo;t
-              require a narrow one-trick app or a full platform migration.
-              Growmerce builds focused AI tools that install directly into the
-              Shopify store you already run. Growsearch, our AI-powered search
-              app, is the first one, and it has to earn its place in your own
-              sales numbers.
-            </p>
-          </Reveal>
         </section>
 
         {/* You will find us on */}
