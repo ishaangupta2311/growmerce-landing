@@ -1,13 +1,8 @@
-"use client";
-
-import { useState } from "react";
+import Link from "next/link";
 import Arrow from "./Arrow";
 
 /* The capture band from Figma: we do the first hour of work before the call. */
 export default function ProveItBand({ className }: { className?: string }) {
-  const [sent, setSent] = useState(false);
-  const [url, setUrl] = useState("");
-
   return (
     <section
       aria-labelledby="prove-it-title"
@@ -32,44 +27,13 @@ export default function ProveItBand({ className }: { className?: string }) {
             </p>
           </div>
 
-          {sent ? (
-            <p
-              role="status"
-              className="rounded-2xl bg-white px-6 py-5 text-[15.5px] font-semibold text-charcoal ring-1 ring-brand/25"
-            >
-              Thanks — we&rsquo;ll be in touch with your teardown shortly.
-            </p>
-          ) : (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (url.trim()) setSent(true);
-              }}
-              className="flex flex-col gap-3 sm:flex-row sm:items-center lg:pb-1"
-            >
-              <label htmlFor="store-url" className="sr-only">
-                Your store URL
-              </label>
-              <input
-                id="store-url"
-                name="store-url"
-                type="text"
-                inputMode="url"
-                required
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="yourstore.com"
-                className="min-w-0 flex-1 rounded-full border border-line bg-white px-6 py-3.5 text-[16px] text-charcoal placeholder:text-muted focus:border-brand focus:outline-none"
-              />
-              <button
-                type="submit"
-                className="cta-primary shrink-0"
-              >
-                Okay, prove it
-                <Arrow className="size-4" />
-              </button>
-            </form>
-          )}
+          <Link
+            href="/try"
+            className="cta-primary w-full sm:w-fit lg:mb-1 lg:justify-self-end"
+          >
+            Try it free
+            <Arrow className="size-4" />
+          </Link>
         </div>
       </div>
     </section>
