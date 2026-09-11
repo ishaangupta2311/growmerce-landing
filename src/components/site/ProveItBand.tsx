@@ -21,9 +21,9 @@ export default function ProveItBand({ className }: { className?: string }) {
               Skip the call. We&rsquo;ll do the first hour of work
             </h2>
             <p className="mt-7 max-w-[52ch] text-[clamp(1rem,1.4vw,1.375rem)] leading-relaxed text-body-mute">
-              Drop your store URL. We&rsquo;ll run your current search and send back
-              your top zero-result queries, what they&rsquo;re costing you, and
-              exactly how Growsearch would fix each one.
+              We&rsquo;ll show you where your search is falling short. Drop your
+              store URL and see your current results side by side with
+              Growsearch.
             </p>
           </div>
 
