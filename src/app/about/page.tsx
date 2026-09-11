@@ -119,10 +119,13 @@ export default function AboutPage() {
 
         <section className="mx-auto max-w-[1370px] px-6 pb-20 lg:pb-28">
           <Reveal>
-            <h2 className="font-serif text-[clamp(2.2rem,4.5vw,4.5rem)] leading-[1.05] font-bold tracking-tight">
-              We Build AI Tools Store Owners Actually Keep
+            <p className="font-poppins text-[13px] font-extrabold tracking-[0.2em] text-brand uppercase">
+              Why Growmerce exists
+            </p>
+            <h2 className="mt-4 max-w-[1000px] text-[clamp(2rem,4.5vw,4.5rem)] leading-[1.02] font-extrabold tracking-tight text-balance">
+              We build AI tools store owners actually <span className="text-brand">keep</span>
             </h2>
-            <p className="mt-6 max-w-[70ch] font-serif text-[clamp(1.2rem,1.8vw,1.55rem)] leading-[1.65] text-charcoal">
+            <p className="mt-6 max-w-[70ch] text-[clamp(1.0625rem,1.6vw,1.35rem)] leading-relaxed text-body-mute">
               AI is now expected on every online store. Getting it shouldn&rsquo;t
               require a narrow one-trick app or a full platform migration.
               Growmerce builds focused AI tools that install directly into the
@@ -180,20 +183,31 @@ export default function AboutPage() {
 
         <section aria-labelledby="hold-title" className="mx-auto max-w-[1370px] px-6 py-16 lg:py-24">
           <Reveal>
-            <h2 id="hold-title" className="font-serif text-[clamp(2rem,3.6vw,3.25rem)] font-bold tracking-tight">
+            <p className="font-poppins text-[13px] font-extrabold tracking-[0.2em] text-brand uppercase">
+              Our standard
+            </p>
+            <h2 id="hold-title" className="mt-3 text-[clamp(2rem,3.6vw,3.25rem)] font-extrabold tracking-tight">
               What We Hold To
             </h2>
-            <p className="mt-3 max-w-[72ch] font-serif text-[clamp(1.1rem,1.6vw,1.35rem)] leading-relaxed text-body-mute">
+            <p className="mt-3 max-w-[72ch] text-[clamp(1.0625rem,1.6vw,1.25rem)] leading-relaxed text-body-mute">
               Five things we won&rsquo;t compromise on as Growmerce grows; check
               them against Growsearch any time.
             </p>
           </Reveal>
-          <div className="mt-10 space-y-10">
-            <article><h3 className="font-serif text-2xl font-bold">Grounded in your catalog</h3><p className="mt-2 max-w-[76ch] font-serif text-lg leading-relaxed text-body-mute">Every result Growsearch shows comes from your live Shopify inventory. Nothing invented, nothing out of stock, nothing that isn&rsquo;t real.</p></article>
-            <article><h3 className="font-serif text-2xl font-bold">Judged on revenue</h3><p className="mt-2 max-w-[76ch] font-serif text-lg leading-relaxed text-body-mute">Every tool reports on itself: search-attributed checkouts, add-to-cart rate, zero-result rate. If it isn&rsquo;t moving those numbers, it isn&rsquo;t earning its place in your store.</p></article>
-            <article><h3 className="font-serif text-2xl font-bold">Installs into the Shopify store you run today</h3><p className="mt-2 max-w-[76ch] font-serif text-lg leading-relaxed text-body-mute">No replatforming, no migration, no AI team to hire. If you can install a Shopify app, you can run Growsearch.</p></article>
-            <article><h3 className="font-serif text-2xl font-bold">Priced like an honest bill, not a negotiation</h3><p className="mt-2 max-w-[76ch] font-serif text-lg leading-relaxed text-body-mute">A flat monthly number you can cancel any time. No revenue share, no seat minimums, no &ldquo;let&rsquo;s talk pricing&rdquo; call.</p></article>
-            <article><h3 className="font-serif text-2xl font-bold">One tool at a time, and the next one earns its name</h3><p className="mt-2 max-w-[76ch] font-serif text-lg leading-relaxed text-body-mute">Growsearch is first. The next tool gets built, named, and shipped only once it has real customers proving it works, not before.</p></article>
+          <div className="mt-10 grid gap-4 md:grid-cols-2">
+            {[
+              ["01", "Grounded in your catalog", "Every result Growsearch shows comes from your live Shopify inventory. Nothing invented, nothing out of stock, nothing that isn't real."],
+              ["02", "Judged on revenue", "Every tool reports on itself: search-attributed checkouts, add-to-cart rate, zero-result rate. If it isn't moving those numbers, it isn't earning its place in your store."],
+              ["03", "Installs into the Shopify store you run today", "No replatforming, no migration, no AI team to hire. If you can install a Shopify app, you can run Growsearch."],
+              ["04", "Priced like an honest bill, not a negotiation", "A flat monthly number you can cancel any time. No revenue share, no seat minimums, no \"let's talk pricing\" call."],
+              ["05", "One tool at a time, and the next one earns its name", "Growsearch is first. The next tool gets built, named, and shipped only once it has real customers proving it works, not before."],
+            ].map(([number, title, body]) => (
+              <article key={number} className="rounded-[22px] border border-peach bg-cream px-6 py-7 transition-[transform,box-shadow] duration-300 hover-lift [--lift:4px] hover:shadow-glow sm:px-8">
+                <span className="font-poppins text-[12px] font-extrabold tracking-[0.16em] text-brand">{number}</span>
+                <h3 className="mt-3 text-[clamp(1.25rem,2vw,1.65rem)] leading-tight font-extrabold">{title}</h3>
+                <p className="mt-3 text-[16px] leading-relaxed text-body-mute">{body}</p>
+              </article>
+            ))}
           </div>
         </section>
 
@@ -221,12 +235,12 @@ export default function AboutPage() {
               </Reveal>
             ))}
           </div>
-          <div className="mt-20 space-y-10">
+          <div className="mt-20 space-y-4 rounded-[30px] bg-cream p-6 sm:p-8 lg:p-10">
             {HOW_WE_WORK_DETAILS.map((item, i) => (
               <Reveal key={item.title} delay={i * 70}>
-                <article className="border-t border-brand/15 pt-7">
-                  <h3 className="font-serif text-[clamp(1.5rem,2.2vw,2rem)] font-bold">{item.title}</h3>
-                  <p className="mt-3 max-w-[78ch] font-serif text-[clamp(1.05rem,1.5vw,1.3rem)] leading-relaxed text-body-mute">{item.body}</p>
+                <article className="border-t border-brand/15 py-6 first:border-t-0 first:pt-0 last:pb-0">
+                  <h3 className="text-[clamp(1.35rem,2.2vw,1.9rem)] font-extrabold">{item.title}</h3>
+                  <p className="mt-3 max-w-[78ch] text-[clamp(1rem,1.5vw,1.2rem)] leading-relaxed text-body-mute">{item.body}</p>
                 </article>
               </Reveal>
             ))}
