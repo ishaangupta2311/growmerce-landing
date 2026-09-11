@@ -45,6 +45,25 @@ const HOW_WE_WORK = [
   },
 ];
 
+const HOW_WE_WORK_DETAILS = [
+  {
+    title: "Built in public",
+    body: "Founder-led from Delhi, serving stores worldwide. We post progress as it happens, and you get a straight answer when something isn't ready yet.",
+  },
+  {
+    title: "You talk to the person who built it",
+    body: "No ticket queue, no tiered support, no chatbot reading a script. When something breaks, or you have a question, you're talking to someone who can actually see the code and fix it.",
+  },
+  {
+    title: "Shipped as it's ready, not on a release calendar",
+    body: "Updates go out in small pieces as soon as they're tested, not bundled into a quarterly roadmap. You'll see a fix in your store before you'd see it in a changelog.",
+  },
+  {
+    title: "Every request gets read by a human who can act on it",
+    body: "Feature requests and bug reports go straight to the person building Growsearch, not into a backlog that gets revisited once a year.",
+  },
+];
+
 const UPDATES = [
   {
     tag: "Product",
@@ -98,6 +117,22 @@ export default function AboutPage() {
           />
         </section>
 
+        <section className="mx-auto max-w-[1370px] px-6 pb-20 lg:pb-28">
+          <Reveal>
+            <h2 className="font-serif text-[clamp(2.2rem,4.5vw,4.5rem)] leading-[1.05] font-bold tracking-tight">
+              We Build AI Tools Store Owners Actually Keep
+            </h2>
+            <p className="mt-6 max-w-[70ch] font-serif text-[clamp(1.2rem,1.8vw,1.55rem)] leading-[1.65] text-charcoal">
+              AI is now expected on every online store. Getting it shouldn&rsquo;t
+              require a narrow one-trick app or a full platform migration.
+              Growmerce builds focused AI tools that install directly into the
+              Shopify store you already run. Growsearch, our AI-powered search
+              app, is the first one, and it has to earn its place in your own
+              sales numbers.
+            </p>
+          </Reveal>
+        </section>
+
         {/* You will find us on */}
         <Reveal className="mx-auto max-w-[1370px] px-6 pb-16">
           <div className="flex flex-col items-center gap-7 rounded-[22px] border-2 border-brand bg-peach/60 px-8 py-6 lg:flex-row lg:justify-center lg:gap-14">
@@ -143,6 +178,25 @@ export default function AboutPage() {
           </div>
         </section>
 
+        <section aria-labelledby="hold-title" className="mx-auto max-w-[1370px] px-6 py-16 lg:py-24">
+          <Reveal>
+            <h2 id="hold-title" className="font-serif text-[clamp(2rem,3.6vw,3.25rem)] font-bold tracking-tight">
+              What We Hold To
+            </h2>
+            <p className="mt-3 max-w-[72ch] font-serif text-[clamp(1.1rem,1.6vw,1.35rem)] leading-relaxed text-body-mute">
+              Five things we won&rsquo;t compromise on as Growmerce grows; check
+              them against Growsearch any time.
+            </p>
+          </Reveal>
+          <div className="mt-10 space-y-10">
+            <article><h3 className="font-serif text-2xl font-bold">Grounded in your catalog</h3><p className="mt-2 max-w-[76ch] font-serif text-lg leading-relaxed text-body-mute">Every result Growsearch shows comes from your live Shopify inventory. Nothing invented, nothing out of stock, nothing that isn&rsquo;t real.</p></article>
+            <article><h3 className="font-serif text-2xl font-bold">Judged on revenue</h3><p className="mt-2 max-w-[76ch] font-serif text-lg leading-relaxed text-body-mute">Every tool reports on itself: search-attributed checkouts, add-to-cart rate, zero-result rate. If it isn&rsquo;t moving those numbers, it isn&rsquo;t earning its place in your store.</p></article>
+            <article><h3 className="font-serif text-2xl font-bold">Installs into the Shopify store you run today</h3><p className="mt-2 max-w-[76ch] font-serif text-lg leading-relaxed text-body-mute">No replatforming, no migration, no AI team to hire. If you can install a Shopify app, you can run Growsearch.</p></article>
+            <article><h3 className="font-serif text-2xl font-bold">Priced like an honest bill, not a negotiation</h3><p className="mt-2 max-w-[76ch] font-serif text-lg leading-relaxed text-body-mute">A flat monthly number you can cancel any time. No revenue share, no seat minimums, no &ldquo;let&rsquo;s talk pricing&rdquo; call.</p></article>
+            <article><h3 className="font-serif text-2xl font-bold">One tool at a time, and the next one earns its name</h3><p className="mt-2 max-w-[76ch] font-serif text-lg leading-relaxed text-body-mute">Growsearch is first. The next tool gets built, named, and shipped only once it has real customers proving it works, not before.</p></article>
+          </div>
+        </section>
+
         {/* How we work */}
         <section aria-labelledby="how-title" className="mx-auto max-w-[1370px] px-6 py-16 lg:py-24">
           <Reveal>
@@ -163,6 +217,16 @@ export default function AboutPage() {
                   <p className="mt-3 text-[clamp(1rem,1.4vw,1.125rem)] leading-relaxed text-body-mute">
                     {item.body}
                   </p>
+                </article>
+              </Reveal>
+            ))}
+          </div>
+          <div className="mt-20 space-y-10">
+            {HOW_WE_WORK_DETAILS.map((item, i) => (
+              <Reveal key={item.title} delay={i * 70}>
+                <article className="border-t border-brand/15 pt-7">
+                  <h3 className="font-serif text-[clamp(1.5rem,2.2vw,2rem)] font-bold">{item.title}</h3>
+                  <p className="mt-3 max-w-[78ch] font-serif text-[clamp(1.05rem,1.5vw,1.3rem)] leading-relaxed text-body-mute">{item.body}</p>
                 </article>
               </Reveal>
             ))}

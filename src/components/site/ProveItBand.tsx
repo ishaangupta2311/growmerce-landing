@@ -26,9 +26,9 @@ export default function ProveItBand({ className }: { className?: string }) {
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:items-end">
           <p className="max-w-[52ch] text-[clamp(1rem,1.4vw,1.375rem)] leading-relaxed text-body-mute">
-            Drop your store URL. We&rsquo;ll send back the three workflows most
-            likely costing you hours, what each is worth to fix, and how
-            we&rsquo;d scope the first one.
+            Drop your store URL. We&rsquo;ll run your current search and send back
+            your top zero-result queries, what they&rsquo;re costing you, and
+            exactly how Growsearch would fix each one.
           </p>
 
           {sent ? (

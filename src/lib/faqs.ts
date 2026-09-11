@@ -151,7 +151,11 @@ const ABOUT_FAQ: FaqItem[] = [
   },
   {
     q: "How do I get in touch?",
-    a: "Drop your store URL in the form above and we'll come back with a teardown of the three workflows most likely costing you hours — before any call.",
+    a: "Drop your store URL in the form above, and we'll come back with a teardown of the three workflows most likely costing you hours, before any call.",
+  },
+  {
+    q: "Does Growmerce sell or share shopper data?",
+    a: "No. Growmerce does not sell or share shopper data. Growsearch uses the information needed to make search work and report on its revenue, and your store's data stays tied to your store.",
   },
 ];
 
