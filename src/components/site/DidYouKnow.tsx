@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Reveal from "./Reveal";
 
 export default function DidYouKnow() {
@@ -12,14 +11,6 @@ export default function DidYouKnow() {
         <p className="mt-5 max-w-[860px] text-[clamp(1.1rem,1.8vw,1.45rem)] leading-relaxed text-body-mute">
           Most Shopify search bars weren&apos;t built to earn that conversion. Growsearch is.
         </p>
-        <Link
-          href="https://www.rebuyengine.com/product/search-collections"
-          target="_blank"
-          rel="noreferrer"
-          className="mt-6 inline-flex font-poppins text-sm font-bold text-brand underline decoration-brand/35 underline-offset-4 transition-colors hover:text-charcoal"
-        >
-          See the search benchmark
-        </Link>
       </Reveal>
     </section>
   );
