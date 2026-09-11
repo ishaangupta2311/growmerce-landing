@@ -26,20 +26,16 @@ const CONVICTIONS = [
 
 const HOW_WE_WORK = [
   {
-    title: "One tool at a time",
-    body: "We own, build and run each tool end to end — no suite, no bundle, no seat minimums. Growsearch is the first: storefront search that never dead-ends, and the analytics to prove what search sells.",
-  },
-  {
-    title: "Install today, not next quarter",
-    body: "Every tool has to work inside the store you already run. Install it, keep your theme, your checkout and your data exactly where they are. No replatforming and no six-week onboarding.",
-  },
-  {
-    title: "We charge from day one",
-    body: "No free pilots dressed up as partnerships. Early pricing is honest pricing — a small monthly number you can cancel — because a store owner choosing to pay is the only proof a tool deserves to exist.",
-  },
-  {
     title: "Built in public",
-    body: "Founder-led and serving stores worldwide. Progress gets posted as it happens, and you get a straight answer when something isn't ready yet.",
+    body: "Founder-led and serving stores worldwide. We post progress as it happens, and you get a straight answer when something isn't ready yet.",
+  },
+  {
+    title: "Always improving, never half-baked",
+    body: "We’re always improving. We listen to every feature request and bug report, then roll out updates and fixes as quickly as possible—so you never have to settle for a half-baked tool.",
+  },
+  {
+    title: "Your feedback shapes the product",
+    body: "Feature suggestions and bug reports are always welcome. The founder personally reads every report to help deliver the experience you deserve.",
   },
 ];
 
@@ -152,7 +148,7 @@ export default function AboutPage() {
               How we work
             </h2>
           </Reveal>
-          <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          <div className="mt-10 grid gap-6 lg:grid-cols-3">
             {HOW_WE_WORK.map((item, i) => (
               <Reveal key={item.title} delay={i * 80}>
                 <article className="h-full rounded-[22px] bg-cream px-7 py-8">
