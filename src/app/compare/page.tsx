@@ -50,11 +50,9 @@ export default function ComparePage() {
                 className="hero-enter mt-4 text-[clamp(2.25rem,4.3vw,4rem)] leading-[0.99] font-extrabold tracking-[-0.035em] text-balance"
                 style={{ animationDelay: "90ms" }}
               >
-                <span className="block">Traditional Search</span>
-                <span className="block">Stops At Keywords.</span>
-                <span className="block">
-                  Growmerce Understands <span className="text-brand">Intent</span>
-                </span>
+                <span className="block">Search That</span>
+                <span className="block">Understands What</span>
+                <span className="block text-brand">Shoppers Mean</span>
               </h1>
               <p
                 className="hero-enter mt-6 max-w-[54ch] text-[clamp(1rem,1.3vw,1.125rem)] leading-[1.55] text-body-mute"
