@@ -40,23 +40,24 @@ export default function ComparePage() {
       <Navbar />
       <main className="font-bricolage">
         {/* Hero */}
-        <section className="mx-auto max-w-[1370px] px-6 pt-14 pb-12 lg:pt-20">
-          <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
-            <div>
+        <section className="mx-auto max-w-[1370px] px-6 pt-10 pb-10 lg:pt-12 lg:pb-14">
+          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:gap-14">
+            <div className="max-w-[760px]">
               <p className="hero-enter font-poppins text-[13px] font-extrabold tracking-[0.18em] text-brand uppercase">
                 Growmerce vs traditional search
               </p>
               <h1
-                className="hero-enter mt-5 text-[clamp(2rem,5.2vw,4.5rem)] leading-[1.04] font-extrabold tracking-tight text-balance"
+                className="hero-enter mt-4 text-[clamp(2.25rem,4.3vw,4rem)] leading-[0.99] font-extrabold tracking-[-0.035em] text-balance"
                 style={{ animationDelay: "90ms" }}
               >
-                Traditional Search Stops At Keywords.
-                <br />
-                Growmerce Understands{" "}
-                <span className="text-brand">Intent</span>
+                <span className="block">Traditional Search</span>
+                <span className="block">Stops At Keywords.</span>
+                <span className="block">
+                  Growmerce Understands <span className="text-brand">Intent</span>
+                </span>
               </h1>
               <p
-                className="hero-enter mt-7 max-w-[52ch] text-[clamp(1.0625rem,1.6vw,1.375rem)] leading-relaxed text-body-mute"
+                className="hero-enter mt-6 max-w-[54ch] text-[clamp(1rem,1.3vw,1.125rem)] leading-[1.55] text-body-mute"
                 style={{ animationDelay: "170ms" }}
               >
                 <span className="block">
@@ -64,14 +65,14 @@ export default function ComparePage() {
                   standalone AI tools solve isolated parts of product
                   discovery.
                 </span>
-                <span className="mt-4 block">
+                <span className="mt-3 block">
                   Growmerce connects intent, relevance, merchandising, shopper
                   behavior, and revenue into one search experience that moves
                   customers closer to purchase.
                 </span>
               </p>
               <div
-                className="hero-enter mt-9 flex flex-wrap items-center gap-4 [&>*]:max-[430px]:w-full"
+                className="hero-enter mt-7 flex flex-wrap items-center gap-3 [&>*]:max-[430px]:w-full"
                 style={{ animationDelay: "250ms" }}
               >
                 <DemoStoreButton className="cta-primary" source="compare-hero">
@@ -100,8 +101,8 @@ export default function ComparePage() {
                 width={1239}
                 height={1261}
                 priority
-                sizes="(min-width: 1024px) 52vw, 100vw"
-                className="h-auto w-full"
+                sizes="(min-width: 1024px) 46vw, 100vw"
+                className="h-auto w-full lg:max-w-[620px] lg:justify-self-end"
               />
             </div>
           </div>
