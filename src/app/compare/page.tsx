@@ -161,7 +161,8 @@ export default function ComparePage() {
                 <span className="text-brand">for yourself.</span>
               </h2>
               <p className="max-w-[34ch] text-[16.5px] leading-relaxed text-body-mute lg:text-right">
-                Same shopper. Same search. A completely different experience.
+                The query didn&rsquo;t change. The intelligence behind the results
+                did.
               </p>
             </div>
           </Reveal>
