@@ -10,6 +10,7 @@ import DemoStoreButton from "@/components/site/DemoStoreButton";
 import Arrow from "@/components/site/Arrow";
 import SideBySide from "./components/SideBySide";
 import CapabilityTable from "./components/CapabilityTable";
+import ScrambleHeadline from "./components/ScrambleHeadline";
 
 export const metadata: Metadata = {
   title: "Growmerce vs the alternatives",
@@ -46,17 +47,7 @@ export default function ComparePage() {
               <p className="hero-enter font-poppins text-[13px] font-extrabold tracking-[0.18em] text-brand uppercase">
                 Growmerce vs traditional search
               </p>
-              <h1 className="mt-4 text-[clamp(2.25rem,4.3vw,4rem)] leading-[0.99] font-extrabold tracking-[-0.035em] text-balance">
-                <span className="hero-enter block" style={{ animationDelay: "100ms" }}>
-                  Search That
-                </span>
-                <span className="hero-enter block" style={{ animationDelay: "180ms" }}>
-                  Understands What
-                </span>
-                <span className="hero-enter block text-brand" style={{ animationDelay: "260ms" }}>
-                  Shoppers Mean
-                </span>
-              </h1>
+              <ScrambleHeadline />
               <p
                 className="hero-enter mt-6 max-w-[54ch] text-[clamp(1rem,1.3vw,1.125rem)] leading-[1.55] text-body-mute"
                 style={{ animationDelay: "330ms" }}
