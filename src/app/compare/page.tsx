@@ -178,6 +178,18 @@ export default function ComparePage() {
           className="mx-auto max-w-[1370px] px-6 pb-16 lg:pb-24"
         >
           <Reveal>
+            <div className="mx-auto max-w-[900px] text-center">
+              <h2 className="font-poppins text-[clamp(1.75rem,4vw,3.25rem)] leading-tight font-extrabold tracking-tight text-balance">
+                Built to Outperform Traditional Ecommerce Search
+              </h2>
+              <p className="mx-auto mt-4 max-w-[58ch] text-[17px] leading-relaxed text-body-mute">
+                See how Growsearch delivers more control, smarter results, and
+                stronger growth potential.
+              </p>
+            </div>
+          </Reveal>
+
+          <Reveal delay={100} className="mt-14 lg:mt-20">
             <h2
               id="matrix-title"
               className="mx-auto max-w-[22ch] text-center font-poppins text-[clamp(1.75rem,4vw,3.25rem)] leading-tight font-extrabold tracking-tight text-balance"
