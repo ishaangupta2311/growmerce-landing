@@ -2,6 +2,11 @@ import type { NextConfig } from "next";
 import { GROWSEARCH_FEATURES, GROWSEARCH_HOME } from "./src/lib/site-urls";
 
 const nextConfig: NextConfig = {
+  // The iMac dev server is viewed from the MacBook over Tailscale. Next
+  // blocks dev-only assets and HMR requests from that hostname unless it is
+  // explicitly allowed.
+  allowedDevOrigins: ["ishaans-imac.tail55a128.ts.net", "100.117.190.45"],
+
   /* `@sparticuz/chromium` keeps its ~100 MB browser as .br archives in its own
      bin/ and opens them by a path it computes at runtime. Next traces a page's
      files by statically reading its imports, requires and fs calls, and a path
