@@ -44,32 +44,41 @@ export default function ComparePage() {
           <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
             <div>
               <p className="hero-enter font-poppins text-[13px] font-extrabold tracking-[0.18em] text-brand uppercase">
-                &ndash; Compare
+                Growmerce vs traditional search
               </p>
               <h1
                 className="hero-enter mt-5 text-[clamp(2rem,5.2vw,4.5rem)] leading-[1.04] font-extrabold tracking-tight text-balance"
                 style={{ animationDelay: "90ms" }}
               >
-                Same goal.
+                Traditional Search Stops At Keywords.
                 <br />
-                A very different{" "}
-                <span className="text-brand">experience.</span>
+                Growmerce Understands{" "}
+                <span className="text-brand">Intent</span>
               </h1>
               <p
                 className="hero-enter mt-7 max-w-[52ch] text-[clamp(1.0625rem,1.6vw,1.375rem)] leading-relaxed text-body-mute"
                 style={{ animationDelay: "170ms" }}
               >
-                Traditional search, recommendation tools and AI plugins solve
-                bits and pieces. Growmerce brings it all together &mdash;
-                understanding shoppers, not just keywords.
+                <span className="block">
+                  Traditional site search, recommendation engines, and
+                  standalone AI tools solve isolated parts of product
+                  discovery.
+                </span>
+                <span className="mt-4 block">
+                  Growmerce connects intent, relevance, merchandising, shopper
+                  behavior, and revenue into one search experience that moves
+                  customers closer to purchase.
+                </span>
               </p>
               <div
                 className="hero-enter mt-9 flex flex-wrap items-center gap-4 [&>*]:max-[430px]:w-full"
                 style={{ animationDelay: "250ms" }}
               >
-                <DemoStoreButton className="cta-primary" source="compare-hero" />
+                <DemoStoreButton className="cta-primary" source="compare-hero">
+                  See Growsearch in Action
+                </DemoStoreButton>
                 <Link href="/try" className="cta-secondary">
-                  Try it free
+                  Try Growsearch Free
                 </Link>
               </div>
             </div>
@@ -87,7 +96,7 @@ export default function ComparePage() {
             >
               <Image
                 src="/img/compare/hero-laptop.webp"
-                alt="A Growmerce storefront answering “summer dresses under $100” with four in-stock dresses, ringed by the claims it makes: understands shopper intent, connects the full journey, drives more revenue, gives you real insights"
+                alt="A Growmerce storefront answering “summer dresses under $100” with four in-stock dresses, showing how it understands real shopper intent, ranks products by relevance, connects search to conversion, and turns behavior into insight"
                 width={1239}
                 height={1261}
                 priority
@@ -109,12 +118,13 @@ export default function ComparePage() {
                 id="journey-title"
                 className="text-center font-poppins text-[clamp(1.6rem,3.6vw,2.75rem)] leading-tight font-extrabold text-balance"
               >
-                It&rsquo;s not just about{" "}
-                <span className="text-brand">search results.</span>
+                Search Is Only the Start.{" "}
+                <span className="text-brand">Revenue Is the Outcome</span>
               </h2>
               <p className="mx-auto mt-3 max-w-[56ch] text-center text-[clamp(1rem,1.6vw,1.25rem)] leading-relaxed text-body-mute">
-                It&rsquo;s about what happens next &mdash; discovery,
-                engagement, and growth.
+                Growsearch connects every step between shopper intent and
+                purchase, so better searches lead to better product discovery,
+                stronger cart activity, and measurable growth.
               </p>
             </Reveal>
 
