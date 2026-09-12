@@ -136,6 +136,24 @@ body {
   }
 }
 
+@keyframes headline-reveal {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+    filter: blur(8px);
+    transform: translateY(0.35em);
+  }
+  45% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  to {
+    clip-path: inset(0);
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
 @keyframes scale-in {
   from {
     opacity: 0;
@@ -262,6 +280,11 @@ body {
 .hero-enter {
   opacity: 0;
   animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.hero-headline-reveal {
+  animation: headline-reveal 1.1s cubic-bezier(0.16, 1, 0.3, 1) 90ms both;
+  will-change: clip-path, filter, opacity, transform;
 }
 
 .hero-enter-scale {
