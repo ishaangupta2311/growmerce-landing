@@ -41,7 +41,7 @@ export default function ComparePage() {
       <Navbar />
       <main className="font-bricolage">
         {/* Hero */}
-        <section className="mx-auto max-w-[1370px] px-6 pt-10 pb-10 lg:pt-12 lg:pb-14">
+        <section className="mx-auto max-w-[1370px] px-6 pt-10 pb-8 lg:pt-12 lg:pb-8">
           <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:gap-14">
             <div className="max-w-[760px]">
               <p className="hero-enter font-poppins text-[13px] font-extrabold tracking-[0.18em] text-brand uppercase">
@@ -98,7 +98,7 @@ export default function ComparePage() {
         {/* The journey */}
         <section
           aria-labelledby="journey-title"
-          className="mt-16 bg-peach/70 py-14 lg:mt-28 lg:py-20"
+          className="mt-8 bg-peach/70 py-14 lg:mt-12 lg:py-20"
         >
           <div className="mx-auto max-w-[1370px] px-6">
             <Reveal>
