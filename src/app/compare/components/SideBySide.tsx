@@ -34,7 +34,7 @@ const SMART_NOTES = ["Understands context", "Shows relevant results", "Delivers 
  */
 export default function SideBySide() {
   return (
-    <div className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-5">
+    <div className="relative grid items-stretch gap-6 lg:grid-cols-2 lg:gap-5">
       <Panel
         tone="plain"
         badge="Traditional search"
@@ -66,7 +66,7 @@ export default function SideBySide() {
           panels on a narrow one. */}
       <div
         aria-hidden
-        className="relative z-10 mx-auto grid size-12 place-items-center rounded-full bg-white font-poppins text-[15px] font-extrabold text-brand shadow-[0_10px_26px_-12px_rgba(23,23,23,0.45)] ring-1 ring-brand/20 lg:-mx-9 lg:self-center"
+        className="relative z-10 mx-auto grid size-12 place-items-center rounded-full bg-white font-poppins text-[15px] font-extrabold text-brand shadow-[0_10px_26px_-12px_rgba(23,23,23,0.45)] ring-1 ring-brand/20 lg:absolute lg:top-1/2 lg:left-1/2 lg:m-0 lg:-translate-x-1/2 lg:-translate-y-1/2"
       >
         VS
       </div>
