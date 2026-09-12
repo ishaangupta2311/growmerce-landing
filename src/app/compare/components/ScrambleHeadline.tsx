@@ -96,6 +96,17 @@ export default function ScrambleHeadline() {
       <span className="block text-brand">
         <span className={scrambleDone ? "headline-underline-active" : "headline-underline"}>
           {displayLines[2]}
+          <svg
+            aria-hidden="true"
+            className="headline-underline-svg"
+            viewBox="0 0 100 12"
+            preserveAspectRatio="none"
+          >
+            <path
+              pathLength="1"
+              d="M 1 7 C 14 3.5, 25 9.5, 39 6 S 61 3.5, 73 7 S 89 9, 99 5"
+            />
+          </svg>
         </span>
       </span>
     </h1>
