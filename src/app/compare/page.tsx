@@ -46,24 +46,22 @@ export default function ComparePage() {
               <p className="hero-enter font-poppins text-[13px] font-extrabold tracking-[0.18em] text-brand uppercase">
                 Growmerce vs traditional search
               </p>
-              <h1
-                className="hero-enter mt-4 text-[clamp(2.25rem,4.3vw,4rem)] leading-[0.99] font-extrabold tracking-[-0.035em] text-balance"
-                style={{ animationDelay: "90ms" }}
-              >
-                <span className="block">Search That</span>
-                <span className="block">Understands What</span>
-                <span className="block text-brand">Shoppers Mean</span>
+              <h1 className="mt-4 text-[clamp(2.25rem,4.3vw,4rem)] leading-[0.99] font-extrabold tracking-[-0.035em] text-balance">
+                <span className="hero-enter block" style={{ animationDelay: "100ms" }}>
+                  Search That
+                </span>
+                <span className="hero-enter block" style={{ animationDelay: "180ms" }}>
+                  Understands What
+                </span>
+                <span className="hero-enter block text-brand" style={{ animationDelay: "260ms" }}>
+                  Shoppers Mean
+                </span>
               </h1>
               <p
                 className="hero-enter mt-6 max-w-[54ch] text-[clamp(1rem,1.3vw,1.125rem)] leading-[1.55] text-body-mute"
-                style={{ animationDelay: "170ms" }}
+                style={{ animationDelay: "330ms" }}
               >
                 <span className="block">
-                  Traditional site search, recommendation engines, and
-                  standalone AI tools solve isolated parts of product
-                  discovery.
-                </span>
-                <span className="mt-3 block">
                   Growmerce connects intent, relevance, merchandising, shopper
                   behavior, and revenue into one search experience that moves
                   customers closer to purchase.
@@ -71,7 +69,7 @@ export default function ComparePage() {
               </p>
               <div
                 className="hero-enter mt-7 flex flex-wrap items-center gap-3 [&>*]:max-[430px]:w-full"
-                style={{ animationDelay: "250ms" }}
+                style={{ animationDelay: "430ms" }}
               >
                 <DemoStoreButton className="cta-primary" source="compare-hero">
                   See Growsearch in Action
