@@ -51,6 +51,32 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Homepage typography is intentionally scoped so the archived concepts can
+   keep their own type systems. One family and a small, predictable weight
+   hierarchy prevent adjacent marketing sections from competing visually. */
+.home-page {
+  font-family: var(--font-bricolage-loaded), ui-sans-serif, system-ui, sans-serif;
+}
+
+.home-page :is(h1, h2, h3, h4) {
+  font-family: inherit;
+  font-optical-sizing: none;
+}
+
+.home-page h1 {
+  font-weight: 800;
+}
+
+.home-page h2 {
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.home-page :is(h3, h4) {
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
 ::selection {
   background: #ff5c1a;
   color: #ffffff;

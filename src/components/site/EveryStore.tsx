@@ -124,22 +124,22 @@ const SEGMENTS = [
   {
     icon: Storefront,
     title: "Startups & D2C Brands",
-    body: "One product line, no search team. Install it, and the store answers questions properly from day one instead of waiting until there is budget for it.",
+    body: "You have one product line and no search team. Install Growsearch, and your store answers questions properly from day one instead of waiting until there's budget for it.",
   },
   {
     icon: Trolley,
     title: "Growing Marketplaces",
-    body: "Every seller names things their own way. Growsearch reads what the shopper meant, so a scrappy catalogue still returns the right shelf.",
+    body: "Every seller on your platform names things their own way. Growsearch reads what the shopper meant, not what the listing says, so even a scrappy or inconsistent catalog still returns the right shelf.",
   },
   {
     icon: Bag,
     title: "Mid-sized Stores",
-    body: "Traffic is fine and search converts badly. The analytics show which queries lose the sale, so you fix the ones that cost you money first.",
+    body: "Traffic is fine, but search converts badly, and nobody can say why. The analytics show exactly which queries lose the sale, so you fix the ones costing you money first.",
   },
   {
     icon: Warehouse,
     title: "Large Catalog Businesses",
-    body: "Thousands of SKUs, and the long tail is where the misses hide. Semantic matching keeps deep inventory reachable without hand-tuned synonyms.",
+    body: "You have thousands of SKUs, and the long tail is where the misses hide. Semantic matching keeps deep inventory reachable without you hand-tuning synonyms for every edge case.",
   },
   {
     icon: Globe,
@@ -148,33 +148,6 @@ const SEGMENTS = [
   },
   {
     icon: Gem,
-    title: "Niche & Specialty Stores",
-    body: "Your customers use vocabulary a keyword index has never seen. Intent matching handles the jargon, and zero-result recovery covers the rest.",
-  },
-];
-
-const SEARCH_PROBLEMS = [
-  {
-    title: "Startups & D2C Brands",
-    body: "You have one product line and no search team. Install Growsearch, and your store answers questions properly from day one instead of waiting until there's budget for it.",
-  },
-  {
-    title: "Growing Marketplaces",
-    body: "Every seller on your platform names things their own way. Growsearch reads what the shopper meant, not what the listing says, so even a scrappy or inconsistent catalog still returns the right shelf.",
-  },
-  {
-    title: "Mid-sized Stores",
-    body: "Traffic is fine, but search converts badly, and nobody can say why. The analytics show exactly which queries lose the sale, so you fix the ones costing you money first.",
-  },
-  {
-    title: "Large Catalog Businesses",
-    body: "You have thousands of SKUs, and the long tail is where the misses hide. Semantic matching keeps deep inventory reachable without you hand-tuning synonyms for every edge case.",
-  },
-  {
-    title: "Growth-Stage Retailers",
-    body: "Your merchandising team writes product titles one way; your customers search a completely different way. Growsearch closes that gap by matching what shoppers mean, not the exact words your team chose.",
-  },
-  {
     title: "Niche & Specialty Stores",
     body: "Your customers use vocabulary a keyword index has never seen. Intent matching handles the jargon, and zero-result recovery covers whatever's left.",
   },
@@ -285,14 +258,14 @@ export default function EveryStore() {
           <p className="inline-block rounded-[7px] bg-peach px-3.5 py-2 font-poppins text-[13px] font-extrabold tracking-[0.02em] text-brand uppercase">
             Perfect for every ecommerce business
           </p>
-          <h2 className="mt-5 text-[clamp(2rem,4.2vw,3.35rem)] leading-[1.16] font-bold">
-            Built for <span className="text-brand-bright">every store.</span>
-            <br />
-            Designed to grow with you.
+          <h2 className="mt-5 max-w-[760px] text-[clamp(2rem,4.2vw,3.35rem)] leading-[1.08] font-bold">
+            Wherever Your Search Is Losing Sales,{" "}
+            <span className="text-brand-bright">We Start There</span>
           </h2>
-          <p className="mt-5 max-w-[520px] text-[17px] leading-[1.6] text-body-mute">
+          <p className="mt-5 max-w-[700px] text-[17px] leading-[1.6] text-body-mute">
             Whether you&apos;re a startup or an enterprise, Growsearch adapts to
-            your catalog size, customer behaviour, and business goals.
+            your catalog size, your customer behavior, and where your business
+            is headed next.
           </p>
         </Reveal>
 
@@ -324,23 +297,6 @@ export default function EveryStore() {
         })}
       </div>
 
-      <Reveal className="mt-24 max-w-[1080px]" delay={100}>
-        <h2 className="text-[clamp(2rem,4.2vw,3.35rem)] leading-[1.12] font-bold">
-          Wherever Your Search Is Losing Sales, We Start There
-        </h2>
-        <p className="mt-6 max-w-[1000px] text-[clamp(1.15rem,2vw,1.55rem)] leading-[1.5] text-body-mute">
-          Whether you&apos;re a startup or an enterprise, Growsearch adapts to your catalog size, your customer behavior, and where your business is headed next.
-        </p>
-
-        <div className="mt-12 space-y-10">
-          {SEARCH_PROBLEMS.map((problem) => (
-            <article key={problem.title} className="border-t border-brand/15 pt-6">
-              <h3 className="text-[clamp(1.25rem,2vw,1.75rem)] font-bold text-charcoal">{problem.title}</h3>
-              <p className="mt-3 max-w-[980px] text-[clamp(1.05rem,1.7vw,1.35rem)] leading-[1.6] text-body-mute">{problem.body}</p>
-            </article>
-          ))}
-        </div>
-      </Reveal>
     </section>
   );
 }

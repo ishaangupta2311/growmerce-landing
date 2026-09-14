@@ -16,9 +16,9 @@ import Footer from "@/components/site/Footer";
 
 export default function Home() {
   return (
-    <>
+    <div className="home-page">
       <Navbar />
-      <main className="font-bricolage">
+      <main>
         <Hero />
         <HomeIntro />
         <PlatformStrip />
@@ -33,6 +33,6 @@ export default function Home() {
         <HomeFinalCta />
       </main>
       <Footer />
-    </>
+    </div>
   );
 }
