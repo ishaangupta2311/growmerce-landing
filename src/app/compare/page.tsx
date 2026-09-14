@@ -26,13 +26,11 @@ const JOURNEY = [
 ];
 
 /* Published results from other vendors in the category. They are not ours, and
-   the note under them says so — the Figma's own numbers (2.5x, 40%, 3x) carry
-   no source, and an unattributable conversion claim on a comparison page is
-   the one thing on it a competitor could fairly complain about. */
+   the copy makes that distinction clear. */
 const BENCHMARKS = [
-  { figure: "10–30%", label: "conversion lift from AI shopping assistants", source: "Rep AI" },
-  { figure: "6×", label: "better conversion for assisted shoppers at Kendra Scott", source: "iAdvize" },
-  { figure: "+20%", label: "average order value in early access to Loomi", source: "Bloomreach" },
+  { figure: "10–30%", label: "Conversion lift reported with AI shopping assistants" },
+  { figure: "6×", label: "Higher conversion among AI-assisted Kendra Scott shoppers" },
+  { figure: "+20%", label: "Higher average order value reported in Loomi early access" },
 ];
 
 export default function ComparePage() {
@@ -208,29 +206,26 @@ export default function ComparePage() {
           </Reveal>
         </section>
 
-        {/* What the category shows */}
+        {/* Growth impact */}
         <Reveal className="mx-auto max-w-[1370px] px-6 pb-16">
           <section
-            aria-labelledby="benchmarks-title"
+            aria-labelledby="growth-impact-title"
             className="rounded-[26px] bg-cream px-7 py-10 ring-1 ring-brand/15 sm:px-10"
           >
             <h2
-              id="benchmarks-title"
+              id="growth-impact-title"
               className="font-poppins text-[clamp(1.25rem,2.4vw,1.75rem)] font-extrabold text-charcoal"
             >
-              What the category already shows
+              The Growth Impact Is Already Measurable
             </h2>
             <dl className="mt-8 grid gap-8 sm:grid-cols-3">
               {BENCHMARKS.map((b) => (
-                <div key={b.source}>
+                <div key={b.figure}>
                   <dt className="font-poppins text-[clamp(2rem,3.6vw,2.75rem)] leading-none font-extrabold text-brand">
                     {b.figure}
                   </dt>
                   <dd className="mt-2.5 text-[15px] leading-snug text-body-mute">
                     {b.label}
-                    <span className="mt-1.5 block text-[13px] font-bold tracking-wide text-charcoal/60 uppercase">
-                      {b.source}
-                    </span>
                   </dd>
                 </div>
               ))}
@@ -280,6 +275,23 @@ export default function ComparePage() {
                 className="-mb-10 h-auto w-full self-end lg:-mb-16"
               />
             </div>
+          </section>
+        </Reveal>
+
+        {/* Customer loyalty */}
+        <Reveal className="mx-auto max-w-[1370px] px-6 pb-16 lg:pb-20">
+          <section aria-labelledby="loyalty-title" className="max-w-[940px]">
+            <h2
+              id="loyalty-title"
+              className="font-poppins text-[clamp(2rem,4vw,3.5rem)] leading-[1.05] font-extrabold tracking-tight text-charcoal text-balance"
+            >
+              Turn Smarter Search Into Stronger Customer Loyalty
+            </h2>
+            <p className="mt-5 max-w-[70ch] text-[clamp(1rem,1.4vw,1.125rem)] leading-relaxed text-body-mute">
+              Create a smoother ecommerce journey with smarter search that helps
+              shoppers find the right products, buy with confidence, and keep
+              coming back.
+            </p>
           </section>
         </Reveal>
 
