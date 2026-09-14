@@ -1,18 +1,56 @@
 import Reveal from "./Reveal";
 
+const STEPS = [
+  { number: "01", label: "Understand intent" },
+  { number: "02", label: "Rank the right products" },
+  { number: "03", label: "Measure revenue" },
+];
+
 export default function HomeIntro() {
   return (
-    <section className="border-t border-brand/10 bg-white px-6 py-20 sm:py-28 lg:px-10 lg:py-32">
+    <section className="border-y border-brand/10 bg-cream/55 px-6 py-16 sm:py-20 lg:px-10 lg:py-24">
       <Reveal className="mx-auto max-w-[1160px]">
-        <div className="max-w-[1030px]">
-          <h2 className="max-w-[1000px] font-poppins text-[clamp(2.4rem,5.7vw,5.8rem)] leading-[0.98] font-extrabold tracking-[-0.045em] text-charcoal">
-            The AI Search app Built For Ecommerce Stores
-          </h2>
-          <div className="mt-10 max-w-[1020px] space-y-7 font-poppins text-[clamp(1.15rem,2vw,1.55rem)] leading-[1.45] text-body-mute">
-            <p>Stop losing shoppers to dead-end searches. Growmerce reads intent, not just keywords, and turns every search into a sale.</p>
-            <p>You can now make product discovery your biggest revenue driver by connecting shoppers to the right products.</p>
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-end lg:gap-20">
+          <div>
+            <p className="font-poppins text-[13px] font-extrabold tracking-[0.18em] text-brand uppercase">
+              Built for ecommerce
+            </p>
+            <h2 className="mt-4 max-w-[20ch] font-poppins text-[clamp(2.25rem,4vw,3.5rem)] leading-[1.04] font-semibold tracking-[-0.035em] text-charcoal text-balance">
+              Search that turns{" "}
+              <span className="text-brand">intent into revenue.</span>
+            </h2>
           </div>
+
+          <p className="max-w-[48ch] font-poppins text-[clamp(1.05rem,1.5vw,1.25rem)] leading-[1.6] text-body-mute">
+            Growsearch understands what shoppers mean, ranks the right products,
+            and shows which searches lead to sales.
+          </p>
         </div>
+
+        <ol className="mt-12 grid border-y border-brand/15 sm:grid-cols-3">
+          {STEPS.map((step, index) => (
+            <li
+              key={step.number}
+              className={`flex items-center gap-4 py-5 sm:px-6 ${
+                index > 0
+                  ? "border-t border-brand/15 sm:border-t-0 sm:border-l"
+                  : "sm:pl-0"
+              } ${index === STEPS.length - 1 ? "sm:pr-0" : ""}`}
+            >
+              <span className="font-poppins text-xs font-extrabold tracking-[0.14em] text-brand">
+                {step.number}
+              </span>
+              <span className="font-poppins text-[17px] font-semibold text-charcoal">
+                {step.label}
+              </span>
+              {index < STEPS.length - 1 && (
+                <span className="ml-auto hidden text-xl text-brand/45 sm:block" aria-hidden>
+                  →
+                </span>
+              )}
+            </li>
+          ))}
+        </ol>
       </Reveal>
     </section>
   );
