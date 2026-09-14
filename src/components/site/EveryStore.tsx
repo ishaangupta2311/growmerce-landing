@@ -255,14 +255,12 @@ export default function EveryStore() {
           pushes the six tiles a screen further down for no gain. */}
       <div className="flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,340px)] lg:items-center lg:gap-12">
         <Reveal className="order-2 lg:order-1">
-          <p className="inline-block rounded-[7px] bg-peach px-3.5 py-2 font-poppins text-[13px] font-extrabold tracking-[0.02em] text-brand uppercase">
-            Perfect for every ecommerce business
-          </p>
-          <h2 className="mt-5 max-w-[760px] text-[clamp(2rem,4.2vw,3.35rem)] leading-[1.08] font-bold">
-            Wherever Your Search Is Losing Sales,{" "}
-            <span className="text-brand-bright">We Start There</span>
+          <p className="section-eyebrow">Perfect for every ecommerce business</p>
+          <h2 className="section-title mt-4 max-w-[24ch]">
+            Wherever your search is losing sales,{" "}
+            <span className="text-brand">we start there</span>
           </h2>
-          <p className="mt-5 max-w-[700px] text-[17px] leading-[1.6] text-body-mute">
+          <p className="section-lede mt-5 max-w-[60ch]">
             Whether you&apos;re a startup or an enterprise, Growsearch adapts to
             your catalog size, your customer behavior, and where your business
             is headed next.
@@ -279,12 +277,12 @@ export default function EveryStore() {
           const Glyph = segment.icon;
           return (
             <Reveal key={segment.title} delay={(i % 3) * 110}>
-              <article className="h-full rounded-[14px] border border-peach bg-white p-5 transition-[transform,box-shadow] duration-300 hover-lift [--lift:4px] hover:shadow-glow">
+              <article className="section-card h-full">
                 <div className="flex items-start gap-3.5">
                   <span className="grid size-11 shrink-0 place-items-center rounded-[10px] bg-peach/70 text-brand">
                     <Glyph className="size-6" />
                   </span>
-                  <h3 className="text-[19px] leading-[1.25] font-bold">
+                  <h3 className="text-[20px] leading-[1.25]">
                     {segment.title}
                   </h3>
                 </div>

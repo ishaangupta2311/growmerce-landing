@@ -103,13 +103,13 @@ function Check({ className }: GlyphProps) {
 function StepCard({ card }: { card: (typeof CARDS)[number] }) {
   const Glyph = card.icon;
   return (
-    <article className="relative rounded-[16px] bg-gradient-to-br from-white to-cream p-5 shadow-[0_18px_44px_-28px_rgba(96,44,14,0.55)] ring-1 ring-peach/70 sm:p-6">
+    <article className="relative rounded-[20px] border border-peach bg-gradient-to-br from-white to-cream p-5 shadow-[0_18px_44px_-28px_rgba(96,44,14,0.45)] sm:p-6">
       <div className="flex items-start gap-4">
         <span className="grid size-12 shrink-0 place-items-center rounded-full bg-white text-brand ring-1 ring-peach">
           <Glyph className="size-6" />
         </span>
         <div className="min-w-0">
-          <h3 className="text-[19px] leading-tight font-bold">{card.title}</h3>
+          <h3 className="text-[20px] leading-tight">{card.title}</h3>
           <p className="mt-1 text-[15.5px] text-body-mute">{card.blurb}</p>
         </div>
       </div>
@@ -176,14 +176,12 @@ export default function SearchGrowth() {
             paragraph instead of leaving a column of white beside it. */}
         <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-12">
           <Reveal className="relative">
-            <p className="inline-block rounded-[7px] bg-peach px-3.5 py-2 font-poppins text-[13px] font-extrabold tracking-[0.02em] text-brand uppercase">
-              Search that drives growth
-            </p>
-            <h2 className="mt-5 text-[clamp(2rem,4.2vw,3.35rem)] leading-[1.16] font-bold">
+            <p className="section-eyebrow">Search that drives growth</p>
+            <h2 className="section-title mt-4">
               Turn every search into{" "}
-              <span className="text-brand-bright">a growth opportunity.</span>
+              <span className="text-brand">a growth opportunity.</span>
             </h2>
-            <p className="mt-5 max-w-[520px] text-[17px] leading-[1.6] text-body-mute">
+            <p className="section-lede mt-5 max-w-[52ch]">
               Every search contains valuable customer intent. Growsearch helps
               ecommerce teams understand shoppers, identify opportunities, and
               improve product discovery.

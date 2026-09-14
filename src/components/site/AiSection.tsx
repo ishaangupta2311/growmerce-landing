@@ -61,7 +61,7 @@ export default function AiSection() {
   return (
     <section id="service" className="mx-auto max-w-[1440px] px-6 py-24">
       <Reveal>
-      <div className="grid items-center gap-10 rounded-[40px] bg-white px-8 py-14 shadow-glow-lg sm:px-14 lg:min-h-[616px] lg:grid-cols-2 lg:rounded-[63px]">
+      <div className="grid items-center gap-10 rounded-[28px] border border-peach bg-white px-6 py-12 shadow-glow sm:px-12 sm:py-14 lg:min-h-[616px] lg:grid-cols-2">
         {/* The half the design left open, now carrying the mock for whichever
             conviction is expanded. Stacked and cross-faded so the space never
             blanks mid-swap.
@@ -70,7 +70,7 @@ export default function AiSection() {
             the fourth conviction changes a picture the reader has already
             scrolled past. On a phone the mock goes inside the panel it
             belongs to instead. */}
-        <div className="relative -mx-2 mb-10 hidden aspect-[1386/1135] overflow-hidden rounded-[24px] bg-peach/40 lg:mx-0 lg:mb-0 lg:mr-10 lg:block">
+        <div className="relative -mx-2 mb-10 hidden aspect-[1386/1135] overflow-hidden rounded-[20px] bg-peach/40 lg:mx-0 lg:mb-0 lg:mr-10 lg:block">
           {ITEMS.map((item, i) => (
             <Image
               key={item.title}
@@ -85,10 +85,9 @@ export default function AiSection() {
         </div>
 
         <div>
-          <h2 className="text-[clamp(1.875rem,3vw,2.5rem)] font-semibold">
-            AI at Growmerce
-          </h2>
-          <p className="mt-4 max-w-[46ch] text-[16px] leading-relaxed text-body-mute">
+          <p className="section-eyebrow">How we build</p>
+          <h2 className="section-title mt-4">AI at Growmerce</h2>
+          <p className="section-lede mt-4 max-w-[46ch]">
             Every tool we ship runs on the same few convictions about where AI
             belongs in a store &mdash; and where it doesn&rsquo;t.
           </p>
@@ -103,7 +102,7 @@ export default function AiSection() {
                     setShown(i);
                   }}
                   aria-expanded={open === i}
-                  className="flex w-full items-center justify-between py-4 text-left text-xl transition-colors hover:text-brand"
+                  className="flex w-full items-center justify-between gap-6 py-4 text-left text-[19px] leading-snug font-semibold transition-colors hover:text-brand"
                 >
                   {item.title}
                   <span
@@ -127,9 +126,9 @@ export default function AiSection() {
                       width={720}
                       height={590}
                       sizes="92vw"
-                      className="mb-4 h-auto w-full rounded-[18px] bg-peach/40 lg:hidden"
+                      className="mb-4 h-auto w-full rounded-[16px] bg-peach/40 lg:hidden"
                     />
-                    <p className="pb-5 text-sm leading-[27px]">{item.body}</p>
+                    <p className="max-w-[60ch] pb-5 text-[15.5px] leading-[1.6] text-body-mute">{item.body}</p>
                   </div>
                 </div>
               </li>
@@ -138,7 +137,7 @@ export default function AiSection() {
 
           <Link
             href={GROWSEARCH_HOME}
-            className="cta-primary mt-12"
+            className="cta-primary mt-10"
           >
             See it running in Growsearch
             <Arrow className="cta-arrow" />

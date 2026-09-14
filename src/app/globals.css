@@ -77,6 +77,33 @@ body {
   letter-spacing: -0.015em;
 }
 
+/* Homepage section grammar. Every section opens the same way — a small
+   orange eyebrow, one title on one scale, one muted lede — and every card on
+   the page is the same box. Sections used to each bring their own pill,
+   chip, heading size and card shadow, which is what made them look like
+   they came from different sites. */
+@utility section-eyebrow {
+  @apply text-[13px] font-bold tracking-[0.16em] text-brand uppercase;
+}
+
+@utility section-title {
+  @apply text-[clamp(2.25rem,3.8vw,3.5rem)] leading-[1.05] tracking-[-0.03em] text-charcoal text-balance;
+}
+
+/* A step up from the section title for the two statement blocks (the stat
+   callout and the closing CTA), which carry no body copy to compete with. */
+@utility section-display {
+  @apply text-[clamp(2.25rem,4.2vw,3.75rem)] leading-[1.05] tracking-[-0.03em] text-balance;
+}
+
+@utility section-lede {
+  @apply text-[clamp(1.0625rem,1.3vw,1.25rem)] leading-[1.55] text-body-mute;
+}
+
+@utility section-card {
+  @apply rounded-[20px] border border-peach bg-white p-6 transition-[transform,box-shadow] duration-300 hover-lift [--lift:4px] hover:shadow-glow;
+}
+
 ::selection {
   background: #ff5c1a;
   color: #ffffff;

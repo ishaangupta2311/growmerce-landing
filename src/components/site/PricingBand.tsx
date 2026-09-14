@@ -25,10 +25,10 @@ export default function PricingBand() {
 
       <div className="relative mx-auto max-w-[1370px] px-6">
         <Reveal>
-          <p className="text-base font-medium tracking-wide uppercase">
+          <p className="text-[13px] font-bold tracking-[0.16em] text-white/80 uppercase">
             Plans &amp; pricing
           </p>
-          <h2 className="mt-3 max-w-[530px] font-grotesk text-[clamp(2rem,3.5vw,3.125rem)] leading-[1.28]">
+          <h2 className="mt-4 max-w-[16ch] text-[clamp(2.25rem,3.8vw,3.5rem)] leading-[1.05] text-balance">
             Choose the perfect plan for your business
           </h2>
           <div className="mt-8">
