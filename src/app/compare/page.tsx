@@ -283,7 +283,7 @@ export default function ComparePage() {
           <section aria-labelledby="loyalty-title" className="max-w-[940px]">
             <h2
               id="loyalty-title"
-              className="font-poppins text-[clamp(2rem,4vw,3.5rem)] leading-[1.05] font-extrabold tracking-tight text-charcoal text-balance"
+              className="max-w-[30ch] font-poppins text-[clamp(1.75rem,3vw,2.625rem)] leading-[1.12] font-semibold tracking-[-0.02em] text-charcoal text-balance"
             >
               Turn Smarter Search Into Stronger Customer Loyalty
             </h2>
