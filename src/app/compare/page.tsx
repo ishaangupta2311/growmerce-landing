@@ -248,11 +248,12 @@ export default function ComparePage() {
                   id="closing-title"
                   className="mt-3 max-w-[16ch] font-poppins text-[clamp(1.75rem,4vw,3.25rem)] leading-[1.06] font-extrabold tracking-tight text-charcoal text-balance"
                 >
-                  Turn more searches into loyal customers.
+                  Turn Smarter Search Into Stronger Customer Loyalty
                 </h2>
                 <p className="mt-5 max-w-[46ch] text-[clamp(1rem,1.4vw,1.125rem)] leading-relaxed text-body-mute">
-                  Join growing brands using Growmerce to create smarter, more
-                  personalized shopping experiences.
+                  Create a smoother ecommerce journey with smarter search that
+                  helps shoppers find the right products, buy with confidence,
+                  and keep coming back.
                 </p>
                 <div className="mt-8 flex flex-wrap items-center gap-4 [&>*]:max-[430px]:w-full">
                   <Link href="/try" className="cta-primary">
@@ -275,23 +276,6 @@ export default function ComparePage() {
                 className="-mb-10 h-auto w-full self-end lg:-mb-16"
               />
             </div>
-          </section>
-        </Reveal>
-
-        {/* Customer loyalty */}
-        <Reveal className="mx-auto max-w-[1370px] px-6 pb-16 lg:pb-20">
-          <section aria-labelledby="loyalty-title" className="max-w-[940px]">
-            <h2
-              id="loyalty-title"
-              className="max-w-[30ch] font-poppins text-[clamp(1.75rem,3vw,2.625rem)] leading-[1.12] font-semibold tracking-[-0.02em] text-charcoal text-balance"
-            >
-              Turn Smarter Search Into Stronger Customer Loyalty
-            </h2>
-            <p className="mt-5 max-w-[70ch] text-[clamp(1rem,1.4vw,1.125rem)] leading-relaxed text-body-mute">
-              Create a smoother ecommerce journey with smarter search that helps
-              shoppers find the right products, buy with confidence, and keep
-              coming back.
-            </p>
           </section>
         </Reveal>
 
