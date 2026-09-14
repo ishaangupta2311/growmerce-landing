@@ -24,12 +24,12 @@ const CARDS = [
 
 export default function Fighting() {
   return (
-    <section id="about" className="mx-auto max-w-[1370px] px-6 pt-24">
+    <section id="about" className="mx-auto max-w-[1370px] px-6 pt-24 font-bricolage">
       <Reveal>
-        <h2 className="text-[clamp(2.5rem,5.5vw,5rem)] font-bold leading-[1.2]">
+        <h2 className="text-[clamp(2.5rem,4.8vw,4rem)] leading-[1.05] font-bold tracking-[-0.03em] [font-optical-sizing:none]">
           What Is <span className="text-brand-bright">Growmerce Fighting?</span>
         </h2>
-        <p className="mt-4 max-w-[1197px] text-[clamp(1.25rem,2.2vw,2rem)] leading-[1.4]">
+        <p className="mt-5 max-w-[78ch] text-[clamp(1.0625rem,1.35vw,1.25rem)] leading-[1.55] text-body-mute">
           Nearly a third of ecommerce searches end in nothing: the shopper types, gets zero useful results, and leaves. Growmerce isn&apos;t fighting one product. It&apos;s fighting that default: hiring more, buying more disconnected tools, or waiting for traffic to convert on its own.
         </p>
       </Reveal>
@@ -72,7 +72,7 @@ export default function Fighting() {
           />
           <div className="hidden h-10 w-px bg-body-mute/25 sm:block" />
           <div>
-            <p className="font-poppins text-[12px] font-semibold tracking-[0.14em] text-charcoal/55 uppercase">
+            <p className="text-[12px] font-bold tracking-[0.14em] text-charcoal/55 uppercase">
               Growmerce doesn&apos;t sell a platform
             </p>
             <p className="mt-1 text-[clamp(1.0625rem,1.5vw,1.375rem)] leading-snug font-bold">

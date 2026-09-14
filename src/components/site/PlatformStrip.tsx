@@ -44,7 +44,7 @@ function PlatformMark({
 function ComingSoon({ className }: { className?: string }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 font-poppins text-[10px] font-semibold tracking-[0.1em] text-charcoal/45 uppercase ${className ?? ""}`}
+      className={`inline-flex items-center gap-1.5 font-bricolage text-[10px] font-bold tracking-[0.1em] text-charcoal/45 uppercase ${className ?? ""}`}
     >
       <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-charcoal/30" />
       Coming soon
@@ -119,7 +119,7 @@ export default function PlatformStrip({
       className={`bg-peach py-8 ${className ?? ""}`}
     >
       <div className="mx-auto flex max-w-[1370px] flex-col items-center justify-center gap-6 px-6 lg:flex-row lg:gap-14">
-        <p className="shrink-0 font-poppins text-[13px] font-semibold tracking-[0.16em] text-charcoal/55 uppercase">
+        <p className="shrink-0 font-bricolage text-[13px] font-bold tracking-[0.16em] text-charcoal/55 uppercase">
           {label}
         </p>
         <PlatformLogos />

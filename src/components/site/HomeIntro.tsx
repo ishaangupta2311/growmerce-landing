@@ -8,20 +8,20 @@ const STEPS = [
 
 export default function HomeIntro() {
   return (
-    <section className="border-y border-brand/10 bg-cream/55 px-6 py-16 sm:py-20 lg:px-10 lg:py-24">
+    <section className="border-y border-brand/10 bg-cream/55 px-6 py-16 font-bricolage sm:py-20 lg:px-10 lg:py-24">
       <Reveal className="mx-auto max-w-[1160px]">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-end lg:gap-20">
           <div>
-            <p className="font-poppins text-[13px] font-extrabold tracking-[0.18em] text-brand uppercase">
+            <p className="text-[13px] font-bold tracking-[0.18em] text-brand uppercase">
               Built for ecommerce
             </p>
-            <h2 className="mt-4 max-w-[20ch] font-poppins text-[clamp(2.25rem,4vw,3.5rem)] leading-[1.04] font-semibold tracking-[-0.035em] text-charcoal text-balance">
+            <h2 className="mt-4 max-w-[20ch] text-[clamp(2.25rem,3.6vw,3.25rem)] leading-[1.05] font-bold tracking-[-0.03em] text-charcoal text-balance [font-optical-sizing:none]">
               Search that turns{" "}
               <span className="text-brand">intent into revenue.</span>
             </h2>
           </div>
 
-          <p className="max-w-[48ch] font-poppins text-[clamp(1.05rem,1.5vw,1.25rem)] leading-[1.6] text-body-mute">
+          <p className="max-w-[48ch] text-[clamp(1.0625rem,1.35vw,1.25rem)] leading-[1.55] text-body-mute">
             Growsearch understands what shoppers mean, ranks the right products,
             and shows which searches lead to sales.
           </p>
@@ -37,10 +37,10 @@ export default function HomeIntro() {
                   : "sm:pl-0"
               } ${index === STEPS.length - 1 ? "sm:pr-0" : ""}`}
             >
-              <span className="font-poppins text-xs font-extrabold tracking-[0.14em] text-brand">
+              <span className="text-xs font-bold tracking-[0.14em] text-brand">
                 {step.number}
               </span>
-              <span className="font-poppins text-[17px] font-semibold text-charcoal">
+              <span className="text-[17px] font-semibold text-charcoal">
                 {step.label}
               </span>
               {index < STEPS.length - 1 && (
