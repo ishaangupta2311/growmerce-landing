@@ -73,7 +73,7 @@ export default function AiSection() {
         <div className="relative -mx-2 mb-10 hidden aspect-[1386/1135] overflow-hidden rounded-[24px] bg-peach/40 lg:mx-0 lg:mb-0 lg:mr-10 lg:block">
           {ITEMS.map((item, i) => (
             <Image
-              key={item.media}
+              key={item.title}
               src={item.media}
               alt={i === shown ? item.alt : ""}
               fill
