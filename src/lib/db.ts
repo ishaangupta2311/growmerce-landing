@@ -19,7 +19,11 @@
  * concurrency, which is the worst way to find out.
  */
 
-import postgres, { type Sql } from "postgres";
+import postgres, { type Options, type Sql } from "postgres";
+
+/* postgres.js honours `max_pipeline` at runtime but leaves it out of its
+   type definitions (src/index.js lists it with the other integer options). */
+type ClientOptions = Options<Record<string, never>> & { max_pipeline?: number };
 
 /** How long a stored preview stays good before we rebuild it. */
 export const PREVIEW_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -54,19 +58,34 @@ export function db(): Sql | null {
     return null;
   }
 
-  client = postgres(url, {
+  const options: ClientOptions = {
     /* Supavisor's transaction mode hands a different backend to each
        statement, so a prepared statement from an earlier one is not there. */
     prepare: false,
+    /* Never send a second query down a connection before the first has
+       answered. postgres.js pipelines by default when there are more
+       concurrent queries than connections, and Supavisor's transaction mode
+       does not survive it: the pooled backend is left half-way through a
+       message, the connection never answers again, and once all `max` of them
+       are wedged every query queues forever. Reproduced against this project
+       with five parallel queries on a warm pool of three; with this set to 0
+       the same load completes every round. */
+    max_pipeline: 0,
     /* One invocation does at most a couple of small queries. A wide pool per
        instance is what exhausts the server's limit under concurrency. */
     max: 3,
-    idle_timeout: 20,
+    /* Short in production, where a frozen serverless instance should not sit
+       on connections. Long in development: `next dev` is one long-lived
+       process, often far from the database, and a reconnect there costs
+       seconds (TLS plus pooler auth across an ocean) on the first click after
+       every pause. */
+    idle_timeout: process.env.NODE_ENV === "development" ? 600 : 20,
     /* Nothing here is worth making a visitor wait on. The preview job has its
        own deadline and a slow database must not eat into it. */
     connect_timeout: 10,
     onnotice: () => {},
-  });
+  };
+  client = postgres(url, options);
   return client;
 }
 

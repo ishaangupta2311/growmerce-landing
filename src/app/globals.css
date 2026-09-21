@@ -874,3 +874,222 @@ body {
 .gs-fade {
   transition: opacity 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* --------------------------------------------------------------------------
+   Blog article body
+
+   One stylesheet for the public article and the admin editor, so what an
+   editor sees while writing is what a reader gets. Tailwind's preflight
+   strips list bullets, heading sizes and table borders; this puts back the
+   reading typography for exactly the elements the sanitiser allows
+   (src/lib/blog/sanitize.ts).
+-------------------------------------------------------------------------- */
+.blog-prose {
+  font-family: var(--font-bricolage-loaded), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.75;
+  color: #2b2b2b;
+  overflow-wrap: break-word;
+}
+
+.blog-prose > :first-child {
+  margin-top: 0;
+}
+
+.blog-prose > :last-child {
+  margin-bottom: 0;
+}
+
+.blog-prose p {
+  margin: 1.2em 0;
+}
+
+.blog-prose :is(h2, h3, h4) {
+  color: var(--color-charcoal);
+  line-height: 1.2;
+  scroll-margin-top: 110px;
+  text-wrap: balance;
+}
+
+.blog-prose h2 {
+  margin: 2em 0 0.65em;
+  font-size: clamp(1.55rem, 2.6vw, 1.95rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+.blog-prose h3 {
+  margin: 1.8em 0 0.55em;
+  font-size: clamp(1.3rem, 2vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.blog-prose h4 {
+  margin: 1.6em 0 0.5em;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.blog-prose a {
+  color: var(--color-brand);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--color-brand) 35%, transparent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.2s;
+}
+
+.blog-prose a:hover {
+  text-decoration-color: var(--color-brand);
+}
+
+.blog-prose strong {
+  color: var(--color-charcoal);
+  font-weight: 700;
+}
+
+.blog-prose :is(ul, ol) {
+  margin: 1.2em 0;
+  padding-left: 1.4em;
+}
+
+.blog-prose ul {
+  list-style: disc;
+}
+
+.blog-prose ol {
+  list-style: decimal;
+}
+
+.blog-prose li {
+  margin: 0.45em 0;
+  padding-left: 0.25em;
+}
+
+.blog-prose li::marker {
+  color: var(--color-brand);
+  font-weight: 700;
+}
+
+.blog-prose li > p {
+  margin: 0.3em 0;
+}
+
+.blog-prose blockquote {
+  margin: 1.8em 0;
+  padding: 0.35em 0 0.35em 1.25em;
+  border-left: 4px solid var(--color-brand);
+  color: var(--color-charcoal);
+  font-size: 1.2em;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.blog-prose blockquote p {
+  margin: 0.5em 0;
+}
+
+.blog-prose img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 2em auto;
+  border-radius: 16px;
+}
+
+.blog-prose hr {
+  margin: 3em 0;
+  border: 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.blog-prose code {
+  padding: 0.15em 0.4em;
+  border-radius: 6px;
+  background: var(--color-cream);
+  color: #b33a0e;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.86em;
+}
+
+.blog-prose pre {
+  margin: 1.8em 0;
+  padding: 1.15em 1.3em;
+  overflow-x: auto;
+  border-radius: 14px;
+  background: var(--color-charcoal);
+  color: #f5f5f5;
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.blog-prose pre code {
+  padding: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+}
+
+/* A block-level table scrolls sideways on a phone instead of forcing the
+   whole page wider than the screen. */
+.blog-prose table {
+  display: block;
+  max-width: 100%;
+  margin: 2em 0;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.95em;
+  line-height: 1.55;
+}
+
+.blog-prose :is(th, td) {
+  min-width: 120px;
+  padding: 0.6em 0.85em;
+  border: 1px solid var(--color-line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.blog-prose th {
+  background: var(--color-cream);
+  color: var(--color-charcoal);
+  font-weight: 700;
+}
+
+.blog-prose :is(th, td) p {
+  margin: 0;
+}
+
+/* Editor-only affordances. */
+.blog-prose-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: #a1a1aa;
+  pointer-events: none;
+}
+
+.blog-prose-editor img.ProseMirror-selectednode {
+  outline: 3px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+.blog-prose-editor :is(th, td) {
+  position: relative;
+}
+
+.blog-prose-editor .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-brand) 12%, transparent);
+  pointer-events: none;
+}
+
+.blog-prose-editor table {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}

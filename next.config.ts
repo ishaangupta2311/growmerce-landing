@@ -19,8 +19,37 @@ const nextConfig: NextConfig = {
     "/api/preview": ["./node_modules/@sparticuz/chromium/bin/**"],
   },
 
+  experimental: {
+    serverActions: {
+      /* Media uploads go through a Server Action, one image per request, and
+         images may be up to 4 MB (src/lib/blog/types.ts). The default 1 MB
+         would refuse most photos before our own checks ever saw them. */
+      bodySizeLimit: "5mb",
+    },
+  },
+
+  async headers() {
+    /* The admin panel: never framed (clickjacking), never indexed, never
+       leaking its URLs to other sites via Referer. */
+    const admin = [
+      { key: "X-Frame-Options", value: "DENY" },
+      { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+      { key: "X-Robots-Tag", value: "noindex, nofollow" },
+      { key: "Referrer-Policy", value: "same-origin" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+    ];
+    return [
+      { source: "/admin", headers: admin },
+      { source: "/admin/:path*", headers: admin },
+    ];
+  },
+
   async redirects() {
     return [
+      /* Page one of the blog listing is /blog itself. Done here rather than
+         in the page so it never renders (a redirect thrown from an ISR page
+         came back with a doubled Location header on a cache miss). */
+      { source: "/blog/page/1", destination: "/blog", permanent: true },
       ...["growmerce.ai", "www.growmerce.ai"].flatMap((host) => [
         {
           source: "/growsearch",
