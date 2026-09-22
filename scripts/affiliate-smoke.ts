@@ -54,6 +54,10 @@ const HELD_CODE = `SMOKEHD${RUN.slice(0, 4)}`.toUpperCase();
 const AGENCY_SHOP = `smoke-agency-${RUN}.myshopify.com`;
 const CREATOR_SHOP = `smoke-creator-${RUN}.myshopify.com`;
 const HELD_SHOP = `smoke-held-${RUN}.myshopify.com`;
+const REFUND_CODE = `SMOKERF${RUN.slice(0, 4)}`.toUpperCase();
+const CHURN_CODE = `SMOKECH${RUN.slice(0, 4)}`.toUpperCase();
+const REFUND_SHOP = `smoke-refund-${RUN}.myshopify.com`;
+const CHURN_SHOP = `smoke-churn-${RUN}.myshopify.com`;
 
 let failures = 0;
 
@@ -106,7 +110,10 @@ async function cleanup() {
   /* Partners cascade to codes, referrals, commissions and payouts; deleting the
      auth user cascades to the partner. Events have no owner, so they go by the
      shops they name. */
-  await sql!`delete from affiliate.event where shop in (${AGENCY_SHOP}, ${CREATOR_SHOP}, ${HELD_SHOP})`;
+  await sql!`
+    delete from affiliate.event
+    where shop in (${AGENCY_SHOP}, ${CREATOR_SHOP}, ${HELD_SHOP}, ${REFUND_SHOP}, ${CHURN_SHOP})
+  `;
   if (userIds.length > 0) await sql!`delete from auth.users where id in ${sql!(userIds)}`;
 }
 
@@ -283,6 +290,76 @@ async function main() {
     "a charge after cancellation earns nothing",
     (await send({
       type: "charge.succeeded", shop: AGENCY_SHOP, chargeId: `smoke-${RUN}-a3`,
+      amountCents: 4900, currency: "USD",
+    })).detail,
+    "referral_cancelled",
+  );
+
+  /* Both of the following are ledger defects found in review, kept as checks
+     because each pays real money out on a path that looks correct from every
+     screen in the admin. */
+
+  console.log("\na charge refunded before the application was approved");
+
+  /* The sequence: the store pays while the partner is still in the queue, so
+     no commission is written; the charge is then refunded, and the refund
+     finds no commission to reverse. Only `affiliate.event` knows either thing
+     happened. Approving the partner replays the payment — and used to pay
+     commission on money we had already given back. */
+  const refundId = await makePartner("agency", REFUND_CODE, 2000, "pending");
+  await send({ type: "referral.linked", shop: REFUND_SHOP, code: REFUND_CODE });
+  await send({
+    type: "charge.succeeded", shop: REFUND_SHOP, chargeId: `smoke-${RUN}-r1`,
+    amountCents: 9900, currency: "USD",
+  });
+  check(
+    "the refund finds no commission to reverse",
+    (await send({ type: "charge.refunded", shop: REFUND_SHOP, chargeId: `smoke-${RUN}-r1` })).detail,
+    "no_commission_for_charge",
+  );
+
+  await setPartnerStatus(refundId, "approved");
+  check("approving replays the charge but it earns nothing", await replaySkippedCharges(refundId), {
+    replayed: 1,
+    earned: 0,
+  });
+  check("and no commission exists for refunded money", (await commissionsFor(refundId)).length, 0);
+
+  console.log("\na store that cancels before the application is approved");
+
+  /* The mirror image, and the more expensive way round: the payment was good
+     when it was taken and the partner earned it. The store churning later does
+     not unearn it, but approval used to judge the old charge against the
+     store's status today, reject it, and mark the event replayed — so the
+     money left the recovery queue without ever being paid. */
+  const churnId = await makePartner("agency", CHURN_CODE, 2000, "pending");
+  await send({ type: "referral.linked", shop: CHURN_SHOP, code: CHURN_CODE });
+  await send({
+    type: "charge.succeeded", shop: CHURN_SHOP, chargeId: `smoke-${RUN}-x1`,
+    amountCents: 9900, currency: "USD",
+  });
+
+  /* Deliberately sent without `occurredAt`, then aged here: senders are not
+     required to supply one, and this is what proves the replay falls back to
+     when we received the event rather than treating a ten-day-old charge as
+     though it were collected after the cancellation below. */
+  await sql!`
+    update affiliate.event set received_at = now() - interval '10 days'
+    where shop = ${CHURN_SHOP} and type = 'charge.succeeded'
+  `;
+
+  await send({ type: "subscription.cancelled", shop: CHURN_SHOP });
+  await setPartnerStatus(churnId, "approved");
+  check("approving still pays the charge the store made while subscribed", await replaySkippedCharges(churnId), {
+    replayed: 1,
+    earned: 1,
+  });
+  check("worth 20% of $99.00", (await commissionsFor(churnId))[0]?.amountCents, 1980);
+  check("and the store stays cancelled", (await referralsFor(churnId, "USD"))[0]?.status, "cancelled");
+  check(
+    "while a charge taken after the cancellation still earns nothing",
+    (await send({
+      type: "charge.succeeded", shop: CHURN_SHOP, chargeId: `smoke-${RUN}-x2`,
       amountCents: 4900, currency: "USD",
     })).detail,
     "referral_cancelled",

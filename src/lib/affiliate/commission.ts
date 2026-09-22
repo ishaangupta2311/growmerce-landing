@@ -82,8 +82,9 @@ export function commissionCents(chargeCents: number, rateBps: number): number {
  */
 export type SkipReason =
   | "already_paid_once" // influencer rule: this referral has earned its fee
+  | "charge_refunded" // the money went back; there is nothing left to pay on
   | "partner_not_approved" // application is pending, rejected or suspended
-  | "referral_cancelled" // the store had already churned when this arrived
+  | "referral_cancelled" // the store had already churned when this charge landed
   | "zero_amount"; // a £0 charge, e.g. a fully discounted month
 
 export type ChargeDecision =
@@ -100,7 +101,8 @@ export type ChargeDecision =
  * The order of the guards is the order of the questions a human would ask, and
  * it matters for the reason recorded: a suspended partner whose referral also
  * churned is reported as suspended, because that is the fact somebody needs to
- * act on.
+ * act on. The one exception is the refund, which is asked before anything else
+ * — the reason recorded there decides whether the charge is ever reconsidered.
  */
 export function applyCharge(input: {
   partnerKind: PartnerKind;
@@ -109,8 +111,32 @@ export function applyCharge(input: {
   chargeCents: number;
   /** Whether this referral has already produced a live one-time commission. */
   referralHasEarned: boolean;
+  /**
+   * Whether the store had cancelled **by the time of this charge** — not
+   * whether it has cancelled by now. Money collected while a store was
+   * subscribed was earned, and a cancellation three months later does not
+   * unearn it. The caller resolves this against the charge's own timestamp;
+   * see `chargeSucceeded` in `ingest.ts`.
+   */
   referralCancelled: boolean;
+  /**
+   * Whether this exact charge has been refunded.
+   *
+   * Needed because a charge can be refunded before it has ever produced a
+   * commission: one collected while the partner's application was still
+   * pending earns nothing at the time, so the refund that follows finds no
+   * commission to reverse and only the event log remembers it.
+   */
+  chargeRefunded: boolean;
 }): ChargeDecision {
+  /* Asked first because it is a fact about the money rather than about the
+     relationship: refunded money cannot be commissioned whoever the partner is
+     and whatever state their application is in. Answering `partner_not_approved`
+     here instead would file the charge in the queue `replaySkippedCharges`
+     drains on approval — and pay it in full. */
+  if (input.chargeRefunded) {
+    return { earns: false, reason: "charge_refunded" };
+  }
   if (input.partnerStatus !== "approved") {
     return { earns: false, reason: "partner_not_approved" };
   }

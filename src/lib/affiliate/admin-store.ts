@@ -643,6 +643,11 @@ export async function recordPayout(input: PayoutRequest): Promise<PayoutResult> 
  * - The events go through `ingest()` like any other, so `charge_ref` uniqueness
  *   applies. A charge already credited comes back `charge_already_credited`
  *   and no second commission is written.
+ * - A charge that was refunded while the application sat in the queue comes
+ *   back `charge_refunded` and earns nothing. The refund found no commission to
+ *   reverse at the time, so the event log is the only thing that remembers it;
+ *   `applyCharge` is given that fact rather than left to infer it from a ledger
+ *   the refund never reached.
  * - A replayed event is given a fresh `external_id` — the original is taken —
  *   and the original row's outcome is marked so it is not picked up again.
  *
@@ -652,8 +657,8 @@ export async function recordPayout(input: PayoutRequest): Promise<PayoutResult> 
 export async function replaySkippedCharges(
   partnerId: number,
 ): Promise<{ replayed: number; earned: number }> {
-  const rows = await sql()<{ id: string; payload: unknown }[]>`
-    select e.id, e.payload
+  const rows = await sql()<{ id: string; payload: unknown; received_at: Date }[]>`
+    select e.id, e.payload, e.received_at
     from affiliate.event e
     join affiliate.referral r on r.shop = e.shop
     where r.partner_id = ${partnerId}
@@ -670,8 +675,18 @@ export async function replaySkippedCharges(
   for (const row of rows) {
     /* `json()` and not a spread of the raw column: it arrives as a string, and
        spreading a string yields an object of numbered characters that
-       `parseEvent` then rejects for having no `type`. */
-    const event = parseEvent({ ...json(row.payload), id: randomUUID() });
+       `parseEvent` then rejects for having no `type`.
+
+       `occurredAt` goes in *before* the spread so a sender that supplied one
+       still wins. When none was sent, the time we received the event stands in
+       for it — later than the charge by minutes, where the alternative is
+       `applyCharge` treating a months-old charge as though it were collected
+       today and judging it against the store's status now. */
+    const event = parseEvent({
+      occurredAt: row.received_at.toISOString(),
+      ...json(row.payload),
+      id: randomUUID(),
+    });
     const outcome = await ingest(event);
     if (outcome.status === "applied") earned++;
 

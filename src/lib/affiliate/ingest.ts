@@ -248,6 +248,8 @@ type ReferralContext = {
   partnerStatus: PartnerStatus;
   rateBps: number;
   cancelled: boolean;
+  /** When the store churned, so a charge can be judged against its own date. */
+  cancelledAt: Date | null;
   hasEarned: boolean;
 };
 
@@ -273,6 +275,7 @@ async function loadReferral(
       status: PartnerStatus;
       commission_rate_bps: number;
       referral_status: string;
+      cancelled_at: Date | null;
     }[]
   >`
     select r.id,
@@ -280,7 +283,8 @@ async function loadReferral(
            p.kind,
            p.status,
            p.commission_rate_bps,
-           r.status as referral_status
+           r.status as referral_status,
+           r.cancelled_at
     from affiliate.referral r
     join affiliate.partner p on p.id = r.partner_id
     where r.shop = ${shop}
@@ -308,8 +312,67 @@ async function loadReferral(
     partnerStatus: row.status,
     rateBps: row.commission_rate_bps,
     cancelled: row.referral_status === "cancelled",
+    cancelledAt: row.cancelled_at,
     hasEarned: earned.length > 0,
   };
+}
+
+/**
+ * Whether the store had already churned when this charge was collected.
+ *
+ * `cancelled` on its own is the state *now*, which is the wrong question for a
+ * charge being replayed months after the fact: a store that paid in March and
+ * churned in June earned its partner the March commission, and reading the
+ * June status would quietly withhold it. That is exactly what
+ * `replaySkippedCharges` does on approval, which is where this was losing
+ * money.
+ *
+ * A cancelled referral with no `cancelled_at` cannot be placed in time, so it
+ * counts as cancelled throughout — the conservative reading, and one
+ * `setReferralStatus` makes unreachable anyway by always stamping the column.
+ */
+function cancelledByCharge(referral: ReferralContext, chargeAt: Date): boolean {
+  if (!referral.cancelled) return false;
+  if (!referral.cancelledAt) return true;
+  return referral.cancelledAt.getTime() <= chargeAt.getTime();
+}
+
+/**
+ * Whether this charge has already been refunded.
+ *
+ * The refund may well have arrived when there was no commission to reverse: a
+ * charge collected while the partner's application was pending earns nothing,
+ * so `chargeRefunded` below finds no row and records `no_commission_for_charge`.
+ * From then on the event log is the only record that the money went back,
+ * which makes it the thing to consult before paying on that charge later.
+ *
+ * Narrowed by `shop` so this rides `event_shop_idx` instead of scanning every
+ * event ever received for a JSON key.
+ *
+ * The `jsonb_typeof` dance is not decoration. `ingest` writes the payload as
+ * `${JSON.stringify(event)}::jsonb`, and postgres.js JSON-encodes a string
+ * bound to a jsonb parameter — so the column holds a jsonb *string* wrapping
+ * the real object, and a plain `payload->>'chargeId'` silently returns null on
+ * every row. (The same quirk is why `replaySkippedCharges` parses the column
+ * with `json()` rather than spreading it.) Unwrapping one level when the value
+ * is a string leaves this correct against the rows written today and against
+ * properly-encoded rows if that is ever fixed.
+ */
+async function chargeWasRefunded(
+  tx: TransactionSql,
+  shop: string,
+  chargeId: string,
+): Promise<boolean> {
+  const refunds = await tx`
+    select 1 from affiliate.event
+    where shop = ${shop}
+      and type = 'charge.refunded'
+      and (case when jsonb_typeof(payload) = 'string'
+                then (payload #>> '{}')::jsonb
+                else payload end) ->> 'chargeId' = ${chargeId}
+    limit 1
+  `;
+  return refunds.length > 0;
 }
 
 async function apply(tx: TransactionSql, event: AffiliateEvent): Promise<IngestOutcome> {
@@ -415,13 +478,21 @@ async function chargeSucceeded(tx: TransactionSql, event: AffiliateEvent): Promi
     where id = ${referral.referralId}
   `;
 
+  /* The charge's own moment, not this request's. A replayed charge is months
+     old by the time it gets here, and both the cancellation question and the
+     record of a refund have to be asked as of then. An unparseable or absent
+     timestamp falls back to now, which is what a live charge means anyway. */
+  const stamped = event.occurredAt ? new Date(event.occurredAt) : null;
+  const chargeAt = stamped && !Number.isNaN(stamped.getTime()) ? stamped : new Date();
+
   const decision = applyCharge({
     partnerKind: referral.partnerKind,
     partnerStatus: referral.partnerStatus,
     rateBps: referral.rateBps,
     chargeCents: event.amountCents!,
     referralHasEarned: referral.hasEarned,
-    referralCancelled: referral.cancelled,
+    referralCancelled: cancelledByCharge(referral, chargeAt),
+    chargeRefunded: await chargeWasRefunded(tx, event.shop, event.chargeId!),
   });
 
   if (!decision.earns) return { status: "ignored", detail: decision.reason };
