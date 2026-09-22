@@ -27,10 +27,15 @@ const buckets = new Map<string, Map<string, number[]>>();
  * rightmost `x-forwarded-for` entry is the one our edge appended.
  */
 export function clientKey(request: Request): string {
-  const platform = request.headers.get("x-vercel-forwarded-for")?.trim();
+  return clientKeyFromHeaders(request.headers);
+}
+
+/** The same rule for callers holding headers rather than a Request (Server Actions). */
+export function clientKeyFromHeaders(headers: { get(name: string): string | null }): string {
+  const platform = headers.get("x-vercel-forwarded-for")?.trim();
   if (platform) return platform;
 
-  const forwarded = request.headers.get("x-forwarded-for");
+  const forwarded = headers.get("x-forwarded-for");
   if (forwarded) {
     const hops = forwarded
       .split(",")
@@ -39,7 +44,7 @@ export function clientKey(request: Request): string {
     if (hops.length > 0) return hops[hops.length - 1];
   }
 
-  return request.headers.get("x-real-ip")?.trim() || "unknown";
+  return headers.get("x-real-ip")?.trim() || "unknown";
 }
 
 /** Records a hit and reports whether the caller has already used up `budget`. */

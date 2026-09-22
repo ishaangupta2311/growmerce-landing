@@ -14,7 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Arrow from "@/components/site/Arrow";
 import { OpenDemoStoreButton } from "@/components/site/OpenDemoStore";
 import InstallOnShopify from "@/components/site/InstallOnShopify";
-import { DEMO_STORE_PASSWORD } from "@/lib/site-urls";
+import { DEMO_STORE_PASSWORD, SHOPIFY_LISTING_LIVE } from "@/lib/site-urls";
 import {
   DEFAULT_THEME,
   type PreviewErrorCode,
@@ -556,11 +556,26 @@ function DemoStoreCard() {
           and the button are one unit — but given the rule and its own copy so
           it does not read as the demo store's smaller sibling. */}
       <div className="mt-6 border-t border-line pt-5">
+        {/* Turns over with the flag, so this never promises an App Store page
+            that Shopify has not published yet. */}
         <p className="text-[13.5px] leading-relaxed text-body-mute">
-          Seen enough? Growsearch installs on your own store from the Shopify
-          App Store.
+          {SHOPIFY_LISTING_LIVE ? (
+            <>
+              Seen enough? Growsearch installs on your own store from the
+              Shopify App Store.
+            </>
+          ) : (
+            <>
+              Seen enough? The listing is still in Shopify&apos;s review queue
+              &mdash; take a place in the queue and we&apos;ll send your install
+              link the day it clears.
+            </>
+          )}
         </p>
-        <InstallOnShopify className="mt-3.5 w-full max-[359px]:px-4 max-[359px]:text-[15px]" />
+        <InstallOnShopify
+          className="mt-3.5 w-full max-[359px]:px-4 max-[359px]:text-[15px]"
+          source="try-preview"
+        />
         <Link
           href="/pricing"
           className="mt-4 block text-center text-[13.5px] font-semibold text-charcoal underline underline-offset-4 transition-colors hover:text-brand"

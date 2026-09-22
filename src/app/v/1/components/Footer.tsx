@@ -85,7 +85,7 @@ export default function Footer() {
 
           <div className="mt-8 flex flex-col gap-2 text-[13px] text-[var(--ink-40)] sm:flex-row sm:items-center sm:justify-between">
             <p>© 2026 Growmerce. Practical AI for the people running the store.</p>
-            <p>Delhi, India</p>
+            <p>Serving stores worldwide</p>
           </div>
         </div>
       </footer>

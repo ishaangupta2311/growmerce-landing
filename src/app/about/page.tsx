@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import CtaPair from "@/components/site/CtaPair";
@@ -7,7 +6,6 @@ import Faq from "@/components/site/Faq";
 import { ABOUT_FAQ } from "@/lib/faqs";
 import ProveItBand from "@/components/site/ProveItBand";
 import Reveal from "@/components/site/Reveal";
-import Arrow from "@/components/site/Arrow";
 import { PlatformLogos } from "@/components/site/PlatformStrip";
 import { GROWSEARCH_HOME } from "@/lib/site-urls";
 import ToolDock from "./components/ToolDock";
@@ -28,20 +26,16 @@ const CONVICTIONS = [
 
 const HOW_WE_WORK = [
   {
-    title: "One tool at a time",
-    body: "We own, build and run each tool end to end — no suite, no bundle, no seat minimums. Growsearch is the first: storefront search that never dead-ends, and the analytics to prove what search sells.",
-  },
-  {
-    title: "Install today, not next quarter",
-    body: "Every tool has to work inside the store you already run. Install it, keep your theme, your checkout and your data exactly where they are. No replatforming and no six-week onboarding.",
-  },
-  {
-    title: "We charge from day one",
-    body: "No free pilots dressed up as partnerships. Early pricing is honest pricing — a small monthly number you can cancel — because a store owner choosing to pay is the only proof a tool deserves to exist.",
-  },
-  {
     title: "Built in public",
-    body: "Founder-led from Delhi, serving stores worldwide. Progress gets posted as it happens, and you get a straight answer when something isn't ready yet.",
+    body: "Founder-led and serving stores worldwide. We post progress as it happens, and you get a straight answer when something isn't ready yet.",
+  },
+  {
+    title: "Always improving, never half-baked",
+    body: "We’re always improving. We listen to every feature request and bug report, then roll out updates and fixes as quickly as possible—so you never have to settle for a half-baked tool.",
+  },
+  {
+    title: "Your feedback shapes the product",
+    body: "Feature suggestions and bug reports are always welcome. The founder personally reads every report to help deliver the experience you deserve.",
   },
 ];
 
@@ -84,11 +78,12 @@ export default function AboutPage() {
             className="hero-enter mx-auto mt-7 max-w-[68ch] text-[clamp(1.0625rem,1.6vw,1.5rem)] leading-relaxed text-body-mute"
             style={{ animationDelay: "160ms" }}
           >
-            AI became table stakes for online stores before most owners had
-            anyone to build it. What&rsquo;s on offer is either a narrow gadget or
-            a platform you&rsquo;d have to migrate onto. Growmerce is the
-            practical middle: small, sharp tools that install into the store you
-            already run &mdash; and prove themselves in your own numbers.
+            AI is now expected on every online store. Getting it shouldn&rsquo;t
+            require a narrow one-trick app or a full platform migration.
+            Growmerce builds focused AI tools that install directly into the
+            Shopify store you already run. Growsearch, our AI-powered search
+            app, is the first one, and it has to earn its place in your own
+            sales numbers.
           </p>
           <CtaPair
             className="mt-10 justify-center"
@@ -153,7 +148,7 @@ export default function AboutPage() {
               How we work
             </h2>
           </Reveal>
-          <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          <div className="mt-10 grid gap-6 lg:grid-cols-3">
             {HOW_WE_WORK.map((item, i) => (
               <Reveal key={item.title} delay={i * 80}>
                 <article className="h-full rounded-[22px] bg-cream px-7 py-8">
@@ -170,22 +165,6 @@ export default function AboutPage() {
         </section>
 
         <ProveItBand />
-
-        {/* Custom plan CTA */}
-        <Reveal className="mx-auto max-w-[1370px] px-6 pb-16">
-          <div className="flex flex-col items-center justify-between gap-6 rounded-[22px] bg-peach/60 px-8 py-8 sm:flex-row">
-            <p className="text-[clamp(1.125rem,2vw,1.625rem)] font-extrabold">
-              Not sure which plan fits your catalogue?
-            </p>
-            <Link
-              href="/pricing"
-              className="cta-primary"
-            >
-              Get my custom plan
-              <Arrow className="size-5" />
-            </Link>
-          </div>
-        </Reveal>
 
         {/* Updates */}
         <section aria-labelledby="updates-title" className="mx-auto max-w-[1370px] px-6 pb-16">

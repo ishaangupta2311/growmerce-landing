@@ -2,38 +2,29 @@ import Image from "next/image";
 import Link from "next/link";
 import Arrow from "./Arrow";
 import Reveal from "./Reveal";
-import { PLATFORMS, PlatformMark, ComingSoon } from "./PlatformStrip";
+import { PlatformLogos } from "./PlatformStrip";
 import DemoShot from "./DemoShot";
 import DemoStoreButton from "./DemoStoreButton";
 import { GROWSEARCH_HOME } from "@/lib/site-urls";
 
 const CHECKLIST = [
-  "Understands natural language and intent.",
-  "Matches products meaning, not keywords.",
-  "Considers attributes, synonyms and context.",
+  "Understands natural language and shopper intent, no keyword-matching required.",
+  "Matches products by meaning, not just exact titles or tags.",
+  "Corrects typos and reads synonyms, so no search comes back empty.",
   "Personalized ranking for every shopper.",
+  "Discovery that converts shoppers.",
 ];
 
-function CircleTick() {
+/* The same tick the growth cards use, so the two checklists on the page
+   agree with each other. */
+function Check({ className }: { className?: string }) {
   return (
-    <svg
-      width="34"
-      height="34"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden
-      className="shrink-0"
-    >
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden className={className}>
+      <circle cx="10" cy="10" r="8.4" stroke="currentColor" strokeWidth="1.5" />
       <path
-        d="M12 2.75a9.25 9.25 0 1 0 9.25 9.25"
+        d="m6.4 10.3 2.5 2.5 4.7-5"
         stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <path
-        d="m8.5 11.5 3 3L21.25 4.75"
-        stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="1.7"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -44,33 +35,27 @@ function CircleTick() {
 export default function Growsearch() {
   return (
     <section id="products" className="mx-auto max-w-[1370px] px-6 pt-24">
-      <div className="grid items-start gap-12 lg:grid-cols-[1fr_703px]">
+      <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,660px)] lg:gap-16">
         <Reveal>
-          <span className="inline-flex rounded-full bg-brand px-8 py-1 text-2xl font-medium text-white">
-            Solutions
-          </span>
-          <h2 className="mt-4 text-[clamp(2.5rem,4.5vw,4rem)] font-semibold">
-            Growsearch
-          </h2>
-          <p className="mt-2 text-xl font-extrabold leading-tight">
-            AI search that understands your customers,
-            <br className="hidden sm:block" /> not just what they type.
+          <p className="section-eyebrow">Solutions</p>
+          <h2 className="section-title mt-4">Growsearch</h2>
+          <p className="section-lede mt-4 max-w-[40ch]">
+            AI search that understands your customers, not just what they type.
           </p>
-          <div className="draw-line mt-4 h-[3px] w-[98px] bg-brand" />
 
-          <ul className="mt-10 space-y-6">
+          <ul className="mt-8 space-y-3.5">
             {CHECKLIST.map((item) => (
               <li
                 key={item}
-                className="flex items-center gap-4 text-[clamp(1.125rem,1.8vw,1.625rem)] font-light"
+                className="flex items-start gap-3 text-[17px] leading-[1.5] text-charcoal"
               >
-                <CircleTick />
+                <Check className="mt-[3px] size-5 shrink-0 text-brand" />
                 {item}
               </li>
             ))}
           </ul>
 
-          <div className="mt-12 flex flex-wrap items-center gap-4 [&>a]:max-[430px]:w-full sm:gap-5">
+          <div className="mt-10 flex flex-wrap items-center gap-4 [&>a]:max-[430px]:w-full sm:gap-5">
             <Link href={GROWSEARCH_HOME} className="cta-primary">
               Explore Growsearch
               <Arrow className="cta-arrow" />
@@ -85,57 +70,30 @@ export default function Growsearch() {
             alt="A shopper searches “linen shirt but not white” and Growsearch returns six linen shirts, none of them white"
             width={1387}
             height={1134}
-            sizes="(min-width: 1024px) 703px, 100vw"
-            className="w-full rounded-[27px]"
+            sizes="(min-width: 1024px) 660px, 100vw"
+            className="w-full rounded-[20px]"
           />
         </Reveal>
       </div>
 
-      {/* Ecosystem strip */}
-      <Reveal className="mt-20">
-        <div className="flex items-center gap-4">
-          <div className="h-px flex-1 bg-brand" />
-          <Image src="/img/icon-sparkle.svg" alt="" width={23} height={23} />
-          <p className="text-center text-2xl font-bold">
-            Explore our products in these ecosystems
-          </p>
-          <Image src="/img/icon-sparkle.svg" alt="" width={23} height={23} />
-          <div className="h-px flex-1 bg-brand" />
-        </div>
+      {/* Ecosystems. The platform row is the one the strip under the hero
+          uses, so the marks and their "coming soon" labels are drawn once. */}
+      <Reveal className="mt-16 flex flex-col items-center gap-6 border-t border-peach pt-10 lg:flex-row lg:justify-center lg:gap-14">
+        <p className="shrink-0 text-[13px] font-bold tracking-[0.16em] text-charcoal/55 uppercase">
+          Explore our products in these ecosystems
+        </p>
+        <PlatformLogos />
       </Reveal>
-
-      {/* Centred rather than gridded: there are three platforms and the row was
-          built for four, so the empty fourth cell pushed the whole set left. A
-          wrapping flex centres them at every count, and on a phone the odd one
-          out lands under the middle rather than hard against the margin. */}
-      <div className="mt-10 flex flex-wrap justify-center gap-6 lg:gap-10">
-        {PLATFORMS.map((p, i) => (
-          <Reveal
-            key={p.name}
-            delay={i * 100}
-            className="w-[calc(50%-0.75rem)] sm:w-[220px] lg:w-[250px]"
-          >
-            <div className="flex h-[142px] flex-col items-center justify-center gap-3.5 rounded-[26px] bg-white px-6 shadow-[0_12px_40px_rgba(0,0,0,0.10)] transition-transform duration-300 hover-lift [--lift:6px]">
-              {/* Fixed band so the marks agree across the four cards rather
-                  than stepping with each one's height. */}
-              <span className="flex h-11 items-center">
-                <PlatformMark platform={p} className={`w-auto max-w-full ${p.cls}`} />
-              </span>
-              {!p.live && <ComingSoon />}
-            </div>
-          </Reveal>
-        ))}
-      </div>
 
       {/* One-platform banner */}
       <Reveal delay={100}>
-        <div className="mt-16 flex flex-col items-center gap-6 rounded-[24px] border border-brand bg-peach px-8 py-6 sm:flex-row">
-          <Image src="/img/icon-platform.svg" alt="" width={87} height={85} />
-          <div className="flex-1 text-center sm:text-left">
-            <p className="text-[clamp(1.25rem,2vw,1.625rem)] font-extrabold">
+        <div className="mt-10 flex flex-col items-start gap-5 rounded-[20px] border border-peach bg-cream px-6 py-6 sm:flex-row sm:items-center sm:px-8">
+          <Image src="/img/icon-platform.svg" alt="" width={87} height={85} className="size-14 shrink-0" />
+          <div className="flex-1">
+            <p className="text-[clamp(1.125rem,1.5vw,1.375rem)] leading-snug font-semibold">
               One platform. Many ways to grow.
             </p>
-            <p className="mt-1 text-[clamp(1.125rem,2vw,1.625rem)] text-body-mute">
+            <p className="mt-1 text-[16px] leading-[1.5] text-body-mute">
               Power your entire commerce journey with AI.
             </p>
           </div>

@@ -16,32 +16,39 @@ import { GROWSEARCH_HOME } from "@/lib/site-urls";
    a shelf argues for none of them. */
 const ITEMS = [
   {
+    title: "Intent, not keywords",
+    body:
+      "Shoppers type sentences, not search terms — \"something warm for a rainy commute\" or \"linen shirt but not white.\" Growsearch reads the price, the attribute, and the intent straight out of that sentence. There are no filter menus to dig through, and your customer never has to learn how to talk to your store.",
+    media: "/img/pages/ai-not-a-chatbot.svg",
+    alt: "A shopper's natural-language intent being understood by the search experience",
+  },
+  {
     title: "Grounded in your data, or it doesn\u2019t ship",
     body:
-      "Every answer is tied to something you actually have \u2014 your catalogue, your reviews, your search logs, what your shoppers actually did. If the model cannot point at a record, it does not get to say it. That rules out a whole class of confident nonsense, and it is why we would rather return nothing than return something invented.",
+      "Every answer we return is tied to something you actually have in your catalog — real SKUs, real stock, real prices, synced from Shopify as they change. If the model can't point to an actual record, it can't say it. We would rather return nothing than return something invented.",
     media: "/img/pages/ai-grounded.svg",
-    alt: "Product data, reviews, searches and customer behaviour feeding into one hub, and out of it a single grounded answer",
+    alt: "Product data feeding into one grounded search answer",
   },
   {
     title: "It joins the store you already run",
     body:
-      "No replatforming, no migration, no six-week onboarding. What we ship installs onto the stack you have and takes on your theme, your catalogue and your workflow rather than asking you to take on ours. If a tool needs a project plan before it does anything useful, it isn\u2019t finished.",
+      "There's no replatforming, no migration, and no six-week onboarding process. Growsearch installs onto the stack you already have and adapts to your theme, your catalog, and your workflow, instead of asking you to rebuild around ours. If a tool needs a project plan before it does anything useful, it isn't finished yet.",
     media: "/img/pages/ai-installs.svg",
-    alt: "A storefront cut into jigsaw pieces with the search field missing, and the Growsearch piece dropping into the gap it fits exactly",
+    alt: "Growsearch fitting into an existing storefront",
+  },
+  {
+    title: "Speed is part of the answer",
+    body:
+      "An AI assistant that takes four seconds to think has already lost the sale. Your native search results appear instantly, and AI ranking and semantic matches layer in right on top of them, so your shopper is never sitting there watching a spinner while a model makes up its mind.",
+    media: "/img/pages/ai-measured.svg",
+    alt: "Fast search results appearing before deeper AI refinement",
   },
   {
     title: "Judged on revenue, not on vibes",
     body:
-      "Every AI decision reports on itself in the open: what it was asked, what it returned, and whether that ended in a checkout. We would rather hand you a number that disappoints than a demo that dazzles \u2014 the only question worth answering is whether the AI paid for itself this month.",
+      "Every AI decision we make reports on itself in the open — what it was asked, what it returned, and whether that ended in a checkout. We track search-attributed revenue, add-to-cart rate, and zero-result rate so you can judge the AI on revenue, not on a demo.",
     media: "/img/pages/ai-measured.svg",
-    alt: "A dashed trail running from a query to a result, a cart and a checkout, over a rising bar chart",
-  },
-  {
-    title: "A tool that does a job, not a chatbot",
-    body:
-      "A chat box waiting to be talked to just moves the work onto your customer. We build AI that does its job in the place it belongs \u2014 narrowing a catalogue, rescuing a dead-end search, telling you which queries are losing money \u2014 so nobody has to learn how to talk to it first.",
-    media: "/img/pages/ai-not-a-chatbot.svg",
-    alt: "An inert chat bubble beside a panel where the list has already been narrowed to the right row",
+    alt: "A search journey measured from query to checkout",
   },
 ];
 
@@ -54,7 +61,7 @@ export default function AiSection() {
   return (
     <section id="service" className="mx-auto max-w-[1440px] px-6 py-24">
       <Reveal>
-      <div className="grid items-center gap-10 rounded-[40px] bg-white px-8 py-14 shadow-glow-lg sm:px-14 lg:min-h-[616px] lg:grid-cols-2 lg:rounded-[63px]">
+      <div className="grid items-center gap-10 rounded-[28px] border border-peach bg-white px-6 py-12 shadow-glow sm:px-12 sm:py-14 lg:min-h-[616px] lg:grid-cols-2">
         {/* The half the design left open, now carrying the mock for whichever
             conviction is expanded. Stacked and cross-faded so the space never
             blanks mid-swap.
@@ -63,10 +70,10 @@ export default function AiSection() {
             the fourth conviction changes a picture the reader has already
             scrolled past. On a phone the mock goes inside the panel it
             belongs to instead. */}
-        <div className="relative -mx-2 mb-10 hidden aspect-[1386/1135] overflow-hidden rounded-[24px] bg-peach/40 lg:mx-0 lg:mb-0 lg:mr-10 lg:block">
+        <div className="relative -mx-2 mb-10 hidden aspect-[1386/1135] overflow-hidden rounded-[20px] bg-peach/40 lg:mx-0 lg:mb-0 lg:mr-10 lg:block">
           {ITEMS.map((item, i) => (
             <Image
-              key={item.media}
+              key={item.title}
               src={item.media}
               alt={i === shown ? item.alt : ""}
               fill
@@ -78,10 +85,9 @@ export default function AiSection() {
         </div>
 
         <div>
-          <h2 className="text-[clamp(1.875rem,3vw,2.5rem)] font-semibold">
-            AI at Growmerce
-          </h2>
-          <p className="mt-4 max-w-[46ch] text-[16px] leading-relaxed text-body-mute">
+          <p className="section-eyebrow">How we build</p>
+          <h2 className="section-title mt-4">AI at Growmerce</h2>
+          <p className="section-lede mt-4 max-w-[46ch]">
             Every tool we ship runs on the same few convictions about where AI
             belongs in a store &mdash; and where it doesn&rsquo;t.
           </p>
@@ -96,7 +102,7 @@ export default function AiSection() {
                     setShown(i);
                   }}
                   aria-expanded={open === i}
-                  className="flex w-full items-center justify-between py-4 text-left text-xl transition-colors hover:text-brand"
+                  className="flex w-full items-center justify-between gap-6 py-4 text-left text-[19px] leading-snug font-semibold transition-colors hover:text-brand"
                 >
                   {item.title}
                   <span
@@ -120,9 +126,9 @@ export default function AiSection() {
                       width={720}
                       height={590}
                       sizes="92vw"
-                      className="mb-4 h-auto w-full rounded-[18px] bg-peach/40 lg:hidden"
+                      className="mb-4 h-auto w-full rounded-[16px] bg-peach/40 lg:hidden"
                     />
-                    <p className="pb-5 text-sm leading-[27px]">{item.body}</p>
+                    <p className="max-w-[60ch] pb-5 text-[15.5px] leading-[1.6] text-body-mute">{item.body}</p>
                   </div>
                 </div>
               </li>
@@ -131,7 +137,7 @@ export default function AiSection() {
 
           <Link
             href={GROWSEARCH_HOME}
-            className="cta-primary mt-12"
+            className="cta-primary mt-10"
           >
             See it running in Growsearch
             <Arrow className="cta-arrow" />

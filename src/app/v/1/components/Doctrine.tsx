@@ -58,7 +58,7 @@ export default function Doctrine() {
 
         <Reveal delay={120} className="mt-16 border-t border-[var(--ink-15)] pt-6">
           <p className="text-[13px] font-semibold tracking-[0.14em] text-[var(--ink-40)] uppercase">
-            Founder-led · Built in public · Delhi-based, serving global ecommerce
+            Founder-led · Built in public · serving global ecommerce
           </p>
         </Reveal>
       </div>

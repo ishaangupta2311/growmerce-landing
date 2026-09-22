@@ -124,32 +124,32 @@ const SEGMENTS = [
   {
     icon: Storefront,
     title: "Startups & D2C Brands",
-    body: "One product line, no search team. Install it, and the store answers questions properly from day one instead of waiting until there is budget for it.",
+    body: "You have one product line and no search team. Install Growsearch, and your store answers questions properly from day one instead of waiting until there's budget for it.",
   },
   {
     icon: Trolley,
     title: "Growing Marketplaces",
-    body: "Every seller names things their own way. Growsearch reads what the shopper meant, so a scrappy catalogue still returns the right shelf.",
+    body: "Every seller on your platform names things their own way. Growsearch reads what the shopper meant, not what the listing says, so even a scrappy or inconsistent catalog still returns the right shelf.",
   },
   {
     icon: Bag,
     title: "Mid-sized Stores",
-    body: "Traffic is fine and search converts badly. The analytics show which queries lose the sale, so you fix the ones that cost you money first.",
+    body: "Traffic is fine, but search converts badly, and nobody can say why. The analytics show exactly which queries lose the sale, so you fix the ones costing you money first.",
   },
   {
     icon: Warehouse,
     title: "Large Catalog Businesses",
-    body: "Thousands of SKUs, and the long tail is where the misses hide. Semantic matching keeps deep inventory reachable without hand-tuned synonyms.",
+    body: "You have thousands of SKUs, and the long tail is where the misses hide. Semantic matching keeps deep inventory reachable without you hand-tuning synonyms for every edge case.",
   },
   {
     icon: Globe,
-    title: "Global Businesses",
-    body: "Shoppers ask in their own words, and rarely the ones your merchandiser typed. Natural-language search takes the phrasing as it comes.",
+    title: "Growth-Stage Retailers",
+    body: "Your merchandising team writes product titles one way; your customers search a completely different way. Growsearch closes that gap by matching what shoppers mean, not the exact words your team chose.",
   },
   {
     icon: Gem,
     title: "Niche & Specialty Stores",
-    body: "Your customers use vocabulary a keyword index has never seen. Intent matching handles the jargon, and zero-result recovery covers the rest.",
+    body: "Your customers use vocabulary a keyword index has never seen. Intent matching handles the jargon, and zero-result recovery covers whatever's left.",
   },
 ];
 
@@ -255,17 +255,15 @@ export default function EveryStore() {
           pushes the six tiles a screen further down for no gain. */}
       <div className="flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,340px)] lg:items-center lg:gap-12">
         <Reveal className="order-2 lg:order-1">
-          <p className="inline-block rounded-[7px] bg-peach px-3.5 py-2 font-poppins text-[13px] font-extrabold tracking-[0.02em] text-brand uppercase">
-            Perfect for every ecommerce business
-          </p>
-          <h2 className="mt-5 text-[clamp(2rem,4.2vw,3.35rem)] leading-[1.16] font-bold">
-            Built for <span className="text-brand-bright">every store.</span>
-            <br />
-            Designed to grow with you.
+          <p className="section-eyebrow">Perfect for every ecommerce business</p>
+          <h2 className="section-title mt-4 max-w-[24ch]">
+            Wherever your search is losing sales,{" "}
+            <span className="text-brand">we start there</span>
           </h2>
-          <p className="mt-5 max-w-[520px] text-[17px] leading-[1.6] text-body-mute">
+          <p className="section-lede mt-5 max-w-[60ch]">
             Whether you&apos;re a startup or an enterprise, Growsearch adapts to
-            your catalog size, customer behaviour, and business goals.
+            your catalog size, your customer behavior, and where your business
+            is headed next.
           </p>
         </Reveal>
 
@@ -279,12 +277,12 @@ export default function EveryStore() {
           const Glyph = segment.icon;
           return (
             <Reveal key={segment.title} delay={(i % 3) * 110}>
-              <article className="h-full rounded-[14px] border border-peach bg-white p-5 transition-[transform,box-shadow] duration-300 hover-lift [--lift:4px] hover:shadow-glow">
+              <article className="section-card h-full">
                 <div className="flex items-start gap-3.5">
                   <span className="grid size-11 shrink-0 place-items-center rounded-[10px] bg-peach/70 text-brand">
                     <Glyph className="size-6" />
                   </span>
-                  <h3 className="text-[19px] leading-[1.25] font-bold">
+                  <h3 className="text-[20px] leading-[1.25]">
                     {segment.title}
                   </h3>
                 </div>
@@ -296,6 +294,7 @@ export default function EveryStore() {
           );
         })}
       </div>
+
     </section>
   );
 }

@@ -14,9 +14,9 @@ type Plan = {
 };
 
 const PLANS: Plan[] = [
-  { name: "Basic", monthly: 49, yearly: 499, savePct: 15, searches: "Upto 5,000 searches per month" },
-  { name: "Plus", monthly: 99, yearly: 1090, savePct: 7, searches: "Upto 25,000 searches per month", featured: true },
-  { name: "Pro", monthly: 199, yearly: 2199, savePct: 8, searches: "Upto 100,000 searches per month" },
+  { name: "Basic", monthly: 49, yearly: 499, savePct: 15, searches: "Up to 5,000 searches per month" },
+  { name: "Plus", monthly: 99, yearly: 1099, savePct: 7, searches: "Up to 20,000 searches per month", featured: true },
+  { name: "Pro", monthly: 199, yearly: 2199, savePct: 8, searches: "Unlimited searches per month" },
 ];
 
 /* Shared across every tier in Figma; only the search allowance differs. */

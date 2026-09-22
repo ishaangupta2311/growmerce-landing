@@ -53,7 +53,7 @@ export default function Footer() {
               <Lightbox />
               <p className="mt-6 max-w-sm text-[15px] leading-relaxed text-[#e3cab4]">
                 An ecommerce AI studio: we own, operate and build practical
-                tools for the people actually running stores. Delhi-made,
+                tools for the people actually running stores. Built in public,
                 globally useful.
               </p>
 

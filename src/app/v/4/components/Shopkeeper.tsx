@@ -12,7 +12,7 @@ import { BulbFrame } from "./scenery";
 
 const COUNTER_NOTES = [
   "Demos are run by the person who writes the code.",
-  "Based in Delhi, serving stores worldwide.",
+  "Serving stores worldwide.",
   "If a tool isn’t right for your store yet, you’ll be told so.",
 ];
 
@@ -133,7 +133,7 @@ export default function Shopkeeper() {
                         The founder
                       </p>
                       <p className="text-[13.5px] font-semibold tracking-wide text-[#d8bda6]">
-                        Growmerce · Delhi, India
+                        Growmerce · Serving stores worldwide
                       </p>
                     </div>
                   </div>

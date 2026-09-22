@@ -28,12 +28,31 @@ export const DEMO_STORE_PASSWORD = "demo";
 
 /**
  * PLACEHOLDER — this is the Shopify App Store home page, not our listing. The
- * Growmerce listing does not exist yet, and this stands in so nothing 404s in
+ * Growmerce listing is still in review, and this stands in so nothing 404s in
  * the meantime.
  *
- * When the listing goes live, replace the string below with its URL. That is
- * the only line that has to change: every "Install on Shopify" CTA reads this
- * constant through src/components/site/InstallOnShopify.tsx, so the address
- * lives here and nowhere else.
+ * When the listing goes live, replace the string below with its URL. Every
+ * "Install on Shopify" CTA reads this constant through
+ * src/components/site/InstallOnShopify.tsx, so the address lives here and
+ * nowhere else — then flip `SHOPIFY_LISTING_LIVE` to send visitors to it.
  */
 export const SHOPIFY_APP_LISTING = "https://apps.shopify.com/";
+
+/**
+ * Whether that listing is something we can actually send a merchant to.
+ *
+ * While this is false, every "Install on Shopify" opens the waitlist form
+ * instead of the App Store — because the button promises an install and there
+ * is nothing yet to install, the honest move is to take the merchant's store
+ * and address and write to them the day it clears review. Signups land in
+ * `marketing.waitlist`; see src/app/api/waitlist/route.ts.
+ *
+ * Launch day is two edits in this file and nothing else: put the real listing
+ * URL above, set this to true. Every CTA becomes a link out again, and the
+ * captions beside them change with it — the pricing page and the /try preview
+ * both read this constant rather than hard-coding either promise.
+ *
+ * Typed `boolean` rather than left to infer `false`, so the live branch is not
+ * narrowed away as dead code while we wait.
+ */
+export const SHOPIFY_LISTING_LIVE: boolean = false;

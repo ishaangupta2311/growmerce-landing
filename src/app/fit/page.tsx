@@ -30,8 +30,6 @@ export const metadata: Metadata = {
     "Growmerce is built for stores where search is a real lever — a growing catalogue, shoppers who use the search bar, no appetite for a six-week install. Here's where it fits, and where it doesn't.",
 };
 
-const CONTACT = "admin@growmerce.ai";
-
 const NOT_A_FIT = [
   {
     n: "01",
@@ -240,7 +238,7 @@ export default function FitPage() {
                 and give an honest recommendation.
               </p>
               <Link
-                href={`mailto:${CONTACT}?subject=Is%20Growmerce%20a%20fit%20for%20my%20store%3F`}
+                href="/contact"
                 className="cta-primary mt-7"
               >
                 Talk to sales

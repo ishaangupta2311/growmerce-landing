@@ -11,24 +11,36 @@ export type FaqItem = { q: string; a: string };
 /* Figma repeats a placeholder "What is GrowSearch?"; these are the real ones. */
 const HOME_FAQ: FaqItem[] = [
   {
-    q: "What is Growsearch?",
-    a: "Growsearch replaces your store's search bar with one that understands sentences instead of keywords. Shoppers can ask for “skincare under $10” or “warm but not bulky” and get real, in-stock products back — and you get analytics showing exactly which searches turned into checkouts.",
+    q: "What is Growsearch, and how is it different from Shopify's native search?",
+    a: "Growsearch replaces your store's default search bar with one that understands full sentences, not just keywords. Shoppers can ask for \"skincare under $10\" or \"warm but not bulky\" and get real, in-stock products back — something Shopify's built-in search can't do — and you get analytics showing exactly which searches turned into checkouts.",
   },
   {
     q: "What happens when a shopper searches for something you don't stock?",
-    a: "Never a dead end. Typos get corrected, intent gets read, and the nearest real shelf gets offered instead of an empty page — “we don't have kava drinks, but you might like these Kratom Seltzers.” Every zero-result term is also logged for you as a buying list.",
+    a: "Never a dead end. Typos get corrected, intent gets read, and the nearest real shelf gets offered instead of an empty page — \"we don't have Kava drinks, but you might like these Kratom Seltzers.\" Every zero-result term is also logged as a buying list for you.",
+  },
+  {
+    q: "Does Growsearch replace my Shopify search bar, or run alongside it?",
+    a: "It replaces the search bar itself; shoppers use the exact box they always have, now running on Growsearch instead of Shopify's keyword matching. Your theme, checkout, and catalog stay exactly where they are.",
+  },
+  {
+    q: "Is Growsearch an AI shopping assistant, or just a search upgrade?",
+    a: "Both, in one bar. Shoppers can search normally or ask a full question and get an assistant-style answer grounded in your real stock, with no separate chat window to open.",
   },
   {
     q: "How long does setup take?",
-    a: "Install from the Shopify App Store and the search bar matches your existing theme automatically, so there's nothing to design. Your catalogue indexes itself from Shopify webhooks and stays current as products change. No replatforming, no developer, no six-week onboarding. WooCommerce is next.",
+    a: "Install from the Shopify App Store, and the search bar matches your existing theme automatically — nothing to design. Your catalog indexes itself from Shopify webhooks and stays current as products change. No replatforming, no developer, no six-week onboarding.",
   },
   {
     q: "How do I know it's actually making me money?",
-    a: "Because it reports on itself. You see search-attributed checkouts, add-to-cart rate from results, click-through rate, zero-result rate and full query-to-purchase journey replays — so the AI is judged on revenue, not on vibes.",
+    a: "Because it reports on itself. You see search-attributed checkouts, add-to-cart rate from results, click-through rate, zero-result rate, and full query-to-purchase journey replays, so the AI is judged on revenue.",
+  },
+  {
+    q: "How is Growsearch different from Klevu or Searchspring?",
+    a: "Growsearch is built for stores that want AI search live in minutes, not a re-platforming project: flat pricing from $49/month, install straight from the Shopify App Store, no revenue share, and no seat minimums. Klevu and Searchspring serve larger, more complex catalogs and price accordingly.",
   },
   {
     q: "What does it cost, and can I try it first?",
-    a: "Plans start at $49/month and every plan includes a 14-day free trial with no credit card required. Pricing is a simple monthly number you can cancel — no revenue share and no seat minimums.",
+    a: "Plans start at $49/month, and every plan includes a 15-day free trial, no credit card required. Pricing is a simple monthly number you can cancel, with no revenue share and no seat minimums.",
   },
 ];
 
@@ -131,7 +143,7 @@ const ABOUT_FAQ: FaqItem[] = [
   },
   {
     q: "Who is behind it?",
-    a: "It's founder-led out of Delhi, serving stores globally. The person who writes the code is the person who answers your demo call — which is an advantage while we're small, and we intend to keep it as long as possible.",
+    a: "It's founder-led and serves stores globally. The person who writes the code is the person who answers your demo call — which is an advantage while we're small, and we intend to keep it as long as possible.",
   },
   {
     q: "What's next after Growsearch?",
@@ -139,7 +151,11 @@ const ABOUT_FAQ: FaqItem[] = [
   },
   {
     q: "How do I get in touch?",
-    a: "Drop your store URL in the form above and we'll come back with a teardown of the three workflows most likely costing you hours — before any call.",
+    a: "Drop your store URL in the form above, and we'll come back with a teardown of the three workflows most likely costing you hours, before any call.",
+  },
+  {
+    q: "Does Growmerce sell or share shopper data?",
+    a: "No. Growmerce does not sell or share shopper data. Growsearch uses the information needed to make search work and report on its revenue, and your store's data stays tied to your store.",
   },
 ];
 
@@ -169,23 +185,31 @@ const FIT_FAQ: FaqItem[] = [
 const COMPARE_FAQ: FaqItem[] = [
   {
     q: "Do I have to replace my existing search app?",
-    a: "Only if it is doing the same job. Growsearch installs alongside your theme and takes over the search bar; if you are running a filter or merchandising app that does something else, it stays. What you should not do is run two things both claiming the search results — pick one.",
+    a: "Only if it is handling the same search experience. Growsearch takes over storefront search, while separate filtering or merchandising tools can stay if they serve a different purpose. The key is to avoid running two systems that both control search results.",
   },
   {
-    q: "How is this different from adding an AI chatbot?",
-    a: "A chatbot sits beside the storefront and answers questions. Growsearch is inside the results — it reads the query, ranks the catalogue, recovers the dead ends and reports what the searches earned. Shoppers never have to notice they are talking to anything.",
+    q: "How is Growsearch different from an AI chatbot?",
+    a: "A chatbot usually sits beside the shopping experience. Growsearch works inside product discovery itself — understanding the query, ranking products, recovering failed searches, and connecting search activity to revenue.",
   },
   {
-    q: "Recommendation apps already lift my AOV. Why add search?",
-    a: "They work on shoppers who are already looking at something. Search is the shopper who told you exactly what they wanted before you showed them anything — and it is the one place a wrong answer ends the session instead of shaping it.",
+    q: "Recommendation apps already help increase AOV. Why add search?",
+    a: "Recommendation tools usually act after a shopper has started browsing a product or category. Search captures intent earlier, when shoppers are actively telling you what they want and expecting the right products in return.",
   },
   {
-    q: "Can I compare it against what I have now?",
-    a: "That is the intended way to buy it. The 14-day trial runs on your own catalogue, and zero-result rate and search-attributed checkouts are visible from day one, so the comparison is against your store's own numbers rather than anyone's marketing page — including this one.",
+    q: "Can I compare Growsearch against my current search?",
+    a: "Yes. The 14-day trial lets you test Growsearch on your own catalog and compare performance using metrics such as zero-result rate and search-attributed checkouts. That gives you a store-specific comparison rather than relying on generic benchmarks.",
   },
   {
-    q: "What if my catalogue is messy?",
-    a: "Metafields and custom attributes are indexed, out-of-stock products are ranked down rather than hidden, and drafts and archived products are excluded. Messy catalogues are where the gap between keyword matching and intent is widest.",
+    q: "What if my product catalog is messy?",
+    a: "Growsearch can index metafields and custom attributes, rank out-of-stock products lower, and exclude draft or archived products. That makes it especially useful when basic keyword matching struggles with inconsistent catalog data.",
+  },
+  {
+    q: "How difficult is Growsearch to set up?",
+    a: "Growsearch is designed to work with your existing storefront rather than forcing a full rebuild. Once connected, it can begin indexing your catalog and powering a smarter search experience without changing the rest of your ecommerce stack.",
+  },
+  {
+    q: "Who is Growsearch best for?",
+    a: "Growsearch is a strong fit for ecommerce stores with growing catalogs, complex product attributes, high search usage, or shoppers who search in natural language rather than exact product names.",
   },
 ];
 

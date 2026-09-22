@@ -64,6 +64,21 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             __html: "document.documentElement.classList.add('js')",
           }}
         />
+        {/* Google tag (gtag.js) */}
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-XBS59VYVXV"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-XBS59VYVXV');
+            `,
+          }}
+        />
       </head>
       <body>{children}</body>
     </html>

@@ -10,6 +10,7 @@ import DemoStoreButton from "@/components/site/DemoStoreButton";
 import Arrow from "@/components/site/Arrow";
 import SideBySide from "./components/SideBySide";
 import CapabilityTable from "./components/CapabilityTable";
+import ScrambleHeadline from "./components/ScrambleHeadline";
 
 export const metadata: Metadata = {
   title: "Growmerce vs the alternatives",
@@ -25,13 +26,11 @@ const JOURNEY = [
 ];
 
 /* Published results from other vendors in the category. They are not ours, and
-   the note under them says so — the Figma's own numbers (2.5x, 40%, 3x) carry
-   no source, and an unattributable conversion claim on a comparison page is
-   the one thing on it a competitor could fairly complain about. */
+   the copy makes that distinction clear. */
 const BENCHMARKS = [
-  { figure: "10–30%", label: "conversion lift from AI shopping assistants", source: "Rep AI" },
-  { figure: "6×", label: "better conversion for assisted shoppers at Kendra Scott", source: "iAdvize" },
-  { figure: "+20%", label: "average order value in early access to Loomi", source: "Bloomreach" },
+  { figure: "10–30%", label: "Conversion lift reported with AI shopping assistants" },
+  { figure: "6×", label: "Higher conversion among AI-assisted Kendra Scott shoppers" },
+  { figure: "+20%", label: "Higher average order value reported in Loomi early access" },
 ];
 
 export default function ComparePage() {
@@ -40,36 +39,32 @@ export default function ComparePage() {
       <Navbar />
       <main className="font-bricolage">
         {/* Hero */}
-        <section className="mx-auto max-w-[1370px] px-6 pt-14 pb-12 lg:pt-20">
-          <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
-            <div>
+        <section className="mx-auto max-w-[1370px] px-6 pt-10 pb-8 lg:pt-12 lg:pb-8">
+          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:gap-14">
+            <div className="max-w-[760px]">
               <p className="hero-enter font-poppins text-[13px] font-extrabold tracking-[0.18em] text-brand uppercase">
-                &ndash; Compare
+                Growmerce vs traditional search
               </p>
-              <h1
-                className="hero-enter mt-5 text-[clamp(2rem,5.2vw,4.5rem)] leading-[1.04] font-extrabold tracking-tight text-balance"
-                style={{ animationDelay: "90ms" }}
-              >
-                Same goal.
-                <br />
-                A very different{" "}
-                <span className="text-brand">experience.</span>
-              </h1>
+              <ScrambleHeadline />
               <p
-                className="hero-enter mt-7 max-w-[52ch] text-[clamp(1.0625rem,1.6vw,1.375rem)] leading-relaxed text-body-mute"
-                style={{ animationDelay: "170ms" }}
+                className="hero-enter mt-6 max-w-[54ch] text-[clamp(1rem,1.3vw,1.125rem)] leading-[1.55] text-body-mute"
+                style={{ animationDelay: "330ms" }}
               >
-                Traditional search, recommendation tools and AI plugins solve
-                bits and pieces. Growmerce brings it all together &mdash;
-                understanding shoppers, not just keywords.
+                <span className="block">
+                  Growmerce connects intent, relevance, merchandising, shopper
+                  behavior, and revenue into one search experience that moves
+                  customers closer to purchase.
+                </span>
               </p>
               <div
-                className="hero-enter mt-9 flex flex-wrap items-center gap-4 [&>*]:max-[430px]:w-full"
-                style={{ animationDelay: "250ms" }}
+                className="hero-enter mt-7 flex flex-wrap items-center gap-3 [&>*]:max-[430px]:w-full"
+                style={{ animationDelay: "430ms" }}
               >
-                <DemoStoreButton className="cta-primary" source="compare-hero" />
+                <DemoStoreButton className="cta-primary" source="compare-hero">
+                  See Growsearch in Action
+                </DemoStoreButton>
                 <Link href="/try" className="cta-secondary">
-                  Try it free
+                  Try Growsearch Free
                 </Link>
               </div>
             </div>
@@ -87,12 +82,12 @@ export default function ComparePage() {
             >
               <Image
                 src="/img/compare/hero-laptop.webp"
-                alt="A Growmerce storefront answering “summer dresses under $100” with four in-stock dresses, ringed by the claims it makes: understands shopper intent, connects the full journey, drives more revenue, gives you real insights"
+                alt="A Growmerce storefront answering “summer dresses under $100” with four in-stock dresses, showing how it understands real shopper intent, ranks products by relevance, connects search to conversion, and turns behavior into insight"
                 width={1239}
                 height={1261}
                 priority
-                sizes="(min-width: 1024px) 52vw, 100vw"
-                className="h-auto w-full"
+                sizes="(min-width: 1024px) 46vw, 100vw"
+                className="h-auto w-full lg:max-w-[620px] lg:justify-self-end"
               />
             </div>
           </div>
@@ -101,7 +96,7 @@ export default function ComparePage() {
         {/* The journey */}
         <section
           aria-labelledby="journey-title"
-          className="mt-16 bg-peach/70 py-14 lg:mt-28 lg:py-20"
+          className="mt-8 bg-peach/70 py-14 lg:mt-12 lg:py-20"
         >
           <div className="mx-auto max-w-[1370px] px-6">
             <Reveal>
@@ -109,12 +104,13 @@ export default function ComparePage() {
                 id="journey-title"
                 className="text-center font-poppins text-[clamp(1.6rem,3.6vw,2.75rem)] leading-tight font-extrabold text-balance"
               >
-                It&rsquo;s not just about{" "}
-                <span className="text-brand">search results.</span>
+                Search Is Only the Start.{" "}
+                <span className="text-brand">Revenue Is the Outcome</span>
               </h2>
               <p className="mx-auto mt-3 max-w-[56ch] text-center text-[clamp(1rem,1.6vw,1.25rem)] leading-relaxed text-body-mute">
-                It&rsquo;s about what happens next &mdash; discovery,
-                engagement, and growth.
+                Growsearch connects every step between shopper intent and
+                purchase, so better searches lead to better product discovery,
+                stronger cart activity, and measurable growth.
               </p>
             </Reveal>
 
@@ -163,7 +159,8 @@ export default function ComparePage() {
                 <span className="text-brand">for yourself.</span>
               </h2>
               <p className="max-w-[34ch] text-[16.5px] leading-relaxed text-body-mute lg:text-right">
-                Same shopper. Same search. A completely different experience.
+                The query didn&rsquo;t change. The intelligence behind the results
+                did.
               </p>
             </div>
           </Reveal>
@@ -179,17 +176,21 @@ export default function ComparePage() {
           className="mx-auto max-w-[1370px] px-6 pb-16 lg:pb-24"
         >
           <Reveal>
-            <h2
-              id="matrix-title"
-              className="mx-auto max-w-[22ch] text-center font-poppins text-[clamp(1.75rem,4vw,3.25rem)] leading-tight font-extrabold tracking-tight text-balance"
-            >
-              Not just better search.{" "}
-              <span className="text-brand">A smarter way to grow.</span>
-            </h2>
-            <p className="mx-auto mt-4 max-w-[56ch] text-center text-[17px] leading-relaxed text-body-mute">
-              Compare the capabilities that actually shape the ecommerce
-              experience.
-            </p>
+            <div className="mx-auto max-w-[900px] text-center">
+              <h2
+                id="matrix-title"
+                className="font-poppins text-[clamp(1.75rem,4vw,3.25rem)] leading-tight font-extrabold tracking-tight text-balance"
+              >
+                Built to Outperform{" "}
+                <span className="text-brand">
+                  Traditional Ecommerce Search
+                </span>
+              </h2>
+              <p className="mx-auto mt-4 max-w-[58ch] text-[17px] leading-relaxed text-body-mute">
+                See how Growsearch delivers more control, smarter results, and
+                stronger growth potential.
+              </p>
+            </div>
           </Reveal>
 
           <Reveal delay={100} className="mt-10 lg:mt-14">
@@ -197,29 +198,26 @@ export default function ComparePage() {
           </Reveal>
         </section>
 
-        {/* What the category shows */}
+        {/* Growth impact */}
         <Reveal className="mx-auto max-w-[1370px] px-6 pb-16">
           <section
-            aria-labelledby="benchmarks-title"
+            aria-labelledby="growth-impact-title"
             className="rounded-[26px] bg-cream px-7 py-10 ring-1 ring-brand/15 sm:px-10"
           >
             <h2
-              id="benchmarks-title"
+              id="growth-impact-title"
               className="font-poppins text-[clamp(1.25rem,2.4vw,1.75rem)] font-extrabold text-charcoal"
             >
-              What the category already shows
+              The Growth Impact Is Already Measurable
             </h2>
             <dl className="mt-8 grid gap-8 sm:grid-cols-3">
               {BENCHMARKS.map((b) => (
-                <div key={b.source}>
+                <div key={b.figure}>
                   <dt className="font-poppins text-[clamp(2rem,3.6vw,2.75rem)] leading-none font-extrabold text-brand">
                     {b.figure}
                   </dt>
                   <dd className="mt-2.5 text-[15px] leading-snug text-body-mute">
                     {b.label}
-                    <span className="mt-1.5 block text-[13px] font-bold tracking-wide text-charcoal/60 uppercase">
-                      {b.source}
-                    </span>
                   </dd>
                 </div>
               ))}
@@ -242,11 +240,12 @@ export default function ComparePage() {
                   id="closing-title"
                   className="mt-3 max-w-[16ch] font-poppins text-[clamp(1.75rem,4vw,3.25rem)] leading-[1.06] font-extrabold tracking-tight text-charcoal text-balance"
                 >
-                  Turn more searches into loyal customers.
+                  Turn Smarter Search Into Stronger Customer Loyalty
                 </h2>
                 <p className="mt-5 max-w-[46ch] text-[clamp(1rem,1.4vw,1.125rem)] leading-relaxed text-body-mute">
-                  Join growing brands using Growmerce to create smarter, more
-                  personalized shopping experiences.
+                  Create a smoother ecommerce journey with smarter search that
+                  helps shoppers find the right products, buy with confidence,
+                  and keep coming back.
                 </p>
                 <div className="mt-8 flex flex-wrap items-center gap-4 [&>*]:max-[430px]:w-full">
                   <Link href="/try" className="cta-primary">
