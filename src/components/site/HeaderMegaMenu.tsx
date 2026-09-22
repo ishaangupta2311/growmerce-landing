@@ -37,7 +37,7 @@ const WHY_US_GROUPS = [
     title: "Company",
     links: [
       { label: "About us", href: "/about" },
-      { label: "Partnership program", href: "/about" },
+      { label: "Affiliate program", href: "/affiliates" },
     ],
   },
   {
