@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { readSessionValue, sessionCookieName, sessionCookieSecure, sessionSecret } from "@/lib/auth/cookie";
+import { refreshSession } from "@/lib/supabase/proxy";
 
 /**
- * The first, cheap gate on both private areas of the site.
+ * The first gate on both private areas of the site.
  *
  * Next.js 16 renamed Middleware to Proxy; this is that file, and the framework
  * allows exactly one of it per project. Two independent guards therefore share
@@ -19,9 +20,8 @@ import { readSessionValue, sessionCookieName, sessionCookieSecure, sessionSecret
  * `src/lib/affiliate/admin.ts` for the affiliate admin, and `requireAdmin()` in
  * `src/lib/auth/session.ts` for the blog admin.
  *
- * What the gate buys is the common case: a signed-out visitor clicking a
- * bookmarked link gets the login page immediately, instead of a dashboard
- * shell that renders and then redirects.
+ * The affiliate side has a second job that only Proxy can do: keeping the
+ * browser's Supabase tokens fresh. See `src/lib/supabase/proxy.ts`.
  *
  * The matcher keeps this off the marketing pages, which are the bulk of this
  * site's traffic and none of which need a cookie read.
@@ -43,29 +43,48 @@ function hasSupabaseSessionCookie(request: NextRequest): boolean {
     .some((cookie) => cookie.name.startsWith("sb-") && cookie.name.includes("-auth-token"));
 }
 
-/**
- * Presence only — the token is not verified here, and a forged cookie of the
- * right name gets past. That is deliberate: verifying would mean a round trip
- * to the auth server on every prefetch. `requirePartner()` does the real work.
- *
- * `/affiliates/admin` is guarded by the same cookie check, but its real gate
- * answers a signed-in non-admin with a 404 rather than a refusal — so this
- * must never become the thing that tells somebody the admin area exists.
- */
-function guardAffiliates(request: NextRequest, pathname: string) {
-  if (!AFFILIATE_GUARDED.some((prefix) => pathname.startsWith(prefix))) {
-    return NextResponse.next();
-  }
-  if (hasSupabaseSessionCookie(request)) {
-    return NextResponse.next();
-  }
-
+function toAffiliateLogin(request: NextRequest, pathname: string) {
   const login = new URL("/affiliates/login", request.nextUrl.origin);
   /* Only the path, never the full URL: `next` is echoed into a link on the
      login page, and a full URL there would be an open redirect. The callback
      and the login page both re-check it. */
   login.searchParams.set("next", pathname);
   return NextResponse.redirect(login);
+}
+
+/**
+ * Cheap step first. No session cookie at all is the common signed-out case —
+ * a bookmarked dashboard link — and is answered from the cookie header alone:
+ * a redirect if the path is guarded, a pass if it is not.
+ *
+ * With a cookie present, `refreshSession` verifies it and, if the access token
+ * has expired, rotates it and carries the new pair into both the render and
+ * the response. That runs for *every* `/affiliates` path, not only the guarded
+ * ones, because the public programme page and the application form read the
+ * session too, and a rotation that happens during one of those renders is
+ * exactly the one that used to be lost.
+ *
+ * A guarded path whose cookie verifies as nobody — expired beyond refresh,
+ * forged, or issued by a project this deployment no longer talks to — goes to
+ * the login page like the absent one, carrying the cleared cookies Supabase
+ * asked for so the browser stops sending it.
+ *
+ * `/affiliates/admin` is behind the same check, and its real gate answers a
+ * signed-in non-admin with a 404 rather than a refusal — so this must never
+ * become the thing that tells somebody the admin area exists.
+ */
+async function guardAffiliates(request: NextRequest, pathname: string) {
+  const guarded = AFFILIATE_GUARDED.some((prefix) => pathname.startsWith(prefix));
+
+  if (!hasSupabaseSessionCookie(request)) {
+    return guarded ? toAffiliateLogin(request, pathname) : NextResponse.next();
+  }
+
+  const session = await refreshSession(request);
+  if (guarded && !session.signedIn) {
+    return session.apply(toAffiliateLogin(request, pathname));
+  }
+  return session.apply(NextResponse.next({ request }));
 }
 
 /**

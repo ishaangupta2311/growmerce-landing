@@ -19,10 +19,10 @@ import type { Partner } from "./types";
  * can change, and the dashboard has no route or form that accepts one.
  *
  * `src/proxy.ts` also keeps signed-out visitors off `/affiliates/dashboard`,
- * and that check is an optimisation, not a defence: it reads the session cookie
- * without verifying it, because Proxy runs on every prefetch and cannot afford
- * a round trip. The real check is here, and it is the one every query depends
- * on.
+ * and refreshes an expiring session on the way in so the rotated tokens reach
+ * the browser (see `src/lib/supabase/proxy.ts`). That is a gate and a
+ * courtesy, not a defence: it verifies the token's signature, not the partner
+ * behind it. The real check is here, and it is the one every query depends on.
  *
  * `cache` is React's per-render memo. A dashboard page that reads the partner
  * in the layout, the page and two components makes one call to Supabase and one

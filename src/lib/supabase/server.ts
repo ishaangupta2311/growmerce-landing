@@ -15,12 +15,15 @@ import { requireSupabaseEnv, supabaseEnv } from "./env";
  *
  * Next.js forbids setting cookies while a Server Component renders — the
  * response headers are already on their way — so `cookies().set()` throws
- * there. Swallowing it is correct rather than merely convenient: the tokens the
- * client just refreshed are held in its own memory for the rest of the request,
- * so the render has a valid session either way; only the *browser's* copy goes
- * unrefreshed, and the next Server Action or Route Handler — both of which can
- * set cookies — writes it. Letting the throw escape would turn a routine token
- * rotation into a 500 on a page that was working perfectly.
+ * there. Swallowing it keeps a routine rotation from becoming a 500, but it is
+ * not the fix: a rotation the browser never receives leaves it holding a
+ * refresh token Supabase has already consumed, and the next request signs the
+ * partner out. The fix is that the rotation happens *before* the render —
+ * `src/lib/supabase/proxy.ts` refreshes the session in Proxy on every
+ * `/affiliates` request that carries one, and writes the new tokens onto the
+ * request this render reads and the response the browser keeps. What reaches
+ * this catch is the narrow case of a token expiring in the gap between the
+ * two, and Proxy repairs that on the very next request.
  *
  * Not memoised. Each caller gets its own client bound to its own cookie store,
  * which is what keeps a Server Action's writes from landing on a stale copy.
@@ -41,7 +44,7 @@ export async function supabaseServer() {
           }
         } catch {
           /* Rendering a Server Component. See above — the session is still
-             valid for this request; the write happens on the next one. */
+             valid for this request, and Proxy persists the rotation next time. */
         }
       },
     },
