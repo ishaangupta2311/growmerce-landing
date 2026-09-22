@@ -9,8 +9,10 @@ import { formatCode } from "@/lib/affiliate/codes";
 import { formatDate, formatMoney } from "@/lib/affiliate/format";
 import {
   codesFor,
+  commissionCountFor,
   commissionsFor,
   payoutsFor,
+  referralCountFor,
   referralsFor,
   totalsFor,
 } from "@/lib/affiliate/store";
@@ -50,14 +52,22 @@ export default async function AdminPartnerPage({
   const partner = await partnerById(partnerId);
   if (!partner) notFound();
 
-  const [totals, codes, referrals, commissions, payouts, held] = await Promise.all([
-    totalsFor(partner.id),
-    codesFor(partner.id),
-    referralsFor(partner.id, partner.payoutCurrency, 100),
-    commissionsFor(partner.id, 100),
-    payoutsFor(partner.id),
-    skippedChargeCount(partner.id),
-  ]);
+  /* The two lists stop at a hundred rows, so the two counts come with them.
+     Without them a partner with four hundred stores gets a page that looks
+     complete and is not, and the number under the lifetime card is the size of
+     a query rather than the size of the account. Counted rather than paginated:
+     an admin who needs row 250 has the partner's own dashboard for it. */
+  const [totals, codes, referrals, commissions, payouts, held, referralCount, commissionCount] =
+    await Promise.all([
+      totalsFor(partner.id),
+      codesFor(partner.id),
+      referralsFor(partner.id, partner.payoutCurrency, 100),
+      commissionsFor(partner.id, 100),
+      payoutsFor(partner.id),
+      skippedChargeCount(partner.id),
+      referralCountFor(partner.id),
+      commissionCountFor(partner.id),
+    ]);
 
   const headline = totals[0];
 
@@ -125,7 +135,7 @@ export default async function AdminPartnerPage({
         <StatCard
           label="Lifetime"
           value={headline ? formatMoney(headline.lifetimeCents, headline.currency) : "—"}
-          note={`${referrals.length} store${referrals.length === 1 ? "" : "s"} referred.`}
+          note={`${referralCount} store${referralCount === 1 ? "" : "s"} referred.`}
         />
       </div>
 
@@ -149,7 +159,12 @@ export default async function AdminPartnerPage({
         </Panel>
       </div>
 
-      {held > 0 && (
+      {/* Approved partners only. A pending partner's held charges are replayed
+          by the approve action itself, so offering the button before then is
+          offering a press that re-ingests every one of them into the same
+          refusal — no money earned, the queue re-dated, and a synthetic event
+          row per charge. `replayHeld` refuses for the same reason. */}
+      {partner.status === "approved" && held > 0 && (
         <Panel title="Held charges">
           <ReplayControls partner={partner} held={held} />
         </Panel>
@@ -220,39 +235,46 @@ export default async function AdminPartnerPage({
             Growsearch.
           </Empty>
         ) : (
-          <Table caption="Stores attributed to this partner">
-            <Head>
-              <Th>Store</Th>
-              <Th>Status</Th>
-              <Th>Code</Th>
-              <Th>Linked</Th>
-              <Th numeric>Earned</Th>
-            </Head>
-            <Body>
-              {referrals.map((referral) => (
-                <Row key={referral.id}>
-                  <RowHeader>
-                    <span className="font-bold text-charcoal">
-                      {referral.shopName ?? referral.shop}
-                    </span>
-                    {referral.shopName && (
-                      <span className="mt-0.5 block text-[13.5px] text-body-mute">
-                        {referral.shop}
+          <>
+            <Table caption="Stores attributed to this partner">
+              <Head>
+                <Th>Store</Th>
+                <Th>Status</Th>
+                <Th>Code</Th>
+                <Th>Linked</Th>
+                <Th numeric>Earned</Th>
+              </Head>
+              <Body>
+                {referrals.map((referral) => (
+                  <Row key={referral.id}>
+                    <RowHeader>
+                      <span className="font-bold text-charcoal">
+                        {referral.shopName ?? referral.shop}
                       </span>
-                    )}
-                  </RowHeader>
-                  <Td>
-                    <ReferralPill status={referral.status} />
-                  </Td>
-                  <Td>
-                    <code className="text-[14px] tracking-[0.03em]">{referral.code}</code>
-                  </Td>
-                  <Td>{formatDate(referral.linkedAt)}</Td>
-                  <Td numeric>{formatMoney(referral.earnedCents, referral.currency)}</Td>
-                </Row>
-              ))}
-            </Body>
-          </Table>
+                      {referral.shopName && (
+                        <span className="mt-0.5 block text-[13.5px] text-body-mute">
+                          {referral.shop}
+                        </span>
+                      )}
+                    </RowHeader>
+                    <Td>
+                      <ReferralPill status={referral.status} />
+                    </Td>
+                    <Td>
+                      <code className="text-[14px] tracking-[0.03em]">{referral.code}</code>
+                    </Td>
+                    <Td>{formatDate(referral.linkedAt)}</Td>
+                    <Td numeric>{formatMoney(referral.earnedCents, referral.currency)}</Td>
+                  </Row>
+                ))}
+              </Body>
+            </Table>
+            {referralCount > referrals.length && (
+              <p className="border-t border-line px-5 py-3 text-[13.5px] text-body-mute">
+                Showing the latest {referrals.length} of {referralCount}.
+              </p>
+            )}
+          </>
         )}
       </Panel>
 
@@ -262,32 +284,39 @@ export default async function AdminPartnerPage({
             A commission is written when a referred store actually pays us.
           </Empty>
         ) : (
-          <Table caption="Every commission on this account">
-            <Head>
-              <Th>Store</Th>
-              <Th>Status</Th>
-              <Th>Kind</Th>
-              <Th>Recorded</Th>
-              <Th numeric>Charge</Th>
-              <Th numeric>Rate</Th>
-              <Th numeric>Commission</Th>
-            </Head>
-            <Body>
-              {commissions.map((commission) => (
-                <Row key={commission.id}>
-                  <RowHeader>{commission.shopName ?? commission.shop}</RowHeader>
-                  <Td>
-                    <CommissionPill status={commission.status} />
-                  </Td>
-                  <Td>{commission.kind === "recurring" ? "Recurring" : "One-time"}</Td>
-                  <Td>{formatDate(commission.createdAt)}</Td>
-                  <Td numeric>{formatMoney(commission.chargeCents, commission.currency)}</Td>
-                  <Td numeric>{formatRate(commission.rateBps)}</Td>
-                  <Td numeric>{formatMoney(commission.amountCents, commission.currency)}</Td>
-                </Row>
-              ))}
-            </Body>
-          </Table>
+          <>
+            <Table caption="Every commission on this account">
+              <Head>
+                <Th>Store</Th>
+                <Th>Status</Th>
+                <Th>Kind</Th>
+                <Th>Recorded</Th>
+                <Th numeric>Charge</Th>
+                <Th numeric>Rate</Th>
+                <Th numeric>Commission</Th>
+              </Head>
+              <Body>
+                {commissions.map((commission) => (
+                  <Row key={commission.id}>
+                    <RowHeader>{commission.shopName ?? commission.shop}</RowHeader>
+                    <Td>
+                      <CommissionPill status={commission.status} />
+                    </Td>
+                    <Td>{commission.kind === "recurring" ? "Recurring" : "One-time"}</Td>
+                    <Td>{formatDate(commission.createdAt)}</Td>
+                    <Td numeric>{formatMoney(commission.chargeCents, commission.currency)}</Td>
+                    <Td numeric>{formatRate(commission.rateBps)}</Td>
+                    <Td numeric>{formatMoney(commission.amountCents, commission.currency)}</Td>
+                  </Row>
+                ))}
+              </Body>
+            </Table>
+            {commissionCount > commissions.length && (
+              <p className="border-t border-line px-5 py-3 text-[13.5px] text-body-mute">
+                Showing the latest {commissions.length} of {commissionCount}.
+              </p>
+            )}
+          </>
         )}
       </Panel>
 

@@ -34,6 +34,26 @@ const OUTCOME_HELP: Record<string, string> = {
   "ignored:no_commission_for_charge": "A refund for a charge that never earned anything.",
 };
 
+/** The suffix `replaySkippedCharges` stamps on a row it has already re-fed. */
+const REPLAYED = " (replayed)";
+
+/**
+ * The help line for an outcome, replayed or not.
+ *
+ * `replaySkippedCharges` marks the rows it has worked through by appending to
+ * their outcome rather than replacing it, which is right — the outcome is
+ * still what happened — but it means the string no longer matches the table
+ * above and every replayed row lost its explanation. Strip the suffix to find
+ * the line, then say what the suffix means, because "it was refused and then
+ * put through again" is the whole story of that row.
+ */
+function helpFor(outcome: string): string | undefined {
+  const replayed = outcome.endsWith(REPLAYED);
+  const help = OUTCOME_HELP[replayed ? outcome.slice(0, -REPLAYED.length) : outcome];
+  if (!help) return undefined;
+  return replayed ? `${help} It has since been replayed.` : help;
+}
+
 export default async function AdminEventsPage({
   searchParams,
 }: {
@@ -108,9 +128,9 @@ export default async function AdminEventsPage({
                         >
                           {event.outcome}
                         </code>
-                        {OUTCOME_HELP[event.outcome] && (
+                        {helpFor(event.outcome) && (
                           <span className="mt-0.5 block max-w-[46ch] text-[13px] leading-snug text-muted">
-                            {OUTCOME_HELP[event.outcome]}
+                            {helpFor(event.outcome)}
                           </span>
                         )}
                       </>

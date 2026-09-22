@@ -23,14 +23,42 @@ export const metadata: Metadata = { title: "Payouts" };
  * once — puts a dozen "record this payout" buttons on one screen, and the
  * failure mode of this page is pressing the wrong one. Opening one is a small
  * deliberate act before an irreversible-ish one.
+ *
+ * The banner at the top is where `createPayout` says it worked, because the
+ * form that would otherwise have said so is gone by then — see the redirect at
+ * the end of that action.
  */
-export default async function AdminPayoutsPage() {
+export default async function AdminPayoutsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    recorded?: string | string[];
+    currency?: string | string[];
+    count?: string | string[];
+  }>;
+}) {
   await requireAdmin();
 
-  const [due, payouts] = await Promise.all([amountsDue(), recentPayouts(60)]);
+  const [params, due, payouts] = await Promise.all([
+    searchParams,
+    amountsDue(),
+    recentPayouts(60),
+  ]);
+  const recorded = recordedFrom(params);
 
   return (
     <div className="space-y-8">
+      {recorded && (
+        <p
+          role="status"
+          className="rounded-[12px] border border-brand/25 bg-cream px-5 py-4 text-[15px] leading-relaxed text-charcoal"
+        >
+          <strong className="font-bold">
+            Recorded {formatMoney(recorded.amountCents, recorded.currency)}
+          </strong>
+          , settling {recorded.count} commission{recorded.count === 1 ? "" : "s"}.
+        </p>
+      )}
       <Panel title={`${due.length} payout${due.length === 1 ? "" : "s"} to make`}>
         {due.length === 0 ? (
           <Empty title="Nothing is owed">
@@ -128,4 +156,35 @@ export default async function AdminPayoutsPage() {
       </Panel>
     </div>
   );
+}
+
+/**
+ * The confirmation `createPayout` redirected here with, or null.
+ *
+ * Read as suspiciously as any other query string, because that is what it is:
+ * the URL is in the address bar and anybody can edit it, a repeated key arrives
+ * as an array rather than a string, and what this renders is a sentence saying
+ * money has left our bank. A figure that is not a whole number of minor units,
+ * or a currency that is not a three-letter code, is junk and gets no banner —
+ * the payout itself is in the table below either way.
+ */
+function recordedFrom(params: {
+  recorded?: string | string[];
+  currency?: string | string[];
+  count?: string | string[];
+}): { amountCents: number; currency: string; count: number } | null {
+  const amountCents = Number(last(params.recorded));
+  const currency = (last(params.currency) ?? "").toUpperCase();
+  const count = Number(last(params.count));
+
+  if (!Number.isInteger(amountCents) || amountCents <= 0) return null;
+  if (!/^[A-Z]{3}$/.test(currency)) return null;
+  if (!Number.isInteger(count) || count <= 0) return null;
+
+  return { amountCents, currency, count };
+}
+
+/** `?a=1&a=2` resolves to `['1', '2']`; the last one is the one that was meant. */
+function last(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[value.length - 1] : value;
 }

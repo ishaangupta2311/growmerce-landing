@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { requireAdmin } from "@/lib/affiliate/admin";
 import {
+  partnerById,
   recordPayout,
   replaySkippedCharges,
   setCommissionRate,
@@ -119,6 +121,10 @@ export async function updateRate(_state: FormState, form: FormData): Promise<For
  * and the store settles exactly the commissions behind it, or refuses. So this
  * form cannot create a payout that disagrees with the ledger — the worst it can
  * do is fail and say why.
+ *
+ * Success leaves the page rather than returning a notice. A failure keeps its
+ * notice, because a payout that was refused leaves the row it was refused for
+ * exactly where it was — see below for why a success cannot.
  */
 export async function createPayout(_state: FormState, form: FormData): Promise<FormState> {
   await requireAdmin();
@@ -164,17 +170,46 @@ export async function createPayout(_state: FormState, form: FormData): Promise<F
   }
 
   revalidateAdmin(partnerId);
-  return {
-    notice: `Recorded ${formatMoney(result.amountCents, currency)}, settling ${result.commissionCount} commission${result.commissionCount === 1 ? "" : "s"}.`,
-  };
+
+  /* The confirmation goes in the URL because a returned notice would never be
+     read. `revalidateAdmin` re-renders the payouts list, the row this just
+     settled is no longer owed anything so it drops out of `amountsDue()`, and
+     the `<details>` holding this form unmounts — taking the `useActionState`
+     that holds the notice with it, before React ever paints it. An admin who
+     has just moved real money would see the row vanish in silence, which reads
+     like a failure and invites them to do it again. A redirect survives the
+     row, and the payouts page renders a banner back out of it. */
+  redirect(
+    `/affiliates/admin/payouts?recorded=${result.amountCents}` +
+      `&currency=${encodeURIComponent(currency)}&count=${result.commissionCount}`,
+  );
 }
 
-/** Replay held charges without changing status — for a partner approved before this existed. */
+/**
+ * Replay held charges without changing status — for a partner approved before
+ * this existed.
+ *
+ * Approved only, and the check is the point of the function rather than
+ * belt-and-braces. Replaying a partner who is still pending re-feeds every
+ * held charge through an ingest that refuses it for the same reason it refused
+ * it the first time: nothing is earned, a fresh event row is written for each
+ * charge, and the originals are stamped as replayed so they leave the queue.
+ * The held count stays the same and its dates all move to today, which is the
+ * one piece of evidence an admin has about how long somebody has been waiting.
+ */
 export async function replayHeld(_state: FormState, form: FormData): Promise<FormState> {
   await requireAdmin();
 
   const partnerId = id(form, "partnerId");
   if (!partnerId) return { error: "Which partner?" };
+
+  const partner = await partnerById(partnerId);
+  if (!partner) return { error: "No partner with that id." };
+  if (partner.status !== "approved") {
+    return {
+      error: `${partner.company} is ${partner.status}, so replaying would earn them nothing. Approve them instead — that replays the held charges itself.`,
+    };
+  }
 
   const { replayed, earned } = await replaySkippedCharges(partnerId);
   revalidateAdmin(partnerId);
