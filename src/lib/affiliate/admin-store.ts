@@ -279,7 +279,11 @@ export type AdminOverview = {
   approvedPartners: number;
   /** Stores attributed across the whole program. */
   referrals: number;
+  /** Paying right now — `active` alone, so it means the same word here as on a
+      partner's own overview. */
   activeReferrals: number;
+  /** On a trial: not paying yet, and not to be added to the figure above. */
+  trialingReferrals: number;
   /** What we owe right now, per currency — approved and not yet paid. */
   owed: { currency: string; cents: number; partners: number }[];
   /** What is still inside the refund window, per currency. */
@@ -298,6 +302,7 @@ export async function adminOverview(): Promise<AdminOverview> {
         approved_partners: string;
         referrals: string;
         active_referrals: string;
+        trialing_referrals: string;
       }[]
     >`
       select
@@ -305,7 +310,9 @@ export async function adminOverview(): Promise<AdminOverview> {
         (select count(*) from affiliate.partner where status = 'approved') as approved_partners,
         (select count(*) from affiliate.referral)                          as referrals,
         (select count(*) from affiliate.referral
-          where status in ('active', 'trialing'))                          as active_referrals
+          where status = 'active')                                         as active_referrals,
+        (select count(*) from affiliate.referral
+          where status = 'trialing')                                       as trialing_referrals
     `,
     /* Owed and clearing in one pass over the ledger: they are the same rows
        grouped the same way, differing only in which status is being summed. */
@@ -349,6 +356,7 @@ export async function adminOverview(): Promise<AdminOverview> {
     approvedPartners: int(counts[0]?.approved_partners),
     referrals: int(counts[0]?.referrals),
     activeReferrals: int(counts[0]?.active_referrals),
+    trialingReferrals: int(counts[0]?.trialing_referrals),
     owed,
     clearing,
   };

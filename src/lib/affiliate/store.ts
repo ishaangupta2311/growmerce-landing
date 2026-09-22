@@ -465,11 +465,20 @@ export async function dashboardSummary(
 ): Promise<DashboardSummary> {
   const [totals, counts, recentCommissions, recentReferrals] = await Promise.all([
     totalsFor(partnerId),
-    sql()<{ total: string; active: string; linked: string; cancelled: string }[]>`
-      select count(*)                                                as total,
-             count(*) filter (where status in ('active', 'trialing')) as active,
-             count(*) filter (where status = 'linked')                as linked,
-             count(*) filter (where status = 'cancelled')             as cancelled
+    /* One bucket per status, and every status the schema has. The overview
+       prints these under the total, so a status folded into another one — or
+       left out, as cancelled was — is a note whose parts do not add up to the
+       number above them. Trialing is its own bucket because the stores page
+       calls those stores "On trial" rather than subscribed, and two screens
+       that count the same store differently is the bug this replaces. */
+    sql()<
+      { total: string; active: string; trialing: string; linked: string; cancelled: string }[]
+    >`
+      select count(*)                                       as total,
+             count(*) filter (where status = 'active')      as active,
+             count(*) filter (where status = 'trialing')    as trialing,
+             count(*) filter (where status = 'linked')      as linked,
+             count(*) filter (where status = 'cancelled')   as cancelled
       from affiliate.referral
       where partner_id = ${partnerId}
     `,
@@ -491,6 +500,7 @@ export async function dashboardSummary(
     referrals: {
       total: int(counts[0]?.total),
       active: int(counts[0]?.active),
+      trialing: int(counts[0]?.trialing),
       linked: int(counts[0]?.linked),
       cancelled: int(counts[0]?.cancelled),
     },

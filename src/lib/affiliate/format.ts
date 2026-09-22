@@ -62,27 +62,13 @@ export function formatMoney(cents: number, currency: string): string {
   return money(currency).format(cents / divisor);
 }
 
-/**
- * The same, with the fractional part dropped.
- *
- * For the headline figures only, where four significant digits and a pair of
- * cents compete for the same glance. Anywhere a partner might reconcile a
- * number against a bank statement — every table row, every payout — uses
- * `formatMoney`.
- */
-export function formatMoneyShort(cents: number, currency: string): string {
-  const divisor = 10 ** minorUnits(currency);
-  const key = currency.toUpperCase();
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: key,
-      maximumFractionDigits: 0,
-    }).format(cents / divisor);
-  } catch {
-    return formatMoney(cents, currency);
-  }
-}
+/* There was a `formatMoneyShort` here, which rounded the overview cards to
+   whole units so that four digits and a pair of cents did not compete for the
+   same glance. It is gone because it rounded a balance *up*: an overview
+   reading "Owed $243" over an earnings page reading $242.80 makes the partner
+   right to ask which of the two we are going to send, and "the headline is
+   approximate" is not an answer anybody accepts about their own money. Every
+   balance on every screen is now the same number to the cent. */
 
 const DATE = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",

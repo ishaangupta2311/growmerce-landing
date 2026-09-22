@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { requireAdmin } from "@/lib/affiliate/admin";
 import { adminOverview, amountsDue, listPartners } from "@/lib/affiliate/admin-store";
-import { formatDate, formatMoney, formatMoneyShort } from "@/lib/affiliate/format";
+import { formatDate, formatMoney } from "@/lib/affiliate/format";
 import { formatRate } from "@/lib/affiliate/commission";
 import Empty from "@/components/affiliate/Empty";
 import Panel from "@/components/affiliate/Panel";
@@ -47,7 +47,7 @@ export default async function AdminOverviewPage() {
         />
         <StatCard
           label="Owed now"
-          value={owed ? formatMoneyShort(owed.cents, owed.currency) : "—"}
+          value={owed ? formatMoney(owed.cents, owed.currency) : "—"}
           note={
             owed
               ? `Cleared and unpaid, across ${owed.partners} partner${owed.partners === 1 ? "" : "s"}.`
@@ -57,13 +57,17 @@ export default async function AdminOverviewPage() {
         />
         <StatCard
           label="Still clearing"
-          value={clearing ? formatMoneyShort(clearing.cents, clearing.currency) : "—"}
+          value={clearing ? formatMoney(clearing.cents, clearing.currency) : "—"}
           note="Earned, inside the 30-day refund window."
         />
         <StatCard
           label="Stores referred"
           value={String(overview.referrals)}
-          note={`${overview.activeReferrals} subscribed right now.`}
+          note={
+            overview.trialingReferrals > 0
+              ? `${overview.activeReferrals} subscribed, ${overview.trialingReferrals} on trial.`
+              : `${overview.activeReferrals} subscribed right now.`
+          }
         />
       </div>
 

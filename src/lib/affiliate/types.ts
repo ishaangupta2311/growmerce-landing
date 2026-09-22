@@ -141,9 +141,17 @@ export type DashboardSummary = {
   totals: Totals;
   /** Totals in any other currency, so a mixed ledger is not silently hidden. */
   otherCurrencies: Totals[];
+  /**
+   * The four statuses a referral can be in, and they add up to `total`. The
+   * overview prints them as a note under that total, so a bucket that is
+   * missing or folded into another one is arithmetic a partner can catch.
+   */
   referrals: {
     total: number;
+    /** Paying — `active` alone, with trials counted separately below. */
     active: number;
+    /** On a trial: further along than `linked`, not yet earning anything. */
+    trialing: number;
     /** Attributed but not yet paying — the pipeline. */
     linked: number;
     cancelled: number;

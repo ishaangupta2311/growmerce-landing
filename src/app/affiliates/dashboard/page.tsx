@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { clearsAt } from "@/lib/affiliate/commission";
-import { formatCountdown, formatDate, formatMoney, formatMoneyShort } from "@/lib/affiliate/format";
+import { formatCountdown, formatDate, formatMoney } from "@/lib/affiliate/format";
 import { requirePartner } from "@/lib/affiliate/session";
 import { codesFor, dashboardSummary } from "@/lib/affiliate/store";
+import type { DashboardSummary } from "@/lib/affiliate/types";
 import CopyCode from "@/components/affiliate/CopyCode";
 import Empty from "@/components/affiliate/Empty";
 import Panel from "@/components/affiliate/Panel";
@@ -13,6 +14,29 @@ import { Body, Head, Row, RowHeader, Table, Td, Th } from "@/components/affiliat
 import { CommissionPill, ReferralPill } from "@/components/affiliate/StatusPill";
 
 export const metadata: Metadata = { title: "Overview" };
+
+/**
+ * "41 subscribed · 7 on trial · 11 not yet paying · 1 cancelled", with the
+ * empty buckets left out.
+ *
+ * Every bucket that has anything in it, because these sit under the total and
+ * have to add up to it: the note used to name two of the four, so a partner
+ * with 60 stores read a card saying 60 above a line accounting for 52 and no
+ * way to tell which eight were missing. The words are the ones the stores page
+ * puts on the same statuses, so counting the rows there gives the same answer.
+ */
+function referralNote(referrals: DashboardSummary["referrals"]): string {
+  const buckets: [number, string][] = [
+    [referrals.active, "subscribed"],
+    [referrals.trialing, "on trial"],
+    [referrals.linked, "not yet paying"],
+    [referrals.cancelled, "cancelled"],
+  ];
+  return buckets
+    .filter(([count]) => count > 0)
+    .map(([count, label]) => `${count} ${label}`)
+    .join(" · ");
+}
 
 /**
  * The page a partner opens to answer one question: how much of this can I have?
@@ -59,23 +83,23 @@ export default async function OverviewPage() {
           <StatCard
             emphasis
             label="Owed to you"
-            value={formatMoneyShort(totals.approvedCents, totals.currency)}
+            value={formatMoney(totals.approvedCents, totals.currency)}
             note="Cleared and waiting on the next payout run."
           />
           <StatCard
             label="Still clearing"
-            value={formatMoneyShort(totals.pendingCents, totals.currency)}
+            value={formatMoney(totals.pendingCents, totals.currency)}
             note="Inside the refund window. It becomes owed automatically."
           />
           <StatCard
             label="Paid to date"
-            value={formatMoneyShort(totals.paidCents, totals.currency)}
+            value={formatMoney(totals.paidCents, totals.currency)}
             note="Everything we have already sent you."
           />
           <StatCard
             label="Stores referred"
             value={String(summary.referrals.total)}
-            note={`${summary.referrals.active} subscribed · ${summary.referrals.linked} not yet paying`}
+            note={referralNote(summary.referrals)}
           />
         </div>
 
