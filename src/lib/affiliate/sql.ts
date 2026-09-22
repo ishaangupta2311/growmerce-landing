@@ -55,27 +55,22 @@ export function int(value: unknown): number {
 /**
  * A `jsonb` column, as an object.
  *
- * The same trap as `int()`, one type along: **postgres.js hands back `jsonb` as
- * a string here.** It normally parses JSON itself, but that depends on type
- * information it fetches at connect time, and this client runs with
- * `prepare: false` against Supavisor's transaction pooler — so what arrives is
- * the raw text.
+ * postgres.js parses `jsonb` on the way out, so an `affiliate.event.payload`
+ * arrives as the object it was stored as. This exists because the column is
+ * `unknown` at the query boundary and something has to say what it is;
+ * anything that is not an object comes back empty rather than guessed at.
  *
- * The failure it causes is quiet rather than loud. `{ ...payload }` on a string
- * spreads its *characters*, producing `{ "0": "{", "1": "\"" … }` — an object
- * with no field you asked for and no error to say so. This function is the only
- * way an `affiliate.event.payload` is allowed to become a value.
- *
- * Written to accept both shapes, because if a future config change turns the
- * parsing back on, the correct behaviour is to keep working.
+ * It used to parse strings too, to cope with rows written double-encoded:
+ * `${JSON.stringify(event)}::jsonb` binds a *string* to a jsonb parameter,
+ * which postgres.js JSON-encodes again, storing a jsonb string around the
+ * object — and `payload->>'anything'` was null on every row. `ingest` now
+ * binds the object with `sql.json()`, `0007_affiliate_event_payload.sql`
+ * unwrapped what had been written and added a check constraint that refuses
+ * anything but an object, so the string branch would be dead code that once
+ * hid a bug.
  */
 export function json(value: unknown): Record<string, unknown> {
-  if (value && typeof value === "object") return value as Record<string, unknown>;
-  if (typeof value !== "string") return {};
-  try {
-    const parsed: unknown = JSON.parse(value);
-    return parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : {};
-  } catch {
-    return {};
-  }
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
 }

@@ -153,6 +153,16 @@ async function main() {
     type: "charge.succeeded", shop: AGENCY_SHOP, chargeId: `smoke-${RUN}-a1`,
     amountCents: 4900, currency: "USD",
   });
+  check(
+    "the event log holds the payload as an object Postgres can read into",
+    (await sql!<{ t: string; cid: string | null }[]>`
+      select jsonb_typeof(payload) as t, payload->>'chargeId' as cid
+      from affiliate.event
+      where shop = ${AGENCY_SHOP} and type = 'charge.succeeded'
+      order by received_at limit 1
+    `)[0],
+    { t: "object", cid: `smoke-${RUN}-a1` },
+  );
   await send({
     type: "charge.succeeded", shop: AGENCY_SHOP, chargeId: `smoke-${RUN}-a2`,
     amountCents: 4900, currency: "USD",
@@ -364,16 +374,6 @@ async function main() {
     })).detail,
     "referral_cancelled",
   );
-}
-
-/* Wrapped rather than awaited at the top level: tsx compiles these scripts to
-   CommonJS, which has no top-level await. */
-async function run() {
-  try {
-    await main();
-  } catch (err) {
-    failures++;
-    console.error("\nthrew:", err);
 
   console.log("\nsign-up");
 
@@ -398,6 +398,16 @@ async function run() {
     (await sql!<{ n: number }[]>`select count(*)::int as n from affiliate.code where partner_id = ${created.id}`)[0].n,
     1,
   );
+}
+
+/* Wrapped rather than awaited at the top level: tsx compiles these scripts to
+   CommonJS, which has no top-level await. */
+async function run() {
+  try {
+    await main();
+  } catch (err) {
+    failures++;
+    console.error("\nthrew:", err);
   } finally {
     await cleanup();
     await sql!.end();

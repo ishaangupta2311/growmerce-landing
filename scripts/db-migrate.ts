@@ -9,22 +9,28 @@
  * against a database that already has most of it is a no-op for those parts.
  * Keep new migrations that way.
  *
- * Reads .env.local when it exists, the same file `next dev` uses.
+ * Reads `.env.local` and `.env` when they exist, as `next dev` does.
  */
 
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import postgres from "postgres";
 
-try {
-  process.loadEnvFile(".env.local");
-} catch {
-  /* No .env.local — rely on the real environment. */
+/* The two files `next dev` reads, with its precedence: `.env.local` beats
+   `.env`, and the real environment beats both. `loadEnvFile` never overwrites
+   a variable that is already set, so loading the more specific file first is
+   what produces that order. */
+for (const file of [".env.local", ".env"]) {
+  try {
+    process.loadEnvFile(file);
+  } catch {
+    /* Absent — the other file or the environment may still have it. */
+  }
 }
 
 const url = process.env.DATABASE_URL?.trim();
 if (!url) {
-  console.error("DATABASE_URL is not set. Put it in .env.local or the environment.");
+  console.error("DATABASE_URL is not set. Put it in .env, .env.local or the environment.");
   process.exit(1);
 }
 

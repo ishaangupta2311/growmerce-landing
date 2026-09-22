@@ -213,7 +213,7 @@ export async function ingest(event: AffiliateEvent): Promise<IngestOutcome> {
   return transaction(sql(), async (tx) => {
     const claimed = await tx`
       insert into affiliate.event (external_id, type, shop, payload)
-      values (${event.id}, ${event.type}, ${event.shop}, ${JSON.stringify(event)}::jsonb)
+      values (${event.id}, ${event.type}, ${event.shop}, ${tx.json(event)})
       on conflict (external_id) do nothing
       returning id
     `;
@@ -348,15 +348,6 @@ function cancelledByCharge(referral: ReferralContext, chargeAt: Date): boolean {
  *
  * Narrowed by `shop` so this rides `event_shop_idx` instead of scanning every
  * event ever received for a JSON key.
- *
- * The `jsonb_typeof` dance is not decoration. `ingest` writes the payload as
- * `${JSON.stringify(event)}::jsonb`, and postgres.js JSON-encodes a string
- * bound to a jsonb parameter — so the column holds a jsonb *string* wrapping
- * the real object, and a plain `payload->>'chargeId'` silently returns null on
- * every row. (The same quirk is why `replaySkippedCharges` parses the column
- * with `json()` rather than spreading it.) Unwrapping one level when the value
- * is a string leaves this correct against the rows written today and against
- * properly-encoded rows if that is ever fixed.
  */
 async function chargeWasRefunded(
   tx: Tx,
@@ -367,9 +358,7 @@ async function chargeWasRefunded(
     select 1 from affiliate.event
     where shop = ${shop}
       and type = 'charge.refunded'
-      and (case when jsonb_typeof(payload) = 'string'
-                then (payload #>> '{}')::jsonb
-                else payload end) ->> 'chargeId' = ${chargeId}
+      and payload->>'chargeId' = ${chargeId}
     limit 1
   `;
   return refunds.length > 0;
