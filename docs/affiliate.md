@@ -18,7 +18,9 @@ altered by a deploy, which is correct for a number somebody agreed to.
 
 ## What to set before it works
 
-Three environment variables, none of which are in `.env` yet.
+Three environment variables beyond `DATABASE_URL`, plus `AFFILIATE_ADMIN_EMAILS`
+for the admin area (see *The admin side*, below). All five are listed in
+`.env.example`.
 
 ```bash
 # Supabase — Project Settings → API, same project as DATABASE_URL.
