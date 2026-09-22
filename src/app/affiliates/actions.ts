@@ -139,6 +139,21 @@ export async function signUp(_state: FormState, form: FormData): Promise<FormSta
     if (error.message.toLowerCase().includes("already registered")) {
       return { error: "That address already has an account. Sign in instead, or reset your password." };
     }
+
+    /* The other exception worth translating, because it is the one that is not
+       about the person reading it. Supabase rate-limits confirmation emails per
+       project, so a burst of sign-ups makes the next honest applicant read
+       "email rate limit exceeded" — a sentence about our quota, phrased as
+       though they had done something wrong. The raw text goes to the log,
+       where somebody can see the quota is being hit. */
+    if (/rate limit/i.test(error.message)) {
+      console.warn(`[affiliate] sign-up refused by Supabase — ${error.message}`);
+      return {
+        error:
+          "Too many sign-up emails have gone out in the last hour. Please try again a little later.",
+      };
+    }
+
     return { error: error.message };
   }
 
