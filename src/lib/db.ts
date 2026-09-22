@@ -19,11 +19,7 @@
  * concurrency, which is the worst way to find out.
  */
 
-import postgres, { type Options, type Sql } from "postgres";
-
-/* postgres.js honours `max_pipeline` at runtime but leaves it out of its
-   type definitions (src/index.js lists it with the other integer options). */
-type ClientOptions = Options<Record<string, never>> & { max_pipeline?: number };
+import postgres, { type Sql } from "postgres";
 
 /** How long a stored preview stays good before we rebuild it. */
 export const PREVIEW_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -58,30 +54,33 @@ export function db(): Sql | null {
     return null;
   }
 
-  const options: ClientOptions = {
+  client = postgres(url, {
     /* Supavisor's transaction mode hands a different backend to each
        statement, so a prepared statement from an earlier one is not there. */
     prepare: false,
-    /* Never send a second query down a connection before the first has
-       answered. postgres.js pipelines by default when there are more
-       concurrent queries than connections, and Supavisor's transaction mode
-       does not survive it: the pooled backend is left half-way through a
-       message, the connection never answers again, and once all `max` of them
-       are wedged every query queues forever. Reproduced against this project
-       with five parallel queries on a warm pool of three; with this set to 0
-       the same load completes every round. */
-    max_pipeline: 0,
-    /* With pipelining off the overflow queues instead of wedging, so this is a
-       throughput number rather than a correctness one — but a page that fans
-       out wider than the pool now waits in batches. The affiliate admin
-       overview issues six queries in one `Promise.all`; ten clears that with
-       room to spare and is still not a wide pool, since the URL is Supavisor's
-       transaction pooler and these multiplex onto far fewer real backends.
+    /* **This must exceed the most queries any one page issues at once.** Not
+       for speed — for correctness, and it is the only lever that works.
 
-       Both halves earned their place. The affiliate work first read this hang
-       as "pool too small" and raised the number, which made it rarer without
-       curing it; `max_pipeline: 0` is the fix. Raising `max` on its own would
-       leave the same deadlock waiting for a wider fan-out. */
+       postgres.js pipelines when there are more concurrent queries than
+       connections, writing a second query down a connection before the first
+       has answered. Supavisor's transaction mode does not survive that: the
+       pooled backend is left half-way through a message, never answers, and
+       once every connection is wedged the page hangs forever on a spinner.
+       Reproduced here with five parallel queries on a warm pool of three.
+
+       Keeping concurrency under `max` is what stops it, because a query that
+       gets its own connection is never pipelined. The affiliate admin overview
+       fans out to six in one `Promise.all`; ten leaves room and is still not a
+       wide pool, since this URL is Supavisor's transaction pooler and these
+       multiplex onto far fewer real backends.
+
+       Do **not** reach for `max_pipeline: 0` instead. It looks like the
+       precise fix and it disables every transaction in the codebase: in
+       postgres.js `execute()`, the `onexecute` callback that marks a
+       connection reserved is guarded by `sent.length < max_pipeline`, so a
+       zero there means connections are never reserved and `sql.begin()` fails
+       every time with UNSAFE_TRANSACTION. The affiliate ledger writes money
+       inside `sql.begin()`. */
     max: 10,
     /* Short in production, where a frozen serverless instance should not sit
        on connections. Long in development: `next dev` is one long-lived
@@ -93,8 +92,7 @@ export function db(): Sql | null {
        own deadline and a slow database must not eat into it. */
     connect_timeout: 10,
     onnotice: () => {},
-  };
-  client = postgres(url, options);
+  });
   return client;
 }
 
