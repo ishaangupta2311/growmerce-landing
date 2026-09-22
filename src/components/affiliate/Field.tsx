@@ -2,15 +2,24 @@
  * The form controls the affiliate surface uses, and the one reason they are
  * shared: a label that is genuinely tied to its input.
  *
- * Every field here generates an id from its `name` and points `htmlFor` at it,
- * so tapping the label focuses the control and a screen reader announces the
- * two together. That is easy to do by hand and just as easy to forget on the
- * fourth field of the fifth form.
+ * Every field here takes an id from React's `useId` and points `htmlFor` at
+ * it, so tapping the label focuses the control and a screen reader announces
+ * the two together. That is easy to do by hand and just as easy to forget on
+ * the fourth field of the fifth form.
+ *
+ * `useId`, not the field's `name`. Ids only have to be unique per page, and
+ * names are not: the admin payouts page renders one payout form per partner
+ * per currency, each with a `reference` and a `note`. With ids from names,
+ * every label on that page pointed at the first form's controls — a click on
+ * the third partner's "Bank reference" focused the first partner's, possibly
+ * inside a closed `<details>` where nothing visibly happened at all.
  *
  * `hint` is rendered below the input and wired through `aria-describedby`,
  * because a hint a sighted user reads before typing is one a screen-reader user
  * should hear before typing too, not after they have got it wrong.
  */
+
+import { useId } from "react";
 
 type Common = {
   name: string;
@@ -26,21 +35,21 @@ const CONTROL =
   "focus:border-brand focus:ring-2 focus:ring-brand/25";
 
 function Shell({
-  name,
+  id,
   label,
   hint,
   required,
   children,
-}: Common & { children: React.ReactNode }) {
+}: Common & { id: string; children: React.ReactNode }) {
   return (
     <div>
-      <label htmlFor={name} className="block font-poppins text-[14px] font-bold text-charcoal">
+      <label htmlFor={id} className="block font-poppins text-[14px] font-bold text-charcoal">
         {label}
         {!required && <span className="ml-1.5 font-normal text-muted">optional</span>}
       </label>
       <div className="mt-2">{children}</div>
       {hint && (
-        <p id={`${name}-hint`} className="mt-1.5 text-[13.5px] leading-snug text-body-mute">
+        <p id={`${id}-hint`} className="mt-1.5 text-[13.5px] leading-snug text-body-mute">
           {hint}
         </p>
       )}
@@ -54,17 +63,18 @@ export function Field({
   autoComplete,
   ...common
 }: Common & { type?: string; placeholder?: string; autoComplete?: string }) {
+  const id = useId();
   return (
-    <Shell {...common}>
+    <Shell {...common} id={id}>
       <input
-        id={common.name}
+        id={id}
         name={common.name}
         type={type}
         required={common.required}
         defaultValue={common.defaultValue}
         placeholder={placeholder}
         autoComplete={autoComplete}
-        aria-describedby={common.hint ? `${common.name}-hint` : undefined}
+        aria-describedby={common.hint ? `${id}-hint` : undefined}
         className={CONTROL}
       />
     </Shell>
@@ -76,16 +86,17 @@ export function TextArea({
   placeholder,
   ...common
 }: Common & { rows?: number; placeholder?: string }) {
+  const id = useId();
   return (
-    <Shell {...common}>
+    <Shell {...common} id={id}>
       <textarea
-        id={common.name}
+        id={id}
         name={common.name}
         rows={rows}
         required={common.required}
         defaultValue={common.defaultValue}
         placeholder={placeholder}
-        aria-describedby={common.hint ? `${common.name}-hint` : undefined}
+        aria-describedby={common.hint ? `${id}-hint` : undefined}
         className={`${CONTROL} resize-y`}
       />
     </Shell>
@@ -96,14 +107,15 @@ export function Select({
   options,
   ...common
 }: Common & { options: { value: string; label: string }[] }) {
+  const id = useId();
   return (
-    <Shell {...common}>
+    <Shell {...common} id={id}>
       <select
-        id={common.name}
+        id={id}
         name={common.name}
         required={common.required}
         defaultValue={common.defaultValue}
-        aria-describedby={common.hint ? `${common.name}-hint` : undefined}
+        aria-describedby={common.hint ? `${id}-hint` : undefined}
         className={CONTROL}
       >
         {options.map((option) => (
