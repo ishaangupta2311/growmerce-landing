@@ -522,6 +522,16 @@ async function chargeSucceeded(tx: Tx, event: AffiliateEvent): Promise<IngestOut
  * their bank statement; recovering it is a conversation, not an UPDATE.
  */
 async function chargeRefunded(tx: Tx, event: AffiliateEvent): Promise<IngestOutcome> {
+  /* The same lock `loadReferral` takes on the way into a charge, taken first
+     and for the lock alone — the row it selects is not used for anything.
+     Without it the two events for one charge can be in flight at once and both
+     commit: the charge's `chargeWasRefunded` looks for a refund that has not
+     been written yet and writes the commission, while this UPDATE looks for a
+     commission that has not been written yet and reverses nothing. The partner
+     keeps a commission on money we gave back, and the event log records both
+     events as applied. Holding the store's referral row makes them queue. */
+  await tx`select id from affiliate.referral where shop = ${event.shop} for update`;
+
   const reversed = await tx`
     update affiliate.commission
     set status = 'reversed', reversed_at = now()

@@ -141,6 +141,12 @@ export type Tx = ReservedSql;
  * error that caused it; and the connection goes back to the pool whatever
  * happened. Nothing more — no savepoints, no prepared transactions — because
  * nothing here uses them.
+ *
+ * One quirk to know about when reading an error from in here: if the
+ * connection dies mid-transaction, postgres.js's `release()` returns it to the
+ * open queue regardless, so the next `reserve()` can be handed the dead socket
+ * — which belongs to any `reserve()` user rather than to this function, and
+ * surfaces here because every statement in `fn` errors on it in turn.
  */
 export async function transaction<T>(client: Sql, fn: (tx: Tx) => Promise<T>): Promise<T> {
   const tx = await client.reserve();

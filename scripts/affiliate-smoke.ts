@@ -66,6 +66,8 @@ const REFUND_CODE = `SMOKERF${RUN.slice(0, 4)}`.toUpperCase();
 const CHURN_CODE = `SMOKECH${RUN.slice(0, 4)}`.toUpperCase();
 const REFUND_SHOP = `smoke-refund-${RUN}.myshopify.com`;
 const CHURN_SHOP = `smoke-churn-${RUN}.myshopify.com`;
+const ORDER_CODE = `SMOKEOD${RUN.slice(0, 4)}`.toUpperCase();
+const ORDER_SHOP = `smoke-order-${RUN}.myshopify.com`;
 
 let failures = 0;
 
@@ -120,7 +122,8 @@ async function cleanup() {
      shops they name. */
   await sql!`
     delete from affiliate.event
-    where shop in (${AGENCY_SHOP}, ${CREATOR_SHOP}, ${HELD_SHOP}, ${REFUND_SHOP}, ${CHURN_SHOP})
+    where shop in (${AGENCY_SHOP}, ${CREATOR_SHOP}, ${HELD_SHOP}, ${REFUND_SHOP}, ${CHURN_SHOP},
+                   ${ORDER_SHOP})
   `;
   if (userIds.length > 0) await sql!`delete from auth.users where id in ${sql!(userIds)}`;
 }
@@ -383,6 +386,46 @@ async function main() {
       amountCents: 4900, currency: "USD",
     })).detail,
     "referral_cancelled",
+  );
+
+  console.log("\nheld charges replayed in the order the charges were taken");
+
+  /* The queue is drained by the charge's own date, not by the order the app
+     got round to telling us about it. It decides real money for exactly one
+     partner kind: an influencer earns a single one-time fee, priced off
+     whichever held charge is replayed first. A store that paid $49.00 in
+     January and $99.00 in March, delivered the wrong way round, used to earn
+     30% of March. */
+  const orderId = await makePartner("influencer", ORDER_CODE, 3000, "pending");
+  await send({ type: "referral.linked", shop: ORDER_SHOP, code: ORDER_CODE });
+  check(
+    "March's $99.00 is held, and is delivered first",
+    (await send({
+      type: "charge.succeeded", shop: ORDER_SHOP, chargeId: `smoke-${RUN}-o2`,
+      amountCents: 9900, currency: "USD", occurredAt: "2026-03-09T10:00:00.000Z",
+    })).detail,
+    "partner_not_approved",
+  );
+  check(
+    "January's $49.00 is held too, and is delivered second",
+    (await send({
+      type: "charge.succeeded", shop: ORDER_SHOP, chargeId: `smoke-${RUN}-o1`,
+      amountCents: 4900, currency: "USD", occurredAt: "2026-01-09T10:00:00.000Z",
+    })).detail,
+    "partner_not_approved",
+  );
+
+  await setPartnerStatus(orderId, "approved");
+  check("approving replays both held charges", await replaySkippedCharges(orderId), {
+    replayed: 2,
+    earned: 1,
+  });
+  const orderLedger = await commissionsFor(orderId);
+  check("an influencer still earns once", orderLedger.length, 1);
+  check(
+    "worth 30% of January's charge, not of the one that arrived first",
+    orderLedger[0]?.amountCents,
+    1470,
   );
 
   console.log("\nsign-up");

@@ -666,18 +666,27 @@ export async function replaySkippedCharges(
     where r.partner_id = ${partnerId}
       and e.type = 'charge.succeeded'
       and e.outcome = 'ignored:partner_not_approved'
-    /* Oldest first: a partner's earliest charge is the one that decides an
-       influencer's single one-time commission, and replaying out of order
-       would award it to whichever month happened to go first. */
-    order by e.received_at asc
+    /* Oldest charge first, by the charge's own moment rather than by when the
+       delivery happened to reach us: a partner's earliest charge is the one
+       that decides an influencer's single one-time commission, so a store
+       whose March invoice was delivered ahead of its January one would
+       otherwise have that fee priced off the wrong charge. The delivery time
+       stands in when the sender supplied no occurredAt, and the id breaks a
+       tie between two charges stamped the same instant, so the order is total
+       and a replay is repeatable.
+
+       Nothing here is backquoted: the comment sits inside the tagged template,
+       where a backtick would end the query. */
+    order by coalesce((e.payload->>'occurredAt')::timestamptz, e.received_at) asc, e.id asc
   `;
 
   let earned = 0;
 
   for (const row of rows) {
-    /* `json()` and not a spread of the raw column: it arrives as a string, and
-       spreading a string yields an object of numbered characters that
-       `parseEvent` then rejects for having no `type`.
+    /* `json()` and not a spread of the raw column: the column is `unknown` at
+       the query boundary and `json()` is what narrows it to an object. It does
+       not parse anything any more — since `0007_affiliate_event_payload.sql`
+       the payload is a real jsonb object and postgres.js hands it back as one.
 
        `occurredAt` goes in *before* the spread so a sender that supplied one
        still wins. When none was sent, the time we received the event stands in
