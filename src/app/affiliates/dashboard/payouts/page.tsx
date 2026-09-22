@@ -26,37 +26,56 @@ const METHOD_LABEL: Record<string, string> = {
  * this page: payouts are made by hand in this build, so a button would be a
  * form that emails somebody. The page says what actually happens instead, which
  * is the thing a partner needs in order to stop wondering.
+ *
+ * One set of figures per currency, never a sum across them. A partner paid
+ * USD 1,000 and now owed EUR 100 must not read "Ready to pay USD 0.00" — which
+ * is what showing only the largest currency did. The same rule the earnings
+ * page follows, for the same reason: money in two currencies is two amounts.
  */
 export default async function PayoutsPage() {
   const { partner } = await requirePartner();
   const [payouts, totals] = await Promise.all([payoutsFor(partner.id), totalsFor(partner.id)]);
 
-  const owed = totals[0] ?? {
-    currency: partner.payoutCurrency,
-    approvedCents: 0,
-    pendingCents: 0,
-    paidCents: 0,
-    lifetimeCents: 0,
-  };
+  const balances =
+    totals.length > 0
+      ? totals
+      : [
+          {
+            currency: partner.payoutCurrency,
+            approvedCents: 0,
+            pendingCents: 0,
+            paidCents: 0,
+            lifetimeCents: 0,
+          },
+        ];
 
   const hasPayoutDetails = Boolean(partner.payoutMethod && partner.payoutDetails);
 
   return (
     <div className="space-y-8">
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard
-          emphasis
-          label="Ready to pay"
-          value={formatMoney(owed.approvedCents, owed.currency)}
-          note="Cleared, and included in the next run."
-        />
-        <StatCard
-          label="Still clearing"
-          value={formatMoney(owed.pendingCents, owed.currency)}
-          note={`Becomes payable ${HOLD_DAYS} days after each payment.`}
-        />
-        <StatCard label="Paid to date" value={formatMoney(owed.paidCents, owed.currency)} />
-      </div>
+      {balances.map((owed) => (
+        <section key={owed.currency}>
+          {balances.length > 1 && (
+            <h2 className="mb-3 font-poppins text-[15px] font-bold text-charcoal">
+              In {owed.currency}
+            </h2>
+          )}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <StatCard
+              emphasis
+              label="Ready to pay"
+              value={formatMoney(owed.approvedCents, owed.currency)}
+              note="Cleared, and included in the next run."
+            />
+            <StatCard
+              label="Still clearing"
+              value={formatMoney(owed.pendingCents, owed.currency)}
+              note={`Becomes payable ${HOLD_DAYS} days after each payment.`}
+            />
+            <StatCard label="Paid to date" value={formatMoney(owed.paidCents, owed.currency)} />
+          </div>
+        </section>
+      ))}
 
       {!hasPayoutDetails && (
         <p
