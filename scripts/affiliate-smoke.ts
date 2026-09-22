@@ -38,7 +38,7 @@ import {
   setPartnerStatus,
 } from "../src/lib/affiliate/admin-store";
 import { clearMaturedCommissions, ingest, parseEvent } from "../src/lib/affiliate/ingest";
-import { commissionsFor, payoutsFor, referralsFor, totalsFor } from "../src/lib/affiliate/store";
+import { commissionsFor, createPartner, payoutsFor, referralsFor, totalsFor } from "../src/lib/affiliate/store";
 
 const sql = db();
 if (!sql) {
@@ -374,6 +374,30 @@ async function run() {
   } catch (err) {
     failures++;
     console.error("\nthrew:", err);
+
+  console.log("\nsign-up");
+
+  /* The one transaction nothing above reaches: the partners in this file are
+     inserted directly. `createPartner` is what the sign-up form calls, and it
+     writes the account and its first code together or not at all. */
+  const signupUser = randomUUID();
+  userIds.push(signupUser);
+  await sql!`
+    insert into auth.users (id, email, instance_id, aud, role)
+    values (${signupUser}, ${`smoke-${RUN}-signup@example.invalid`},
+            '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated')
+  `;
+  const created = await createPartner({
+    userId: signupUser, kind: "influencer", name: "Smoke Signup",
+    company: `Smoke Signup ${RUN}`, email: `smoke-${RUN}-signup@example.invalid`, website: null,
+  });
+  check("creates the partner as pending", created.status, "pending");
+  check("at the influencer rate", created.commissionRateBps, 3000);
+  check(
+    "with exactly one code",
+    (await sql!<{ n: number }[]>`select count(*)::int as n from affiliate.code where partner_id = ${created.id}`)[0].n,
+    1,
+  );
   } finally {
     await cleanup();
     await sql!.end();

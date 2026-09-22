@@ -1,5 +1,7 @@
 import "server-only";
 
+import { transaction } from "@/lib/db";
+
 import { suggestCode } from "./codes";
 import { DEFAULT_RATE_BPS } from "./commission";
 import { int, sql } from "./sql";
@@ -115,7 +117,7 @@ export async function createPartner(input: NewPartner): Promise<Partner> {
   for (let attempt = 0; attempt < 3; attempt++) {
     const code = suggestCode(input.company);
     try {
-      return await sql().begin(async (tx) => {
+      return await transaction(sql(), async (tx) => {
         const rows = await tx<PartnerRow[]>`
           insert into affiliate.partner
             (user_id, kind, name, company, email, website, commission_rate_bps)

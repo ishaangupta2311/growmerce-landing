@@ -19,7 +19,11 @@
  * concurrency, which is the worst way to find out.
  */
 
-import postgres, { type Sql } from "postgres";
+import postgres, { type Options, type ReservedSql, type Sql } from "postgres";
+
+/* postgres.js honours `max_pipeline` at runtime but leaves it out of its
+   type definitions (src/index.js lists it with the other integer options). */
+type ClientOptions = Options<Record<string, never>> & { max_pipeline?: number };
 
 /** How long a stored preview stays good before we rebuild it. */
 export const PREVIEW_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -54,33 +58,35 @@ export function db(): Sql | null {
     return null;
   }
 
-  client = postgres(url, {
+  const options: ClientOptions = {
     /* Supavisor's transaction mode hands a different backend to each
        statement, so a prepared statement from an earlier one is not there. */
     prepare: false,
-    /* **This must exceed the most queries any one page issues at once.** Not
-       for speed — for correctness, and it is the only lever that works.
+    /* Never send a second query down a connection before the first has
+       answered. postgres.js pipelines by default once there are more
+       concurrent queries than connections, and Supavisor's transaction mode
+       does not survive it: the pooled backend is left half-way through a
+       message, the connection never answers again, and once every connection
+       is wedged each query queues forever. Reproduced against this project
+       with real queries — five in parallel on a pool of three hangs on the
+       second round, eight on a pool of one hangs on the first — and with this
+       at zero the same loads complete every time.
 
-       postgres.js pipelines when there are more concurrent queries than
-       connections, writing a second query down a connection before the first
-       has answered. Supavisor's transaction mode does not survive that: the
-       pooled backend is left half-way through a message, never answers, and
-       once every connection is wedged the page hangs forever on a spinner.
-       Reproduced here with five parallel queries on a warm pool of three.
+       Widening the pool does not fix it, it moves it: a pool of three hung
+       at five, a pool of one at eight, and where a pool of ten turns is a
+       matter of timing rather than a number to design around. Zero is what
+       makes a page's fan-out width irrelevant to correctness.
 
-       Keeping concurrency under `max` is what stops it, because a query that
-       gets its own connection is never pipelined. The affiliate admin overview
-       fans out to six in one `Promise.all`; ten leaves room and is still not a
-       wide pool, since this URL is Supavisor's transaction pooler and these
-       multiplex onto far fewer real backends.
-
-       Do **not** reach for `max_pipeline: 0` instead. It looks like the
-       precise fix and it disables every transaction in the codebase: in
-       postgres.js `execute()`, the `onexecute` callback that marks a
-       connection reserved is guarded by `sent.length < max_pipeline`, so a
-       zero there means connections are never reserved and `sql.begin()` fails
-       every time with UNSAFE_TRANSACTION. The affiliate ledger writes money
-       inside `sql.begin()`. */
+       It has one cost. In postgres.js `execute()`, the `onexecute` hook that
+       `sql.begin()` uses to reserve a connection sits behind
+       `sent.length < max_pipeline`, so at zero it never fires and every
+       `sql.begin()` fails with UNSAFE_TRANSACTION. `transaction()` below is
+       the replacement; nothing in this codebase may call `sql.begin()`. */
+    max_pipeline: 0,
+    /* Throughput only, now that correctness does not depend on it: a page
+       that fans out wider than this queues rather than wedges. The affiliate
+       admin overview issues six at once; ten leaves room without being a wide
+       pool, since these multiplex through Supavisor onto far fewer backends. */
     max: 10,
     /* Short in production, where a frozen serverless instance should not sit
        on connections. Long in development: `next dev` is one long-lived
@@ -92,7 +98,8 @@ export function db(): Sql | null {
        own deadline and a slow database must not eat into it. */
     connect_timeout: 10,
     onnotice: () => {},
-  });
+  };
+  client = postgres(url, options);
   return client;
 }
 
@@ -114,5 +121,40 @@ export async function tryDb<T>(operation: string, work: (sql: Sql) => Promise<T>
     const why = err instanceof Error ? err.message : String(err);
     console.warn(`[db] ${operation} failed, continuing without it — ${why.slice(0, 200)}`);
     return fallback;
+  }
+}
+
+/** A connection held for one transaction; every query on it reaches the same backend. */
+export type Tx = ReservedSql;
+
+/**
+ * Runs `fn` inside one transaction on one reserved connection.
+ *
+ * The replacement for `sql.begin()`, which cannot work here — see
+ * `max_pipeline` above. `reserve()` takes a connection out of the pool
+ * directly rather than through the hook that setting disables, and a reserved
+ * connection is what a transaction needs anyway: BEGIN and COMMIT have to
+ * reach the same backend, which through a transaction pooler means the same
+ * client connection for the duration.
+ *
+ * A failed commit rolls back; a failed rollback is not allowed to mask the
+ * error that caused it; and the connection goes back to the pool whatever
+ * happened. Nothing more — no savepoints, no prepared transactions — because
+ * nothing here uses them.
+ */
+export async function transaction<T>(client: Sql, fn: (tx: Tx) => Promise<T>): Promise<T> {
+  const tx = await client.reserve();
+  try {
+    await tx`begin`;
+    try {
+      const result = await fn(tx);
+      await tx`commit`;
+      return result;
+    } catch (err) {
+      await tx`rollback`.catch(() => undefined);
+      throw err;
+    }
+  } finally {
+    tx.release();
   }
 }

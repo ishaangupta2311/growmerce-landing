@@ -2,6 +2,8 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 
+import { transaction } from "@/lib/db";
+
 import { ingest, parseEvent } from "./ingest";
 import { int, json, sql } from "./sql";
 import type { Partner, PartnerKind, PartnerStatus, PayoutMethod } from "./types";
@@ -581,7 +583,7 @@ export type PayoutResult =
  * pointing at it is money we cannot explain.
  */
 export async function recordPayout(input: PayoutRequest): Promise<PayoutResult> {
-  return sql().begin(async (tx) => {
+  return transaction(sql(), async (tx) => {
     const owed = await tx<{ id: string; amount_cents: string }[]>`
       select id, amount_cents
       from affiliate.commission

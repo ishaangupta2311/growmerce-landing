@@ -1,8 +1,8 @@
 import "server-only";
 
-import type { Sql, TransactionSql } from "postgres";
+import type { Sql } from "postgres";
 
-import { db } from "@/lib/db";
+import { db, transaction, type Tx } from "@/lib/db";
 import { normaliseStoreInput } from "@/lib/store-domain";
 
 import { normaliseCode } from "./codes";
@@ -210,7 +210,7 @@ function sql(): Sql {
  * already succeeded.
  */
 export async function ingest(event: AffiliateEvent): Promise<IngestOutcome> {
-  return sql().begin(async (tx) => {
+  return transaction(sql(), async (tx) => {
     const claimed = await tx`
       insert into affiliate.event (external_id, type, shop, payload)
       values (${event.id}, ${event.type}, ${event.shop}, ${JSON.stringify(event)}::jsonb)
@@ -264,7 +264,7 @@ type ReferralContext = {
  * second charge simply being recorded as `already_paid_once`.
  */
 async function loadReferral(
-  tx: TransactionSql,
+  tx: Tx,
   shop: string,
 ): Promise<ReferralContext | null> {
   const rows = await tx<
@@ -359,7 +359,7 @@ function cancelledByCharge(referral: ReferralContext, chargeAt: Date): boolean {
  * properly-encoded rows if that is ever fixed.
  */
 async function chargeWasRefunded(
-  tx: TransactionSql,
+  tx: Tx,
   shop: string,
   chargeId: string,
 ): Promise<boolean> {
@@ -375,7 +375,7 @@ async function chargeWasRefunded(
   return refunds.length > 0;
 }
 
-async function apply(tx: TransactionSql, event: AffiliateEvent): Promise<IngestOutcome> {
+async function apply(tx: Tx, event: AffiliateEvent): Promise<IngestOutcome> {
   switch (event.type) {
     case "referral.linked":
       return linkReferral(tx, event);
@@ -399,7 +399,7 @@ async function apply(tx: TransactionSql, event: AffiliateEvent): Promise<IngestO
  * much as a technical one: the alternative, last-write-wins, means an agency's
  * client can be taken by anyone who talks the merchant into retyping a field.
  */
-async function linkReferral(tx: TransactionSql, event: AffiliateEvent): Promise<IngestOutcome> {
+async function linkReferral(tx: Tx, event: AffiliateEvent): Promise<IngestOutcome> {
   const codes = await tx<{ id: string; partner_id: string; active: boolean }[]>`
     select id, partner_id, active from affiliate.code where code = ${event.code!}
   `;
@@ -426,7 +426,7 @@ async function linkReferral(tx: TransactionSql, event: AffiliateEvent): Promise<
 }
 
 async function setReferralStatus(
-  tx: TransactionSql,
+  tx: Tx,
   event: AffiliateEvent,
   status: "active" | "cancelled",
 ): Promise<IngestOutcome> {
@@ -463,7 +463,7 @@ async function setReferralStatus(
  * is *supposed* to earn nothing — so the reason is recorded against the event
  * and the sender gets a 200.
  */
-async function chargeSucceeded(tx: TransactionSql, event: AffiliateEvent): Promise<IngestOutcome> {
+async function chargeSucceeded(tx: Tx, event: AffiliateEvent): Promise<IngestOutcome> {
   const referral = await loadReferral(tx, event.shop);
   if (!referral) return { status: "ignored", detail: "unknown_shop" };
 
@@ -532,7 +532,7 @@ async function chargeSucceeded(tx: TransactionSql, event: AffiliateEvent): Promi
  * it, and marking it reversed would make the partner's balance disagree with
  * their bank statement; recovering it is a conversation, not an UPDATE.
  */
-async function chargeRefunded(tx: TransactionSql, event: AffiliateEvent): Promise<IngestOutcome> {
+async function chargeRefunded(tx: Tx, event: AffiliateEvent): Promise<IngestOutcome> {
   const reversed = await tx`
     update affiliate.commission
     set status = 'reversed', reversed_at = now()
