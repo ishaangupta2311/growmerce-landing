@@ -557,13 +557,21 @@ async function chargeRefunded(tx: Tx, event: AffiliateEvent): Promise<IngestOutc
  * their December commissions clear.
  *
  * Returns how many cleared, so the log line is worth reading.
+ *
+ * `scope` narrows it to one partner. Nothing in the app passes one — the sweep
+ * is meant to be global — but the smoke test runs against the shared database
+ * and must not approve anybody's real commission early while checking its
+ * own. The predicate is written so a null scope compiles to the global sweep
+ * rather than to a second query.
  */
-export async function clearMaturedCommissions(): Promise<number> {
+export async function clearMaturedCommissions(scope?: { partnerId: number }): Promise<number> {
+  const partnerId = scope?.partnerId ?? null;
   const cleared = await sql()`
     update affiliate.commission
     set status = 'approved', cleared_at = now()
     where status = 'pending'
       and created_at < now() - ${`${HOLD_DAYS} days`}::interval
+      and (${partnerId}::bigint is null or partner_id = ${partnerId}::bigint)
     returning id
   `;
   return cleared.length;

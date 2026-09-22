@@ -247,12 +247,14 @@ async function main() {
   );
 
   /* Age the commission past the refund window and run the same sweep the cron
-     runs, so there is something genuinely owed to pay. */
+     runs, so there is something genuinely owed to pay. Scoped to this partner:
+     the global sweep would also approve any real commission that had matured,
+     on a database this script shares with the real program. */
   await sql!`
     update affiliate.commission set created_at = now() - interval '40 days'
     where partner_id = ${heldId} and status = 'pending'
   `;
-  await clearMaturedCommissions();
+  await clearMaturedCommissions({ partnerId: heldId });
 
   const due = (await amountsDue()).find((row) => row.partnerId === heldId);
   check("it shows up as owed", due?.owedCents, 1980);
