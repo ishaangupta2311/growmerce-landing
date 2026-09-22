@@ -3,8 +3,10 @@ import type { Metadata } from "next";
 import { clearsAt, formatRate, HOLD_DAYS } from "@/lib/affiliate/commission";
 import { formatCountdown, formatDate, formatMoney } from "@/lib/affiliate/format";
 import { requirePartner } from "@/lib/affiliate/session";
-import { commissionsFor, totalsFor } from "@/lib/affiliate/store";
+import { offsetFor, PAGE_SIZE, pageCountFor, pageFrom } from "@/lib/affiliate/paging";
+import { commissionCountFor, commissionsFor, totalsFor } from "@/lib/affiliate/store";
 import Empty from "@/components/affiliate/Empty";
+import Pager from "@/components/affiliate/Pager";
 import Panel from "@/components/affiliate/Panel";
 import StatCard from "@/components/affiliate/StatCard";
 import { CommissionPill } from "@/components/affiliate/StatusPill";
@@ -21,13 +23,25 @@ export const metadata: Metadata = { title: "Earnings" };
  *
  * Reversed rows are listed rather than hidden. A balance that quietly shrinks
  * between two visits is the thing this page exists to make impossible.
+ *
+ * Paged, fifty at a time, against a real count. The count comes first because
+ * the page number is clamped to it — a `?page=` past the end shows the last
+ * page, not an empty table — so the rows cannot be fetched in the same round.
  */
-export default async function EarningsPage() {
+export default async function EarningsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
   const { partner } = await requirePartner();
-  const [commissions, totals] = await Promise.all([
-    commissionsFor(partner.id, 200),
+  const [{ page: requested }, totals, total] = await Promise.all([
+    searchParams,
     totalsFor(partner.id),
+    commissionCountFor(partner.id),
   ]);
+  const pageCount = pageCountFor(total);
+  const page = pageFrom(requested, pageCount);
+  const commissions = await commissionsFor(partner.id, PAGE_SIZE, offsetFor(page));
 
   return (
     <div className="space-y-8">
@@ -60,7 +74,7 @@ export default async function EarningsPage() {
       ))}
 
       <Panel
-        title="Every commission"
+        title={`Every commission (${total})`}
         scroll={commissions.length > 0}
         action={
           <span className="font-poppins text-[14.5px] text-body-mute">
@@ -133,6 +147,16 @@ export default async function EarningsPage() {
           </Table>
         )}
       </Panel>
+
+      <Pager
+        page={page}
+        pageCount={pageCount}
+        total={total}
+        noun="commission"
+        href={(n) =>
+          n <= 1 ? "/affiliates/dashboard/earnings" : `/affiliates/dashboard/earnings?page=${n}`
+        }
+      />
     </div>
   );
 }

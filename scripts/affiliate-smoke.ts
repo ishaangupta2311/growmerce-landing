@@ -38,7 +38,15 @@ import {
   setPartnerStatus,
 } from "../src/lib/affiliate/admin-store";
 import { clearMaturedCommissions, ingest, parseEvent } from "../src/lib/affiliate/ingest";
-import { commissionsFor, createPartner, payoutsFor, referralsFor, totalsFor } from "../src/lib/affiliate/store";
+import {
+  commissionCountFor,
+  commissionsFor,
+  createPartner,
+  payoutsFor,
+  referralCountFor,
+  referralsFor,
+  totalsFor,
+} from "../src/lib/affiliate/store";
 
 const sql = db();
 if (!sql) {
@@ -400,6 +408,19 @@ async function main() {
     (await sql!<{ n: number }[]>`select count(*)::int as n from affiliate.code where partner_id = ${created.id}`)[0].n,
     1,
   );
+
+  console.log("\npaging");
+
+  /* The agency has two commission rows by now — one live, one reversed — and
+     one store. The counts are what the dashboard's page numbers come from, and
+     a page of one is the smallest thing that proves `offset` actually moves. */
+  const all = await commissionsFor(agencyId);
+  check("the count includes reversed rows", await commissionCountFor(agencyId), all.length);
+  check("and there are two of them", all.length, 2);
+  const [first] = await commissionsFor(agencyId, 1, 0);
+  const [second] = await commissionsFor(agencyId, 1, 1);
+  check("a page of one, then the next, walks the same order", [first?.id, second?.id], all.map((c) => c.id));
+  check("stores are counted the same way", await referralCountFor(agencyId), 1);
 }
 
 /* Wrapped rather than awaited at the top level: tsx compiles these scripts to

@@ -324,6 +324,7 @@ export async function referralsFor(
   partnerId: number,
   fallbackCurrency: string,
   limit = 200,
+  offset = 0,
 ): Promise<Referral[]> {
   const rows = await sql()<ReferralRow[]>`
     select r.id, r.shop, r.shop_name, r.status, r.plan, c.code,
@@ -336,9 +337,24 @@ export async function referralsFor(
     where r.partner_id = ${partnerId}
     group by r.id, c.code
     order by r.linked_at desc
-    limit ${limit}
+    limit ${limit} offset ${offset}
   `;
   return rows.map((row) => toReferral(row, fallbackCurrency));
+}
+
+/**
+ * How many stores a partner has referred, for a page count and a heading.
+ *
+ * Its own statement rather than `count(*) over ()` on the list query: that
+ * query groups a join, and a window over a grouped join counts the groups only
+ * as long as nobody changes the grouping. A count that stands alone is one
+ * somebody can read and check.
+ */
+export async function referralCountFor(partnerId: number): Promise<number> {
+  const rows = await sql()<{ n: string }[]>`
+    select count(*) as n from affiliate.referral where partner_id = ${partnerId}
+  `;
+  return int(rows[0]?.n);
 }
 
 type CommissionRow = {
@@ -375,7 +391,11 @@ function toCommission(row: CommissionRow): Commission {
   };
 }
 
-export async function commissionsFor(partnerId: number, limit = 100): Promise<Commission[]> {
+export async function commissionsFor(
+  partnerId: number,
+  limit = 100,
+  offset = 0,
+): Promise<Commission[]> {
   const rows = await sql()<CommissionRow[]>`
     select cm.id, cm.kind, cm.amount_cents, cm.currency, cm.charge_cents, cm.rate_bps,
            cm.status, r.shop, r.shop_name, cm.period_start, cm.period_end,
@@ -384,9 +404,17 @@ export async function commissionsFor(partnerId: number, limit = 100): Promise<Co
     join affiliate.referral r on r.id = cm.referral_id
     where cm.partner_id = ${partnerId}
     order by cm.created_at desc
-    limit ${limit}
+    limit ${limit} offset ${offset}
   `;
   return rows.map(toCommission);
+}
+
+/** Every commission row a partner has, reversed ones included — the ledger's length. */
+export async function commissionCountFor(partnerId: number): Promise<number> {
+  const rows = await sql()<{ n: string }[]>`
+    select count(*) as n from affiliate.commission where partner_id = ${partnerId}
+  `;
+  return int(rows[0]?.n);
 }
 
 export async function payoutsFor(partnerId: number): Promise<Payout[]> {
