@@ -31,7 +31,9 @@ export const metadata: Metadata = { title: "Earnings" };
 export default async function EarningsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  /* A repeated key resolves to an array — `?page=2&page=5` is a URL somebody
+     can type — so the type says so and `pageFrom` takes the last of them. */
+  searchParams: Promise<{ page?: string | string[] }>;
 }) {
   const { partner } = await requirePartner();
   const [{ page: requested }, totals, total] = await Promise.all([
@@ -43,11 +45,29 @@ export default async function EarningsPage({
   const page = pageFrom(requested, pageCount);
   const commissions = await commissionsFor(partner.id, PAGE_SIZE, offsetFor(page));
 
+  /* The same zeroed row the payouts page falls back to, for the same reason.
+     `totalsFor` returns one row per currency that has earned something, so a
+     partner approved this morning has no rows at all — as does one whose only
+     commission was reversed — and a page that renders no cards whatsoever
+     reads as a page that failed rather than as a balance of nothing. */
+  const balances =
+    totals.length > 0
+      ? totals
+      : [
+          {
+            currency: partner.payoutCurrency,
+            approvedCents: 0,
+            pendingCents: 0,
+            paidCents: 0,
+            lifetimeCents: 0,
+          },
+        ];
+
   return (
     <div className="space-y-8">
-      {totals.map((total) => (
+      {balances.map((total) => (
         <section key={total.currency}>
-          {totals.length > 1 && (
+          {balances.length > 1 && (
             <h2 className="mb-3 font-poppins text-[15px] font-bold text-charcoal">
               In {total.currency}
             </h2>

@@ -336,7 +336,11 @@ export async function referralsFor(
     left join affiliate.commission cm on cm.referral_id = r.id
     where r.partner_id = ${partnerId}
     group by r.id, c.code
-    order by r.linked_at desc
+    /* The id breaks the tie. Two stores linked in the same second otherwise
+       have no order between them at all, and Postgres is free to return them
+       either way round on each query — so a LIMIT/OFFSET walk can show one of
+       them on two pages and the other on none. */
+    order by r.linked_at desc, r.id desc
     limit ${limit} offset ${offset}
   `;
   return rows.map((row) => toReferral(row, fallbackCurrency));
@@ -403,7 +407,9 @@ export async function commissionsFor(
     from affiliate.commission cm
     join affiliate.referral r on r.id = cm.referral_id
     where cm.partner_id = ${partnerId}
-    order by cm.created_at desc
+    /* The id breaks the tie, as on the referral list above: a month's charges
+       are ingested in a batch and share a timestamp to the second. */
+    order by cm.created_at desc, cm.id desc
     limit ${limit} offset ${offset}
   `;
   return rows.map(toCommission);

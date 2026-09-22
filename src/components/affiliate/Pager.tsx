@@ -13,7 +13,9 @@ import { clsx } from "@/lib/clsx";
  * is the question the bar exists to answer.
  *
  * Renders nothing for a single page. The count in the heading already says
- * how many rows there are; a bar with one button would only say it again.
+ * how many rows there are; a bar with one button would only say it again —
+ * which is also why the summary line below is always plural. It is only
+ * reached when there are more than a page of rows behind it.
  */
 export default function Pager({
   page,
@@ -40,8 +42,7 @@ export default function Pager({
       className="flex flex-wrap items-center justify-between gap-3 px-1"
     >
       <p className="text-[14px] text-body-mute">
-        Showing {from}–{to} of {total} {noun}
-        {total === 1 ? "" : "s"}
+        Showing {from}–{to} of {total} {noun}s
       </p>
       <div className="flex flex-wrap items-center gap-2">
         {page > 1 && (
@@ -92,7 +93,14 @@ function windowAround(page: number, pageCount: number): (number | null)[] {
 
   const out: (number | null)[] = [];
   sorted.forEach((n, i) => {
-    if (i > 0 && n - sorted[i - 1] > 1) out.push(null);
+    const previous = sorted[i - 1];
+    if (i > 0 && n - previous > 1) {
+      /* A gap of exactly one page gets the page rather than an ellipsis. On
+         page 5 of 10 the first `…` stood for page 2 alone, which is a
+         character wider than the number it was hiding and costs a click to
+         find out what it was. */
+      out.push(n - previous === 2 ? previous + 1 : null);
+    }
     out.push(n);
   });
   return out;

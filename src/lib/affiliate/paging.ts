@@ -18,8 +18,14 @@ export function pageCountFor(total: number): number {
   return Math.max(1, Math.ceil(total / PAGE_SIZE));
 }
 
-export function pageFrom(raw: string | undefined, pageCount: number): number {
-  const n = Number.parseInt(raw ?? "", 10);
+export function pageFrom(raw: string | string[] | undefined, pageCount: number): number {
+  /* An array because Next resolves a repeated search parameter to every value
+     it was given, and `?page=2&page=5` is a URL somebody can type or a link
+     somebody can build wrong. The last value is the one the address bar ends
+     with; parsing the array itself would be NaN, which reads as page 1 and
+     looks like the pager is broken. */
+  const value = Array.isArray(raw) ? raw[raw.length - 1] : raw;
+  const n = Number.parseInt(value ?? "", 10);
   if (!Number.isInteger(n) || n < 1) return 1;
   return Math.min(n, pageCount);
 }

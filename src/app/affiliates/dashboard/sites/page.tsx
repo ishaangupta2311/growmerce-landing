@@ -27,7 +27,8 @@ export const metadata: Metadata = { title: "Referred stores" };
 export default async function SitesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  /* An array when the key is repeated, as on the earnings page. */
+  searchParams: Promise<{ page?: string | string[] }>;
 }) {
   const { partner } = await requirePartner();
   const [{ page: requested }, total] = await Promise.all([
