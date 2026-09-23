@@ -4,29 +4,73 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import {
+  Banknote,
   ExternalLink,
   FileText,
   FolderOpen,
+  Handshake,
   Images,
   LayoutDashboard,
   LogOut,
   Menu,
+  ScrollText,
   Settings,
   Tags,
+  Users,
   X,
+  type LucideIcon,
 } from "lucide-react";
-import { logout } from "@/app/admin/_actions/auth";
+import { signOutAdmin } from "@/app/admin/_actions/auth";
 import { clsx } from "@/lib/clsx";
 import { ToastProvider } from "./overlay";
 
-const NAV = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/admin/blogs", label: "Blogs", icon: FileText },
-  { href: "/admin/categories", label: "Categories", icon: FolderOpen },
-  { href: "/admin/tags", label: "Tags", icon: Tags },
-  { href: "/admin/media", label: "Media", icon: Images },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
+type NavItem = { href: string; label: string; icon: LucideIcon; exact?: boolean };
+
+/**
+ * One admin, two areas: the blog and the affiliate program share this sidebar
+ * rather than each having a shell of its own, which is what they had while
+ * each also had its own login.
+ */
+const NAV: { label?: string; items: NavItem[] }[] = [
+  { items: [{ href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true }] },
+  {
+    label: "Blog",
+    items: [
+      { href: "/admin/blog", label: "Posts", icon: FileText },
+      { href: "/admin/blog/categories", label: "Categories", icon: FolderOpen },
+      { href: "/admin/blog/tags", label: "Tags", icon: Tags },
+      { href: "/admin/blog/media", label: "Media", icon: Images },
+      { href: "/admin/blog/settings", label: "Settings", icon: Settings },
+    ],
+  },
+  {
+    label: "Affiliates",
+    items: [
+      { href: "/admin/affiliates", label: "Overview", icon: Handshake, exact: true },
+      { href: "/admin/affiliates/partners", label: "Partners", icon: Users },
+      { href: "/admin/affiliates/payouts", label: "Payouts", icon: Banknote },
+      { href: "/admin/affiliates/events", label: "Ingest log", icon: ScrollText },
+    ],
+  },
 ];
+
+/**
+ * The one entry to highlight: the longest href the path sits under.
+ *
+ * "Posts" is `/admin/blog`, and every other blog entry lives beneath it, so a
+ * plain prefix test would light Posts up on the Tags page as well. Longest
+ * match wins instead — `/admin/blog/tags` beats `/admin/blog` there — while an
+ * editor at `/admin/blog/12/edit` still falls back to Posts, which is where it
+ * belongs.
+ */
+function activeHref(pathname: string): string | null {
+  let best: string | null = null;
+  for (const { href, exact } of NAV.flatMap((group) => group.items)) {
+    const matches = exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+    if (matches && (!best || href.length > best.length)) best = href;
+  }
+  return best;
+}
 
 function initials(name: string, email: string): string {
   const source = name.trim() || email;
@@ -36,7 +80,7 @@ function initials(name: string, email: string): string {
 
 function LogoutButton({ className, compact = false }: { className?: string; compact?: boolean }) {
   return (
-    <form action={logout}>
+    <form action={signOutAdmin}>
       <button
         type="submit"
         className={clsx(
@@ -75,8 +119,7 @@ export default function AdminShell({
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
-  const isActive = (href: string, exact?: boolean) =>
-    exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+  const current = activeHref(pathname);
 
   const sidebar = (
     <div className="flex h-full flex-col">
@@ -84,28 +127,37 @@ export default function AdminShell({
         <span className="grid size-8 place-items-center rounded-lg bg-brand text-sm font-black text-white">G</span>
         <div className="leading-tight">
           <p className="text-sm font-extrabold text-white">Growmerce</p>
-          <p className="text-[11px] font-semibold tracking-wide text-zinc-400 uppercase">Blog admin</p>
+          <p className="text-[11px] font-semibold tracking-wide text-zinc-400 uppercase">Admin</p>
         </div>
       </div>
 
-      <nav aria-label="Admin" className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
-        {NAV.map(({ href, label, icon: Icon, exact }) => {
-          const active = isActive(href, exact);
-          return (
-            <Link
-              key={href}
-              href={href}
-              aria-current={active ? "page" : undefined}
-              className={clsx(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
-                active ? "bg-white/10 text-white" : "text-zinc-400 hover:bg-white/5 hover:text-white",
-              )}
-            >
-              <Icon aria-hidden className={clsx("size-[18px]", active && "text-brand")} />
-              {label}
-            </Link>
-          );
-        })}
+      <nav aria-label="Admin" className="flex-1 overflow-y-auto px-3 py-4">
+        {NAV.map((group, index) => (
+          <div key={group.label ?? index} className={clsx(index > 0 && "mt-5")}>
+            {group.label && (
+              <p className="px-3 pb-1.5 text-[11px] font-bold tracking-wider text-zinc-500 uppercase">{group.label}</p>
+            )}
+            <div className="space-y-0.5">
+              {group.items.map(({ href, label, icon: Icon }) => {
+                const active = href === current;
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    aria-current={active ? "page" : undefined}
+                    className={clsx(
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
+                      active ? "bg-white/10 text-white" : "text-zinc-400 hover:bg-white/5 hover:text-white",
+                    )}
+                  >
+                    <Icon aria-hidden className={clsx("size-[18px]", active && "text-brand")} />
+                    {label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
       <div className="space-y-1 border-t border-zinc-800 p-3">

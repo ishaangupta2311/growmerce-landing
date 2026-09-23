@@ -58,39 +58,37 @@ rides the advancing front.
 
 ## Blog and admin panel
 
-The public blog lives at `/blog`; the admin panel that edits it at `/admin`.
-Everything is stored in the existing Supabase Postgres, in its own `blog`
-schema (`migrations/0006_blog.sql`) — posts, categories, tags, authors, media,
-admin accounts and sessions.
+The public blog lives at `/blog`. Everything that edits it lives in the admin
+at `/admin`, alongside the affiliate program's admin: one dashboard, one
+sign-in. Blog content is stored in the existing Supabase Postgres, in its own
+`blog` schema (`migrations/0006_blog.sql`) — posts, categories, tags, authors,
+media and admin profiles.
 
 ### Setup
 
-1. Copy `.env.example` to `.env.local` (and set the same variables in the
-   hosting provider): `DATABASE_URL`, `SESSION_SECRET` (32+ random characters),
-   and `ADMIN_EMAIL` / `ADMIN_PASSWORD` for the first account.
+1. Copy `.env.example` to `.env` (or `.env.local`) and set the same variables
+   in the hosting provider. The admin needs `DATABASE_URL`, the Supabase pair
+   (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) and
+   `AFFILIATE_ADMIN_EMAILS`.
 2. `npm run db:migrate` — applies every file in `migrations/`. They are all
    re-runnable.
-3. `npm run admin:create` — creates the admin from `ADMIN_EMAIL` /
-   `ADMIN_PASSWORD` (bcrypt-hashed). Run it again to reset a password; that
-   also signs the account out everywhere.
-
-   Alternatively skip step 3 on a deployment: while the database has no admin
-   accounts, signing in once at `/admin/login` with those env credentials
-   creates the account. After that the database is the only source of truth
-   and the two variables should be removed.
+3. Sign in at `/admin` with a Supabase account whose email is on
+   `AFFILIATE_ADMIN_EMAILS`. There is no separate admin account to create: the
+   first visit writes your admin profile and byline, and your name can be
+   changed under Blog → Settings. Passwords are Supabase's — reset one from
+   "Forgot password" on the sign-in page.
 
 ### How it fits together
 
 | Piece | Where |
 | --- | --- |
-| Route protection | `src/proxy.ts` rejects missing/forged cookies; `requireAdmin()` in `src/lib/auth/session.ts` checks the session row in every admin layout, page and Server Action |
-| Sessions | Random token in a signed, HttpOnly, `SameSite=Lax`, `__Host-` cookie; only its SHA-256 is stored. Logout deletes the row. 7-day lifetime |
-| Login throttling | `src/lib/auth/throttle.ts` — 5 failures per email / 20 per IP per 15 minutes, in Postgres so it holds across serverless instances |
-| Mutations | Server Actions in `src/app/admin/_actions/`, each wrapped in `adminAction()` (auth first) and validated with zod (`src/lib/blog/validation.ts`) |
+| Route protection | `src/proxy.ts` sends signed-out visitors to the sign-in page; `requireAdmin()` in `src/lib/admin/session.ts` checks the verified Supabase session and the `AFFILIATE_ADMIN_EMAILS` allowlist in every admin layout, page and Server Action. A signed-in non-admin gets a 404 |
+| Sessions | Supabase Auth — the same login as the affiliate dashboard. Proxy refreshes expiring tokens before the page renders (`src/lib/supabase/proxy.ts`) |
+| Mutations | Server Actions in `src/app/admin/_actions/`; the blog's are wrapped in `adminAction()` (auth first) and validated with zod (`src/lib/blog/validation.ts`) |
 | Post HTML | Tiptap editor → sanitised against an allowlist on save and again on render (`src/lib/blog/sanitize.ts`) |
 | Media | Re-encoded to WebP (max 2400px, EXIF stripped) by sharp, stored in `blog.media`, served immutably from `/uploads/<id>/<name>` |
 | Publishing | A post is live when it is published or scheduled and its publish time has passed — one rule for `/blog`, `/blog/[slug]` and the sitemap. Pages revalidate every minute and on every save, so scheduled posts go live without a cron job |
-| Previews | Saved posts at `/admin/blogs/[id]/preview`; unsaved editor state is snapshotted to `blog.post_preview` and rendered at `/admin/preview/[token]`. Both use the public article template |
+| Previews | Saved posts at `/admin/blog/[id]/preview`; unsaved editor state is snapshotted to `blog.post_preview` and rendered at `/admin/blog/preview/[token]`. Both use the public article template |
 
 ## Placeholders to replace
 

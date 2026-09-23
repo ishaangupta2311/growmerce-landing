@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { optionalAdmin } from "@/lib/affiliate/admin";
+import { optionalAdmin } from "@/lib/admin/session";
 import { describeTerms } from "@/lib/affiliate/commission";
 import { requirePartner } from "@/lib/affiliate/session";
 import DashboardNav from "@/components/affiliate/DashboardNav";
@@ -51,7 +51,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <PartnerPill status={partner.status} />
           {admin && (
             <Link
-              href="/affiliates/admin"
+              href="/admin"
               className="font-poppins text-[14px] font-bold text-brand underline"
             >
               Admin

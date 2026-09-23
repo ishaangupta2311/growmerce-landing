@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 
-import { createPayout, type FormState } from "@/app/affiliates/admin/actions";
+import { createPayout, type FormState } from "@/app/admin/_actions/affiliates";
 import { formatMoney } from "@/lib/affiliate/format";
 import type { AmountDue } from "@/lib/affiliate/admin-store";
 

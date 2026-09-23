@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { createPartner, updatePartnerProfile, updatePayoutPreferences } from "@/lib/affiliate/store";
 import { requirePartner } from "@/lib/affiliate/session";
 import type { PartnerKind, PayoutMethod } from "@/lib/affiliate/types";
+import { safeNext } from "@/lib/supabase/safe-next";
 import { supabaseServer, currentUser } from "@/lib/supabase/server";
 
 /**
@@ -238,24 +239,6 @@ export async function signIn(_state: FormState, form: FormData): Promise<FormSta
   }
 
   redirect(safeNext(text(form, "next", 300)));
-}
-
-/**
- * Where to land after signing in.
- *
- * `next` originates in `src/proxy.ts`, which puts the path somebody was trying
- * to reach into the login URL — but by the time it arrives here it is a form
- * field, and a form field is whatever the browser was told to send. Restricting
- * it to a path inside `/affiliates/` is what stops a crafted login link from
- * signing a partner in and then depositing them somewhere else entirely. The
- * `//` case is the one worth naming: `//evil.example` is a protocol-relative
- * URL, and `startsWith("/")` alone waves it through.
- */
-function safeNext(raw: string): string {
-  if (!raw || raw.startsWith("//") || !raw.startsWith("/affiliates/")) {
-    return "/affiliates/dashboard";
-  }
-  return raw;
 }
 
 export async function signOut(): Promise<void> {

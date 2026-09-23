@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 
-import { replayHeld, updateRate, updateStatus, type FormState } from "@/app/affiliates/admin/actions";
+import { replayHeld, updateRate, updateStatus, type FormState } from "@/app/admin/_actions/affiliates";
 import { formatRate } from "@/lib/affiliate/commission";
 import type { Partner } from "@/lib/affiliate/types";
 

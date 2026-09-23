@@ -1,8 +1,9 @@
 /**
- * Gives an admin account a byline if it has none.
+ * Gives an admin a byline if they have none.
  *
- * Shared by the first-login bootstrap and `scripts/create-admin.ts`, so it
- * stays free of `server-only` and takes the client as an argument.
+ * Called when an admin opens /admin for the first time and their profile row
+ * is written (`src/lib/admin/session.ts`). Free of `server-only` and handed
+ * its client as an argument, so a script can call it too.
  */
 
 import type { Sql } from "postgres";

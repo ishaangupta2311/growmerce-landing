@@ -8,7 +8,6 @@
     "start": "next start",
     "lint": "eslint",
     "db:migrate": "tsx scripts/db-migrate.ts",
-    "admin:create": "tsx scripts/create-admin.ts",
     "smoke:affiliate": "node --env-file=.env --conditions=react-server --import tsx scripts/affiliate-smoke.ts"
   },
   "dependencies": {
@@ -24,7 +23,6 @@
     "@tiptap/pm": "^3.31.3",
     "@tiptap/react": "^3.31.3",
     "@tiptap/starter-kit": "^3.31.3",
-    "bcryptjs": "^3.0.3",
     "lenis": "^1.3.26",
     "lucide-react": "^1.47.0",
     "next": "16.3.0",

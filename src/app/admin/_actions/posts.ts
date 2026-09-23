@@ -65,7 +65,7 @@ export async function previewPostAction(postId: unknown, values: unknown): Promi
     if (!parsed.success) return { ok: false, error: INVALID, fieldErrors: fieldErrors(parsed.error) };
 
     const previewId = await createPreview(admin.id, id.data, parsed.data);
-    return { ok: true, data: { url: `/admin/preview/${previewId}` } };
+    return { ok: true, data: { url: `/admin/blog/preview/${previewId}` } };
   });
 }
 

@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
+import { safeNext } from "@/lib/supabase/safe-next";
 import { supabaseServer } from "@/lib/supabase/server";
 
 /**
@@ -15,26 +16,6 @@ import { supabaseServer } from "@/lib/supabase/server";
  * `?token_hash=&type=` is the older one-time-token link, verified instead. Both
  * end in the same place: cookies set by `supabaseServer`, and a redirect.
  */
-
-/**
- * Where to send them afterwards.
- *
- * `next` comes out of a URL in an email, so it is attacker-controllable in the
- * only sense that matters: anybody can send anybody a link. It is therefore
- * restricted to a path inside `/affiliates/`, which stops the callback being
- * used as an open redirect — a link that genuinely comes from growmerce.ai,
- * genuinely signs the person in, and then lands them on somebody else's site.
- *
- * The leading `//` check is the one that is easy to miss: `//evil.example` is a
- * protocol-relative URL, not a path, and `startsWith("/")` alone lets it
- * through.
- */
-function safeNext(raw: string | null): string {
-  if (!raw || raw.startsWith("//") || !raw.startsWith("/affiliates/")) {
-    return "/affiliates/dashboard";
-  }
-  return raw;
-}
 
 export async function GET(request: NextRequest) {
   const url = request.nextUrl;

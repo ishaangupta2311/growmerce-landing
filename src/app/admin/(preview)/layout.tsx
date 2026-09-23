@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth/session";
+import { requireAdmin } from "@/lib/admin/session";
 
 /**
  * Previews render the public article template, so they sit outside the admin

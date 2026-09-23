@@ -1,7 +1,7 @@
 import "server-only";
 
 import { unstable_rethrow } from "next/navigation";
-import { requireAdmin, type Admin } from "@/lib/auth/session";
+import { requireAdmin, type Admin } from "@/lib/admin/session";
 import { DatabaseUnavailableError } from "./sql";
 import type { ActionResult } from "./types";
 

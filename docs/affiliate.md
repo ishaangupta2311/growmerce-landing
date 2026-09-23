@@ -151,11 +151,14 @@ reversal, and charges arriving after cancellation.
 
 ## The admin side
 
-`/affiliates/admin`. Deliberately unlinked from anywhere public — the only way
-in is to type it, or to follow the "Admin" link that appears on your own partner
-dashboard if you are one.
+`/admin/affiliates`, inside the site's one admin at `/admin` — the blog is
+administered from the same dashboard, behind the same sign-in. Deliberately
+unlinked from anywhere public — the only way in is to type it, or to follow the
+"Admin" link that appears on your own partner dashboard if you are one. The old
+`/affiliates/admin` addresses redirect there.
 
-Who is an admin comes from an environment variable and nothing else:
+Who is an admin — for the blog as much as for affiliates — comes from an
+environment variable and nothing else:
 
 ```bash
 # Comma-separated. Unset means nobody is an admin — it fails closed.

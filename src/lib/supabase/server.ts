@@ -18,9 +18,9 @@ import { requireSupabaseEnv, supabaseEnv } from "./env";
  * there. Swallowing it keeps a routine rotation from becoming a 500, but it is
  * not the fix: a rotation the browser never receives leaves it holding a
  * refresh token Supabase has already consumed, and the next request signs the
- * partner out. The fix is that the rotation happens *before* the render —
- * `src/lib/supabase/proxy.ts` refreshes the session in Proxy on every
- * `/affiliates` request that carries one, and writes the new tokens onto the
+ * partner or admin out. The fix is that the rotation happens *before* the
+ * render — `src/lib/supabase/proxy.ts` refreshes the session in Proxy on every
+ * `/affiliates` and `/admin` request that carries one, and writes the new tokens onto the
  * request this render reads and the response the browser keeps. What reaches
  * this catch is the narrow case of a token expiring in the gap between the
  * two, and Proxy repairs that on the very next request.

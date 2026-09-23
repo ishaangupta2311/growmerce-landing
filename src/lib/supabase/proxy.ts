@@ -16,11 +16,12 @@ import { supabaseEnv } from "./env";
  * they can see. @supabase/ssr is explicit that middleware has to do this
  * write, and this is that.
  *
- * It runs before the render, on every `/affiliates` request that carries a
- * session cookie, with a client bound to the request's cookies. Anything
- * Supabase asks to set is written twice: onto the request, so the render that
- * follows reads the fresh tokens through `cookies()`; and — via `apply` — onto
- * whichever response Proxy ends up returning, so the browser gets them too.
+ * It runs before the render, on every `/affiliates` and `/admin` request that
+ * carries a session cookie, with a client bound to the request's cookies.
+ * Anything Supabase asks to set is written twice: onto the request, so the
+ * render that follows reads the fresh tokens through `cookies()`; and — via
+ * `apply` — onto whichever response Proxy ends up returning, so the browser
+ * gets them too.
  *
  * `getClaims()` rather than `getUser()`. Both refresh an expired session, but
  * `getClaims` then verifies the JWT locally against the project's signing

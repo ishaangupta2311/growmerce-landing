@@ -50,6 +50,15 @@ const nextConfig: NextConfig = {
          in the page so it never renders (a redirect thrown from an ISR page
          came back with a doubled Location header on a cache miss). */
       { source: "/blog/page/1", destination: "/blog", permanent: true },
+      /* The admin used to be two: the blog's at /admin with its own login, and
+         the affiliate program's at /affiliates/admin. It is one now, at /admin,
+         behind the Supabase sign-in. The old affiliate address has moved for
+         good; the old login page forwards to the one that exists, but is not
+         marked permanent, because a browser caches a 308 for ever and that
+         path may one day mean something again. */
+      { source: "/affiliates/admin", destination: "/admin/affiliates", permanent: true },
+      { source: "/affiliates/admin/:path*", destination: "/admin/affiliates/:path*", permanent: true },
+      { source: "/admin/login", destination: "/affiliates/login?next=/admin", permanent: false },
       ...["growmerce.ai", "www.growmerce.ai"].flatMap((host) => [
         {
           source: "/growsearch",

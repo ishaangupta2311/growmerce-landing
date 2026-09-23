@@ -1,0 +1,21 @@
+-- Admin sign-in moves to Supabase Auth.
+--
+-- Until now the blog admin had its own login: email and bcrypt password in
+-- `blog.admin_user`, sessions in `blog.session`, throttling in
+-- `blog.login_attempt`, and a SESSION_SECRET to sign the cookie. The affiliate
+-- admin already signed in through Supabase against AFFILIATE_ADMIN_EMAILS, so
+-- one person administering both had two passwords for one dashboard. There is
+-- now one: /admin is gated by the Supabase session and the same allowlist.
+--
+-- `blog.admin_user` stays, as the admin's profile rather than their
+-- credential. Posts, media and previews record who created and changed them
+-- by pointing at it, and the author byline hangs off it; a row is found by
+-- email, and written the first time an allowed address opens /admin. Those
+-- rows have no password, so the column stops being required.
+--
+-- Additive, and safe to apply ahead of the code that needs it: the old login
+-- always writes a hash. Re-runnable — dropping a NOT NULL that is already
+-- dropped is a no-op. The retired tables and the column itself go in 0009,
+-- which must wait until nothing deployed still reads them.
+
+alter table blog.admin_user alter column password_hash drop not null;

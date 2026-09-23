@@ -22,10 +22,20 @@ export default async function LoginPage({
 }) {
   const { next, expired } = await searchParams;
 
+  /* The admin signs in here too — one account for the whole site — so the
+     page says which door they came through rather than greeting an admin with
+     a partner's earnings pitch. Only the wording follows `next`; where they
+     land is still decided by `safeNext` in the action. */
+  const toAdmin = next === "/admin" || Boolean(next?.startsWith("/admin/"));
+
   return (
     <AuthShell
-      title="Sign in"
-      lede="Your referrals, what they have earned, and when it lands."
+      title={toAdmin ? "Sign in to the admin" : "Sign in"}
+      lede={
+        toAdmin
+          ? "The blog and the affiliate program, with your Growmerce account."
+          : "Your referrals, what they have earned, and when it lands."
+      }
       notice={
         expired
           ? "That link has expired or had already been used. Sign in below, or send yourself a new one."
