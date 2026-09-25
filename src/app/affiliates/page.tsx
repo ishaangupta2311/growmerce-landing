@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { DEFAULT_RATE_BPS, formatRate, HOLD_DAYS } from "@/lib/affiliate/commission";
+import { optionalAdmin } from "@/lib/admin/session";
 import { optionalPartner } from "@/lib/affiliate/session";
 
 export const metadata: Metadata = {
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
  * page cannot end up advertising a rate the ledger does not pay.
  */
 export default async function AffiliateProgramPage() {
-  const session = await optionalPartner();
+  const [admin, session] = await Promise.all([optionalAdmin(), optionalPartner()]);
 
   return (
     <div className="mx-auto w-full max-w-[1180px] px-5 py-16 sm:px-8 sm:py-24">
@@ -40,7 +41,11 @@ export default async function AffiliateProgramPage() {
       </p>
 
       <div className="mt-8 flex flex-wrap gap-3">
-        {session ? (
+        {admin ? (
+          <Link href="/admin" className="cta-primary">
+            Open the admin
+          </Link>
+        ) : session ? (
           <Link href="/affiliates/dashboard" className="cta-primary">
             Open my dashboard
           </Link>
@@ -155,7 +160,7 @@ export default async function AffiliateProgramPage() {
         </dl>
       </section>
 
-      {!session && (
+      {!session && !admin && (
         <div className="mt-14 flex flex-wrap items-center gap-4">
           <Link href="/affiliates/signup" className="cta-primary">
             Apply to join

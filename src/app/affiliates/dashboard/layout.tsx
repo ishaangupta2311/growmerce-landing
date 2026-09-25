@@ -1,6 +1,3 @@
-import Link from "next/link";
-
-import { optionalAdmin } from "@/lib/admin/session";
 import { describeTerms } from "@/lib/affiliate/commission";
 import { requirePartner } from "@/lib/affiliate/session";
 import DashboardNav from "@/components/affiliate/DashboardNav";
@@ -26,12 +23,6 @@ import SignOutButton from "@/components/affiliate/forms/SignOutButton";
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { partner } = await requirePartner();
 
-  /* An admin who also has a partner account — which is how anybody tests this
-     — otherwise has to remember a URL that is deliberately unlinked from
-     everywhere else. Nothing is revealed to a non-admin: this returns null for
-     them, and the address 404s. */
-  const admin = await optionalAdmin();
-
   return (
     <div className="mx-auto w-full max-w-[1180px] px-5 sm:px-8">
       <header className="flex flex-wrap items-start justify-between gap-4 pt-10">
@@ -49,14 +40,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
         <div className="flex flex-col items-end gap-3">
           <PartnerPill status={partner.status} />
-          {admin && (
-            <Link
-              href="/admin"
-              className="font-poppins text-[14px] font-bold text-brand underline"
-            >
-              Admin
-            </Link>
-          )}
           <SignOutButton />
         </div>
       </header>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { isAdminEmail } from "@/lib/admin/session";
 import { partnerByUserId } from "@/lib/affiliate/store";
 import { currentUser } from "@/lib/supabase/server";
 import ApplyForm from "@/components/affiliate/forms/ApplyForm";
@@ -21,10 +22,14 @@ export const metadata: Metadata = { title: "Finish your application" };
  * Somebody who already has an account is sent to it rather than shown a form
  * that would fail on the unique index: this page is reachable from a bookmark,
  * and a returning partner following one should land on their dashboard.
+ *
+ * An admin is sent to the admin. They share the login page with partners but
+ * are not one, and this form is the only thing that would make them one.
  */
 export default async function ApplyPage() {
   const user = await currentUser();
   if (!user) redirect("/affiliates/login");
+  if (isAdminEmail(user.email)) redirect("/admin");
 
   if (await partnerByUserId(user.id)) redirect("/affiliates/dashboard");
 

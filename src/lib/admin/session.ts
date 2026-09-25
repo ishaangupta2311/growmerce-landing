@@ -62,6 +62,20 @@ export function isAdminEmail(email: string | null | undefined): boolean {
   return adminEmails().has(email.trim().toLowerCase());
 }
 
+/**
+ * Where somebody goes after signing in when nothing asked for anywhere in
+ * particular: admins to the admin, everybody else to their partner dashboard.
+ *
+ * Admins and partners share one login page, and an admin is not a partner. The
+ * partner dashboard's answer to a login with no partner account is the
+ * application form — right for somebody who confirmed their email and closed
+ * the tab, wrong for an admin, who would fill it in to get past it and end up
+ * with a partner account of their own under an admin address.
+ */
+export function landingFor(email: string | null | undefined): "/admin" | "/affiliates/dashboard" {
+  return isAdminEmail(email) ? "/admin" : "/affiliates/dashboard";
+}
+
 export type Admin = {
   /**
    * The `blog.admin_user` row: what `created_by`, `updated_by` and
@@ -111,8 +125,8 @@ export const requireAdmin = cache(async (): Promise<Admin> => {
 /**
  * Whether the signed-in person is an admin, without refusing if they are not.
  *
- * Only for deciding whether to show a link into /admin from somewhere an admin
- * might also be — their own partner dashboard. Touches nothing in the database.
+ * Only for deciding whether to show a link into /admin from a page anybody can
+ * open — the public affiliate program page. Touches nothing in the database.
  */
 export const optionalAdmin = cache(async (): Promise<{ userId: string; email: string } | null> => {
   const user = await currentUser();

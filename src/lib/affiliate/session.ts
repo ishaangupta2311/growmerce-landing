@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 
+import { isAdminEmail } from "@/lib/admin/session";
 import { currentUser } from "@/lib/supabase/server";
 
 import { partnerByUserId } from "./store";
@@ -27,6 +28,11 @@ import type { Partner } from "./types";
  * `cache` is React's per-render memo. A dashboard page that reads the partner
  * in the layout, the page and two components makes one call to Supabase and one
  * to Postgres, not four.
+ *
+ * Admins sign in on the same page and are not partners. Both functions below
+ * treat an address on the admin allowlist as having no partner account, and
+ * the dashboard sends it to /admin — see `landingFor()` for why an admin must
+ * never reach the application form.
  */
 
 export type PartnerSession = {
@@ -41,7 +47,7 @@ export type PartnerSession = {
  */
 export const optionalPartner = cache(async (): Promise<PartnerSession | null> => {
   const user = await currentUser();
-  if (!user) return null;
+  if (!user || isAdminEmail(user.email)) return null;
 
   const partner = await partnerByUserId(user.id);
   if (!partner) return null;
@@ -57,6 +63,7 @@ export const optionalPartner = cache(async (): Promise<PartnerSession | null> =>
  * — they confirmed their email and closed the tab before the application form
  * — so sending them to `/affiliates/apply` finishes what they started instead
  * of showing them a login page they will correctly believe they already used.
+ * An admin also has a login and no partner row, and goes to /admin instead.
  *
  * `redirect` throws, so nothing after a failed check can run. That is why this
  * returns a non-nullable session: a caller cannot forget to check.
@@ -64,6 +71,7 @@ export const optionalPartner = cache(async (): Promise<PartnerSession | null> =>
 export const requirePartner = cache(async (): Promise<PartnerSession> => {
   const user = await currentUser();
   if (!user) redirect("/affiliates/login");
+  if (isAdminEmail(user.email)) redirect("/admin");
 
   const partner = await partnerByUserId(user.id);
   if (!partner) redirect("/affiliates/apply");

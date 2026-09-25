@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
+import { landingFor } from "@/lib/admin/session";
 import { safeNext } from "@/lib/supabase/safe-next";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -14,12 +15,13 @@ import { supabaseServer } from "@/lib/supabase/server";
  * Two link shapes, because Supabase has two depending on how old the project's
  * email templates are. `?code=` is the PKCE flow, exchanged for a session.
  * `?token_hash=&type=` is the older one-time-token link, verified instead. Both
- * end in the same place: cookies set by `supabaseServer`, and a redirect.
+ * end in the same place: cookies set by `supabaseServer`, and a redirect —
+ * to `next` if the link carried one, otherwise to the admin for an admin and
+ * the partner dashboard for everybody else.
  */
 
 export async function GET(request: NextRequest) {
   const url = request.nextUrl;
-  const next = safeNext(url.searchParams.get("next"));
   const supabase = await supabaseServer();
 
   const code = url.searchParams.get("code");
@@ -27,16 +29,19 @@ export async function GET(request: NextRequest) {
   const type = url.searchParams.get("type");
 
   let failed: string | null = null;
+  let email: string | undefined;
 
   if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     failed = error?.message ?? null;
+    email = data.user?.email;
   } else if (tokenHash && type) {
-    const { error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabase.auth.verifyOtp({
       type: type as "signup" | "recovery" | "invite" | "email_change" | "magiclink",
       token_hash: tokenHash,
     });
     failed = error?.message ?? null;
+    email = data.user?.email;
   } else {
     failed = "no_token";
   }
@@ -50,5 +55,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/affiliates/login?expired=1", url.origin));
   }
 
+  const next = safeNext(url.searchParams.get("next"), landingFor(email));
   return NextResponse.redirect(new URL(next, url.origin));
 }

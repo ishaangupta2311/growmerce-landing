@@ -153,9 +153,16 @@ reversal, and charges arriving after cancellation.
 
 `/admin/affiliates`, inside the site's one admin at `/admin` — the blog is
 administered from the same dashboard, behind the same sign-in. Deliberately
-unlinked from anywhere public — the only way in is to type it, or to follow the
-"Admin" link that appears on your own partner dashboard if you are one. The old
+unlinked from anywhere a visitor sees. An admin signs in on the partners' page,
+`/affiliates/login`, and lands in `/admin`; the only link to it is the "Open
+the admin" button the public program page shows to a signed-in admin. The old
 `/affiliates/admin` addresses redirect there.
+
+An admin is never a partner. The partner dashboard and the application form
+both send an allowlisted address to `/admin`, and the application action
+refuses to create a partner for one — otherwise an admin signing in without a
+`next` would be shown the application form and, filling it in to get past it,
+end up with a partner account of their own.
 
 Who is an admin — for the blog as much as for affiliates — comes from an
 environment variable and nothing else:

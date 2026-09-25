@@ -16,14 +16,22 @@
  * `//evil.example` is a protocol-relative URL, not a path, and `startsWith("/")`
  * alone lets it through.
  *
+ * Anything else falls back to `fallback`, which is the caller's to choose
+ * because it depends on who signed in — `landingFor()` in
+ * `src/lib/admin/session.ts` sends admins to the admin rather than to a partner
+ * dashboard they do not have.
+ *
  * One function for both callers — the sign-in action and the auth callback —
  * because two copies of an allowlist drift, and the one that drifts looser is
  * the one that gets found.
  */
-export function safeNext(raw: string | null | undefined): string {
-  if (!raw || raw.startsWith("//")) return "/affiliates/dashboard";
+export function safeNext(
+  raw: string | null | undefined,
+  fallback: string = "/affiliates/dashboard",
+): string {
+  if (!raw || raw.startsWith("//")) return fallback;
 
   const allowed =
     raw.startsWith("/affiliates/") || raw === "/admin" || raw.startsWith("/admin/");
-  return allowed ? raw : "/affiliates/dashboard";
+  return allowed ? raw : fallback;
 }

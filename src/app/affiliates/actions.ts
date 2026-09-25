@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
+import { isAdminEmail, landingFor } from "@/lib/admin/session";
 import { createPartner, updatePartnerProfile, updatePayoutPreferences } from "@/lib/affiliate/store";
 import { requirePartner } from "@/lib/affiliate/session";
 import type { PartnerKind, PayoutMethod } from "@/lib/affiliate/types";
@@ -175,10 +176,15 @@ export async function signUp(_state: FormState, form: FormData): Promise<FormSta
  * authenticated person: `requirePartner()` sends anyone signed in without a
  * partner row here, whether they arrived from the sign-up form five seconds ago
  * or from a confirmation email three days later.
+ *
+ * Never for an admin. The application page already sends them to /admin, but
+ * this is a public POST endpoint that can be called without the page, and an
+ * admin address holding a partner account is the thing being prevented.
  */
 export async function completeApplication(_state: FormState, form: FormData): Promise<FormState> {
   const user = await currentUser();
   if (!user) redirect("/affiliates/login");
+  if (isAdminEmail(user.email)) redirect("/admin");
 
   const name = text(form, "name", 120);
   const company = text(form, "company", 160);
@@ -229,7 +235,7 @@ export async function signIn(_state: FormState, form: FormData): Promise<FormSta
   }
 
   const supabase = await supabaseServer();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
     /* One message for a wrong password and for an address that has no account.
@@ -238,7 +244,9 @@ export async function signIn(_state: FormState, form: FormData): Promise<FormSta
     return { error: "That email and password do not match an account." };
   }
 
-  redirect(safeNext(text(form, "next", 300)));
+  /* With no `next` — the login page opened directly — an admin lands in the
+     admin rather than on a partner dashboard that would ask them to apply. */
+  redirect(safeNext(text(form, "next", 300), landingFor(data.user.email)));
 }
 
 export async function signOut(): Promise<void> {
@@ -303,7 +311,7 @@ export async function resetPassword(_state: FormState, form: FormData): Promise<
   const { error } = await supabase.auth.updateUser({ password });
   if (error) return { error: error.message };
 
-  redirect("/affiliates/dashboard");
+  redirect(landingFor(data.user.email));
 }
 
 /* ---------------------------------------------------------------------------
