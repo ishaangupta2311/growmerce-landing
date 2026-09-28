@@ -94,6 +94,26 @@ export async function listLivePosts(page: number) {
   );
 }
 
+/* The newest few, for pages outside the blog that show what it has lately. */
+export async function latestPosts(limit = 3): Promise<ArticleCard[]> {
+  return tryDb(
+    "blog latest",
+    async (sql) => {
+      const rows = await sql<CardRow[]>`
+        select ${cardColumns(sql)}
+        from blog.post p
+        left join blog.author a on a.id = p.author_id
+        left join blog.category c on c.id = p.category_id
+        where ${live(sql)}
+        order by p.published_at desc, p.id desc
+        limit ${limit}
+      `;
+      return rows.map(toCard);
+    },
+    [],
+  );
+}
+
 export async function relatedPosts(postId: string, categoryId: string | null, limit = 3): Promise<ArticleCard[]> {
   return tryDb(
     "blog related",

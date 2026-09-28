@@ -21,7 +21,8 @@ export default function TryForm() {
   const emailRef = useRef<HTMLInputElement>(null);
 
   const [store, setStore] = useState(() => params.get("store") ?? "");
-  const [email, setEmail] = useState("");
+  // Both arrive prefilled from the forms that send people here with GET.
+  const [email, setEmail] = useState(() => params.get("email") ?? "");
   const [storeError, setStoreError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);

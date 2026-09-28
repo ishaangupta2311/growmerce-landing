@@ -85,7 +85,7 @@ export const RESOURCE_GROUPS: { title: string; links: MenuLink[] }[] = [
     links: [
       { id: "learn-started", label: "Getting Started", note: "What Growmerce is and how it works", href: "/about" },
       { id: "learn-blogs", label: "Blogs", note: "Insights, tips and updates", href: "/blog" },
-      { id: "learn-videos", label: "Videos", note: "Updates from the build log", href: "/about#updates-title" },
+      { id: "learn-videos", label: "Videos", note: "See Growsearch in action", href: GROWSEARCH_DEMO },
     ],
   },
   {

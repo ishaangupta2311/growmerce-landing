@@ -13,4 +13,6 @@ export function revalidateBlog(): void {
   revalidatePath("/blog/page/[page]", "page");
   revalidatePath("/blog/[slug]", "page");
   revalidatePath("/sitemap.xml");
+  // /about shows the latest posts.
+  revalidatePath("/about");
 }

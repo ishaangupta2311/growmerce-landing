@@ -1,14 +1,26 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import CtaPair from "@/components/site/CtaPair";
 import Faq from "@/components/site/Faq";
 import { ABOUT_FAQ } from "@/lib/faqs";
-import ProveItBand from "@/components/site/ProveItBand";
 import Reveal from "@/components/site/Reveal";
 import { PlatformLogos } from "@/components/site/PlatformStrip";
-import { GROWSEARCH_HOME } from "@/lib/site-urls";
+import BlogCard from "@/components/blog/BlogCard";
+import { latestPosts } from "@/lib/blog/public";
 import ToolDock from "./components/ToolDock";
+import HowItWorks from "./components/HowItWorks";
+import WhyExists from "./components/WhyExists";
+import BuiltForEcommerce from "./components/BuiltForEcommerce";
+import InAction from "./components/InAction";
+import SkipTheCall from "./components/SkipTheCall";
+import NotAllAi from "./components/NotAllAi";
+import CustomPlanForm from "./components/CustomPlanForm";
+
+/* The latest blog posts are shown near the foot, so the page is rebuilt with
+   the blog: at most once a minute, and at once when a post is published. */
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "What is Growmerce",
@@ -24,44 +36,12 @@ const CONVICTIONS = [
   "Priced as a flat monthly number you can cancel, with no revenue share",
 ];
 
-const HOW_WE_WORK = [
-  {
-    title: "Built in public",
-    body: "Founder-led and serving stores worldwide. We post progress as it happens, and you get a straight answer when something isn't ready yet.",
-  },
-  {
-    title: "Always improving, never half-baked",
-    body: "We’re always improving. We listen to every feature request and bug report, then roll out updates and fixes as quickly as possible—so you never have to settle for a half-baked tool.",
-  },
-  {
-    title: "Your feedback shapes the product",
-    body: "Feature suggestions and bug reports are always welcome. The founder personally reads every report to help deliver the experience you deserve.",
-  },
-];
-
-const UPDATES = [
-  {
-    tag: "Product",
-    title: "Why Growsearch never shows a zero-result page",
-    dek: "The design rule behind recovery, and what we log when a query finds nothing.",
-  },
-  {
-    tag: "Engineering",
-    title: "Native results first, AI second",
-    dek: "How we layer semantic matching on top of Shopify search without adding latency.",
-  },
-  {
-    tag: "Company",
-    title: "Charging from day one",
-    dek: "Why there are no free pilots here, and what that changes about the roadmap.",
-  },
-];
-
-export default function AboutPage() {
+export default async function AboutPage() {
+  const posts = await latestPosts(3);
   return (
     <>
       <Navbar />
-      <main className="font-bricolage">
+      <main className="bg-cream font-bricolage">
         {/* Hero */}
         <section className="mx-auto max-w-[1370px] px-6 pt-16 pb-14 text-center lg:pt-24">
           <p className="hero-enter font-poppins text-[13px] font-extrabold tracking-[0.2em] text-brand uppercase">
@@ -72,7 +52,7 @@ export default function AboutPage() {
             style={{ animationDelay: "90ms" }}
           >
             We build the AI tools store owners actually{" "}
-            <span className="text-brand">keep</span>
+            <span className="text-brand">need</span>
           </h1>
           <p
             className="hero-enter mx-auto mt-7 max-w-[68ch] text-[clamp(1.0625rem,1.6vw,1.5rem)] leading-relaxed text-body-mute"
@@ -87,8 +67,8 @@ export default function AboutPage() {
           </p>
           <CtaPair
             className="mt-10 justify-center"
-            primaryHref="/pricing"
-            secondaryHref={GROWSEARCH_HOME}
+            primaryHref="/try"
+            secondaryHref="/solutions"
             secondaryLabel="See all our products"
           />
         </section>
@@ -138,69 +118,32 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* How we work */}
-        <section aria-labelledby="how-title" className="mx-auto max-w-[1370px] px-6 py-16 lg:py-24">
-          <Reveal>
-            <h2
-              id="how-title"
-              className="text-[clamp(1.875rem,3.6vw,3rem)] font-extrabold tracking-tight"
-            >
-              How we work
-            </h2>
-          </Reveal>
-          <div className="mt-10 grid gap-6 lg:grid-cols-3">
-            {HOW_WE_WORK.map((item, i) => (
-              <Reveal key={item.title} delay={i * 80}>
-                <article className="h-full rounded-[22px] bg-cream px-7 py-8">
-                  <h3 className="text-[clamp(1.125rem,2vw,1.625rem)] font-bold">
-                    {item.title}
-                  </h3>
-                  <p className="mt-3 text-[clamp(1rem,1.4vw,1.125rem)] leading-relaxed text-body-mute">
-                    {item.body}
-                  </p>
-                </article>
-              </Reveal>
-            ))}
-          </div>
-        </section>
+        <HowItWorks />
+        <WhyExists />
+        <BuiltForEcommerce />
+        <InAction />
+        <SkipTheCall />
+        <NotAllAi />
+        <CustomPlanForm />
 
-        <ProveItBand />
-
-        {/* Updates */}
-        <section aria-labelledby="updates-title" className="mx-auto max-w-[1370px] px-6 pb-16">
-          <Reveal>
-            <h2
-              id="updates-title"
-              className="text-[clamp(1.875rem,3.6vw,3rem)] font-extrabold tracking-tight"
-            >
-              From the build log
-            </h2>
-            <p className="mt-3 max-w-[60ch] text-[17px] text-body-mute">
-              Company updates and engineering notes &mdash; not customer stories.
-              We&rsquo;ll publish those when there are customers to quote.
-            </p>
-          </Reveal>
-          <div className="mt-10 grid gap-6 lg:grid-cols-3">
-            {UPDATES.map((post, i) => (
-              <Reveal key={post.title} delay={i * 90}>
-                <article className="flex h-full flex-col rounded-[22px] bg-white p-7 ring-1 ring-line transition-transform duration-300 hover-lift [--lift:4px]">
-                  <span className="w-fit rounded-full bg-peach px-3.5 py-1 text-[11.5px] font-extrabold tracking-[0.12em] text-brand uppercase">
-                    {post.tag}
-                  </span>
-                  <h3 className="mt-4 text-[clamp(1.0625rem,1.7vw,1.375rem)] leading-snug font-bold">
-                    {post.title}
-                  </h3>
-                  <p className="mt-2.5 flex-1 text-[15px] leading-relaxed text-body-mute">
-                    {post.dek}
-                  </p>
-                  <span className="mt-5 inline-flex items-center gap-2 text-[15px] font-bold text-brand">
-                    Coming soon
-                  </span>
-                </article>
-              </Reveal>
-            ))}
-          </div>
-        </section>
+        {/* The latest posts; left out entirely while the blog is empty. */}
+        {posts.length ? (
+          <section aria-labelledby="blog-title" className="mx-auto max-w-[1370px] px-6 pb-16">
+            <Reveal className="flex flex-wrap items-end justify-between gap-4">
+              <h2 id="blog-title" className="text-[clamp(1.875rem,3.6vw,3rem)] font-extrabold tracking-tight">
+                From the blog
+              </h2>
+              <Link href="/blog" className="text-[16px] font-bold text-brand hover:underline">
+                All posts &rarr;
+              </Link>
+            </Reveal>
+            <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {posts.map((post) => (
+                <BlogCard key={post.id} post={post} />
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <Faq items={ABOUT_FAQ} />
       </main>
