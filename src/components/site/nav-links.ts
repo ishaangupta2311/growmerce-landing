@@ -17,9 +17,14 @@ export type MenuLink = {
 export type PlatformName = "Shopify" | "WooCommerce" | "BigCommerce";
 export type PlatformRow = { name: PlatformName; label: string; note: string };
 
-/* No pages yet: each gets its href the day its product page ships. */
+/* Each gets its href the day its product page ships. */
 export const PRODUCTS: MenuLink[] = [
-  { id: "search", label: "AI Powered Product Search", note: "Help customers find the right products" },
+  {
+    id: "search",
+    label: "AI Powered Product Search",
+    note: "Help customers find the right products",
+    href: "/products/ai-search",
+  },
   { id: "assistant", label: "AI Shopping Assistant", note: "Personalized shopping experiences" },
   { id: "analytics", label: "Merchant Analytics", note: "Turn data into growth" },
 ];
