@@ -126,8 +126,8 @@ export function Lightbox({
       <Image
         src="/brand/logo.svg"
         alt="Growmerce"
-        width={305}
-        height={66}
+        width={349}
+        height={67}
         priority={priority}
         className={`relative h-7 w-auto sm:h-8 ${imgClassName ?? ""}`}
       />

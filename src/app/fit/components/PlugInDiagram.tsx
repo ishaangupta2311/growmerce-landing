@@ -38,7 +38,7 @@ export default function PlugInDiagram() {
           <Image
             src="/brand/logo.svg"
             alt="Growmerce"
-            width={310}
+            width={349}
             height={67}
             className="h-auto w-[64px] sm:w-[78px]"
           />

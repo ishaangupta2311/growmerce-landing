@@ -147,7 +147,7 @@ export default function Navbar({
           <Image
             src="/brand/logo.svg"
             alt="Growmerce"
-            width={310}
+            width={349}
             height={67}
             priority
             className="h-10 w-auto sm:h-11"

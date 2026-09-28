@@ -12,7 +12,7 @@ export default function Nav() {
     <header className="sticky top-0 z-40 border-b border-[var(--ink-15)] bg-[var(--paper)]/90 backdrop-blur">
       <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-6 px-6 py-4 sm:px-10">
         <Link href="/v/1" className="flex items-center gap-2" aria-label="Growmerce home">
-          <Image src="/brand/logo.svg" alt="Growmerce" width={132} height={29} priority />
+          <Image src="/brand/logo.svg" alt="Growmerce" width={151} height={29} priority />
         </Link>
 
         <nav aria-label="Primary" className="hidden items-center gap-8 md:flex">

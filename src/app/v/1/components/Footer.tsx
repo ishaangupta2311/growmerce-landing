@@ -55,7 +55,7 @@ export default function Footer() {
       <footer className="bg-[var(--paper)]">
         <div className="mx-auto max-w-[1180px] px-6 py-10 sm:px-10">
           <div className="flex flex-col gap-8 border-t border-[var(--ink-15)] pt-8 sm:flex-row sm:items-center sm:justify-between">
-            <Image src="/brand/logo.svg" alt="Growmerce" width={118} height={26} />
+            <Image src="/brand/logo.svg" alt="Growmerce" width={135} height={26} />
 
             <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-2">
               {NAV_LINKS.map((link) => (

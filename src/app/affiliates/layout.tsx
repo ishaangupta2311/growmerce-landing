@@ -46,7 +46,7 @@ export default function AffiliatesLayout({ children }: { children: React.ReactNo
             <Image
               src="/brand/logo.svg"
               alt="Growmerce"
-              width={310}
+              width={349}
               height={67}
               priority
               className="h-9 w-auto"
