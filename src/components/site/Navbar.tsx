@@ -2,45 +2,47 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import HeaderMegaMenu, { type HeaderMegaMenuVariant } from "./HeaderMegaMenu";
-import DemoStoreButton from "./DemoStoreButton";
-import { GROWMERCE_HOME, GROWSEARCH_FEATURES, GROWSEARCH_HOME } from "@/lib/site-urls";
+import {
+  GROWMERCE_EXPLORE,
+  GROWSEARCH_EXPLORE,
+  MORE_PRODUCTS,
+  PRODUCTS,
+  RESOURCE_GROUPS,
+  WHY_US_GROUPS,
+  type MenuLink,
+} from "./nav-links";
+import { GROWMERCE_HOME } from "@/lib/site-urls";
 
-type MenuItem = { label: string; href: string; note?: string };
-type NavEntry = { label: string; href?: string; items?: MenuItem[] };
+type NavEntry = { label: string; menu?: HeaderMegaMenuVariant; href?: string };
 
-/* Figma draws Platform / Resources / Why us with carets; they resolve to the
-   real routes below. Pricing is a plain link. */
+/* Platform, Resources and Why us each open a mega menu; Pricing is a plain
+   link. */
 const NAV: NavEntry[] = [
-  {
-    label: "Platform",
-    items: [
-      { label: "Growsearch", href: GROWSEARCH_HOME, note: "Storefront search that never dead-ends" },
-      { label: "All features", href: GROWSEARCH_FEATURES, note: "Everything Growsearch does" },
-      { label: "Solutions", href: "/solutions", note: "The revenue your search bar is leaking" },
-    ],
-  },
-  {
-    label: "Resources",
-    items: [
-      { label: "What is Growmerce", href: "/about" },
-      { label: "FAQ", href: "/#faq" },
-      { label: "Help center", href: "/help" },
-    ],
-  },
-  {
-    label: "Why us",
-    items: [
-      { label: "How we work", href: "/about" },
-      { label: "Same catalog, different outcome", href: "/solutions" },
-      { label: "Growmerce vs the alternatives", href: "/compare" },
-      { label: "Is Growmerce a fit for me?", href: "/fit" },
-    ],
-  },
+  { label: "Platform", menu: "platform" },
+  { label: "Resources", menu: "resources" },
+  { label: "Why us", menu: "why-us" },
   { label: "Pricing", href: "/pricing" },
 ];
+
+/* "Get started" is the free preview on the visitor's own store. */
+const GET_STARTED = "/try";
+
+/* The same menus, as the mobile sheet's groups. Platforms are left out: none
+   of them links anywhere yet, and the sheet is a list of places to go. */
+function mobileGroups(scope: "growmerce" | "growsearch"): { label: string; items: MenuLink[] }[] {
+  /* Resources repeats labels across its two columns, which the desktop panel
+     separates with headings. A flat list cannot, so it keeps the first. */
+  const unique = (links: MenuLink[]) =>
+    links.filter((link, i) => links.findIndex((l) => l.label === link.label) === i);
+  return [
+    { label: "Growmerce", items: [...PRODUCTS, MORE_PRODUCTS] },
+    { label: "Explore", items: scope === "growsearch" ? GROWSEARCH_EXPLORE : GROWMERCE_EXPLORE },
+    { label: "Resources", items: unique(RESOURCE_GROUPS.flatMap((group) => group.links)) },
+    { label: "Why us", items: WHY_US_GROUPS.flatMap((group) => group.links) },
+  ];
+}
 
 /* Row affordance in the mobile sheet: says "this navigates" without a label. */
 function Chevron() {
@@ -67,12 +69,13 @@ function Caret({ open }: { open: boolean }) {
 }
 
 export default function Navbar({
-  scope,
+  scope = "growmerce",
 }: {
+  /* Growsearch's pages are served from their own host at "/", so the path
+     cannot tell them apart; they say so here. */
   scope?: "growmerce" | "growsearch";
 }) {
-  const pathname = usePathname();
-  const [open, setOpen] = useState<string | null>(null);
+  const [open, setOpen] = useState<HeaderMegaMenuVariant | null>(null);
   const [mobile, setMobile] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<number | null>(null);
@@ -108,9 +111,9 @@ export default function Navbar({
   }, []);
 
   // Hover with a short close delay so the pointer can travel into the panel.
-  const hoverOpen = (label: string) => {
+  const hoverOpen = (menu: HeaderMegaMenuVariant) => {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
-    setOpen(label);
+    setOpen(menu);
   };
   const keepOpen = () => {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
@@ -121,21 +124,6 @@ export default function Navbar({
       if (!navRef.current?.contains(document.activeElement)) setOpen(null);
     }, 140);
   };
-
-  const isGrowsearchScope =
-    scope === "growsearch" ||
-    (scope !== "growmerce" && pathname.startsWith("/growsearch"));
-
-  const megaMenuVariant: HeaderMegaMenuVariant | null =
-    open === "Platform"
-      ? isGrowsearchScope
-        ? "growsearch"
-        : "platform"
-      : open === "Resources"
-        ? "resources"
-        : open === "Why us"
-          ? "why-us"
-          : null;
 
   return (
     <header className="sticky top-0 z-50 bg-cream font-bricolage shadow-[0_1px_0_rgba(23,23,23,0.07)]">
@@ -157,26 +145,25 @@ export default function Navbar({
         {/* Desktop nav */}
         <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 font-poppins text-[17px] font-medium lg:flex">
           {NAV.map((entry) =>
-            entry.items ? (
+            entry.menu ? (
               <div
                 key={entry.label}
                 className="relative"
-                onMouseEnter={() => hoverOpen(entry.label)}
+                onMouseEnter={() => hoverOpen(entry.menu!)}
                 onMouseLeave={hoverClose}
               >
                 <button
                   type="button"
-                  aria-expanded={open === entry.label}
+                  aria-expanded={open === entry.menu}
                   aria-haspopup="true"
                   aria-controls="header-mega-menu"
-                  onClick={() => setOpen(entry.label)}
-                  onFocus={() => hoverOpen(entry.label)}
-                  className="flex items-center gap-1.5 rounded-md py-2 transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                  onClick={() => setOpen(entry.menu!)}
+                  onFocus={() => hoverOpen(entry.menu!)}
+                  className={`flex items-center gap-1.5 rounded-md py-2 transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${open === entry.menu ? "text-brand" : ""}`}
                 >
                   {entry.label}
-                  <Caret open={open === entry.label} />
+                  <Caret open={open === entry.menu} />
                 </button>
-
               </div>
             ) : (
               <Link
@@ -192,9 +179,10 @@ export default function Navbar({
 
         {/* Keep one shell mounted while moving between mega-menu triggers.
             Only its content variant changes, so the entrance motion does not replay. */}
-        {megaMenuVariant ? (
+        {open ? (
           <HeaderMegaMenu
-            variant={megaMenuVariant}
+            variant={open}
+            scope={scope}
             onNavigate={() => setOpen(null)}
             onMouseEnter={keepOpen}
             onMouseLeave={hoverClose}
@@ -202,10 +190,12 @@ export default function Navbar({
         ) : null}
 
         <div className="flex shrink-0 items-center gap-2.5">
-          <DemoStoreButton
-            source="navbar"
-            className="hidden items-center justify-center rounded-[10px] bg-brand px-5 py-2 font-poppins text-[15px] font-bold text-white shadow-[0_10px_24px_-14px_rgba(255,90,31,0.9)] transition-transform duration-200 hover-lift sm:inline-flex"
-          />
+          <Link
+            href={GET_STARTED}
+            className="hidden items-center justify-center rounded-[10px] bg-brand px-5 py-2 font-poppins text-[15px] font-bold text-white shadow-[0_10px_24px_-14px_rgba(255,90,31,0.9)] transition-transform duration-200 hover-lift focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:inline-flex"
+          >
+            Get started
+          </Link>
           <button
             type="button"
             aria-label="Menu"
@@ -235,53 +225,63 @@ export default function Navbar({
 
           The groups are cards on cream, which is how the rest of the site
           presents a list, and the eyebrows are brand orange rather than grey
-          so the three sections separate without needing rules between every
+          so the sections separate without needing rules between every
           row. */}
       {mobile ? (
         <div className="fixed inset-x-0 top-[84px] bottom-0 z-40 overflow-y-auto overscroll-contain bg-cream lg:hidden">
           <div className="flex min-h-full flex-col px-5 pt-5">
             <nav aria-label="Main" className="flex-1 space-y-6 pb-6">
-              {NAV.map((entry) =>
-                entry.href ? (
-                  <Link
-                    key={entry.label}
-                    href={entry.href}
-                    onClick={() => setMobile(false)}
-                    className="flex items-center justify-between gap-3 rounded-[18px] bg-white px-4 py-4 font-poppins text-[17px] font-semibold text-charcoal shadow-[0_10px_24px_-20px_rgba(23,23,23,0.5)]"
-                  >
-                    {entry.label}
-                    <Chevron />
-                  </Link>
-                ) : (
-                  <div key={entry.label}>
-                    <p className="px-1 pb-2 font-poppins text-[11px] font-bold tracking-[0.18em] text-brand uppercase">
-                      {entry.label}
-                    </p>
-                    <div className="overflow-hidden rounded-[18px] bg-white shadow-[0_10px_24px_-20px_rgba(23,23,23,0.5)]">
-                      {entry.items!.map((item, i) => (
+              {mobileGroups(scope).map((group) => (
+                <div key={group.label}>
+                  <p className="px-1 pb-2 font-poppins text-[11px] font-bold tracking-[0.18em] text-brand uppercase">
+                    {group.label}
+                  </p>
+                  <div className="overflow-hidden rounded-[18px] bg-white shadow-[0_10px_24px_-20px_rgba(23,23,23,0.5)]">
+                    {group.items.map((item, i) => {
+                      const row = `flex items-center justify-between gap-3 px-4 py-3.5 ${i ? "border-t border-line" : ""}`;
+                      const text = (
+                        <span className="min-w-0">
+                          <span className="block font-poppins text-[17px] font-semibold text-charcoal">
+                            {item.label}
+                          </span>
+                          {item.note ? (
+                            <span className="mt-0.5 block text-[13px] leading-snug text-body-mute">
+                              {item.note}
+                            </span>
+                          ) : null}
+                        </span>
+                      );
+                      // Products without a page yet are listed, not linked.
+                      return item.href ? (
                         <Link
                           key={item.label}
                           href={item.href}
                           onClick={() => setMobile(false)}
-                          className={`flex items-center justify-between gap-3 px-4 py-3.5 ${i ? "border-t border-line" : ""}`}
+                          className={row}
                         >
-                          <span className="min-w-0">
-                            <span className="block font-poppins text-[17px] font-semibold text-charcoal">
-                              {item.label}
-                            </span>
-                            {item.note ? (
-                              <span className="mt-0.5 block text-[13px] leading-snug text-body-mute">
-                                {item.note}
-                              </span>
-                            ) : null}
-                          </span>
+                          {text}
                           <Chevron />
                         </Link>
-                      ))}
-                    </div>
+                      ) : (
+                        <div key={item.label} className={row}>
+                          {text}
+                        </div>
+                      );
+                    })}
                   </div>
-                ),
-              )}
+                </div>
+              ))}
+              {NAV.filter((entry) => entry.href).map((entry) => (
+                <Link
+                  key={entry.label}
+                  href={entry.href!}
+                  onClick={() => setMobile(false)}
+                  className="flex items-center justify-between gap-3 rounded-[18px] bg-white px-4 py-4 font-poppins text-[17px] font-semibold text-charcoal shadow-[0_10px_24px_-20px_rgba(23,23,23,0.5)]"
+                >
+                  {entry.label}
+                  <Chevron />
+                </Link>
+              ))}
             </nav>
 
             {/* Full width: the sheet is the whole screen here, so a half-width
@@ -289,12 +289,9 @@ export default function Navbar({
                 foot, because the list is taller than any phone and the action
                 should not be something you have to scroll to find. */}
             <div className="sticky bottom-0 -mx-5 grid border-t border-brand/10 bg-cream px-5 pt-4 pb-6">
-              <DemoStoreButton
-                source="navbar-mobile"
-                onOpen={() => setMobile(false)}
-                className="cta-primary w-full"
-              />
-
+              <Link href={GET_STARTED} onClick={() => setMobile(false)} className="cta-primary w-full">
+                Get started
+              </Link>
             </div>
           </div>
         </div>

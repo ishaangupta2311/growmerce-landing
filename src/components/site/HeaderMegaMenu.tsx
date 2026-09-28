@@ -1,142 +1,171 @@
 import Image from "next/image";
 import Link from "next/link";
+import {
+  BookOpen,
+  Building2,
+  CircleCheckBig,
+  FileText,
+  HandCoins,
+  Newspaper,
+  Rocket,
+  Scale,
+  SquarePlay,
+  Users,
+} from "lucide-react";
 import PlatformMegaMenuContent from "./PlatformMegaMenu";
-import { GROWSEARCH_DEMO, GROWSEARCH_HOME } from "@/lib/site-urls";
+import {
+  MENU_COLUMN,
+  MENU_COLUMN_FIRST,
+  MENU_COLUMN_LAST,
+  MENU_PANEL,
+  MenuHeading,
+  MenuRow,
+  MenuRows,
+  TintedTile,
+  type MenuIcon,
+} from "./MegaMenuParts";
+import { RESOURCE_GROUPS, WHY_US_GROUPS, type MenuLink } from "./nav-links";
 
-export type HeaderMegaMenuVariant = "platform" | "growsearch" | "resources" | "why-us";
+export type HeaderMegaMenuVariant = "platform" | "resources" | "why-us";
 
-const RESOURCE_GROUPS = [
-  {
-    title: "Learn & Discover",
-    links: [
-      { label: "Getting Started", href: "/about" },
-      { label: "Blogs", href: "/about#updates-title" },
-      { label: "Videos", href: "/about#updates-title" },
-    ],
-  },
-  {
-    title: "Use cases",
-    links: [
-      { label: "Getting Started", href: GROWSEARCH_HOME },
-      { label: "Blogs", href: "/solutions" },
-      { label: "Videos", href: GROWSEARCH_DEMO },
-      { label: "Community", href: "/about" },
-    ],
-  },
-] as const;
+const VARIANTS: HeaderMegaMenuVariant[] = ["platform", "resources", "why-us"];
 
-const WHY_US_GROUPS = [
-  {
-    title: "Compare",
-    links: [
-      { label: "Growmerce Vs Competition", href: "/compare" },
-      { label: "Is Growmerce a fit for me?", href: "/fit" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "About us", href: "/about" },
-      { label: "Affiliate program", href: "/affiliates" },
-    ],
-  },
-  {
-    title: "Proof",
-    links: [
-      { label: "Analytics", href: GROWSEARCH_HOME },
-      { label: "Blogs", href: "/about#updates-title" },
-      { label: "Videos", href: "/about#updates-title" },
-    ],
-  },
-] as const;
+const LABELS: Record<HeaderMegaMenuVariant, string> = {
+  platform: "Platform",
+  resources: "Resources",
+  "why-us": "Why us",
+};
 
-function LinkGroup({
+const COLUMNS = [MENU_COLUMN_FIRST, MENU_COLUMN, MENU_COLUMN_LAST];
+
+const ICONS: Record<string, MenuIcon> = {
+  "learn-started": { icon: BookOpen, tint: "blue" },
+  "learn-blogs": { icon: Newspaper, tint: "purple" },
+  "learn-videos": { icon: SquarePlay, tint: "orange" },
+  "use-started": { icon: Rocket, tint: "orange" },
+  "use-blogs": { icon: FileText, tint: "green" },
+  "use-videos": { icon: SquarePlay, tint: "orange" },
+  "use-community": { icon: Users, tint: "blue" },
+  compare: { icon: Scale, tint: "blue" },
+  fit: { icon: CircleCheckBig, tint: "green" },
+  about: { icon: Building2, tint: "orange" },
+  affiliates: { icon: HandCoins, tint: "green" },
+  "proof-blogs": { icon: Newspaper, tint: "purple" },
+  "proof-videos": { icon: SquarePlay, tint: "orange" },
+};
+
+function LinkColumn({
   group,
+  className,
   onNavigate,
 }: {
-  group: (typeof RESOURCE_GROUPS)[number] | (typeof WHY_US_GROUPS)[number];
+  group: { title: string; links: MenuLink[] };
+  className: string;
   onNavigate: () => void;
 }) {
   return (
-    <section>
-      <h2 className="border-b border-line pb-2 text-[clamp(1.05rem,1.35vw,1.3rem)] leading-tight font-semibold text-charcoal">
-        {group.title}
-      </h2>
-      <div className="mt-3 flex flex-col items-start gap-1">
+    <div className={className}>
+      <MenuHeading title={group.title} />
+      <MenuRows>
         {group.links.map((link) => (
-          <Link
-            key={link.label}
-            href={link.href}
-            onClick={onNavigate}
-            className="rounded-[6px] py-0.5 text-[clamp(0.95rem,1.15vw,1.08rem)] leading-snug font-medium text-charcoal/70 transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-          >
-            {link.label}
-          </Link>
+          <MenuRow key={link.id} item={link} tile={<TintedTile {...ICONS[link.id]} />} onNavigate={onNavigate} />
         ))}
-      </div>
-    </section>
+      </MenuRows>
+    </div>
   );
 }
 
+function Panel({
+  variant,
+  scope,
+  onNavigate,
+}: {
+  variant: HeaderMegaMenuVariant;
+  scope: "growmerce" | "growsearch";
+  onNavigate: () => void;
+}) {
+  if (variant === "platform") return <PlatformMegaMenuContent scope={scope} onNavigate={onNavigate} />;
+
+  if (variant === "resources") {
+    return (
+      <div className={MENU_PANEL}>
+        {RESOURCE_GROUPS.map((group, i) => (
+          <LinkColumn key={group.title} group={group} className={COLUMNS[i]} onNavigate={onNavigate} />
+        ))}
+        <div className={MENU_COLUMN_LAST}>
+          <MenuHeading title="Read it" />
+          <Link
+            href="/blog"
+            onClick={onNavigate}
+            className="group block overflow-hidden rounded-[12px] border border-line bg-white p-2 transition-shadow duration-200 hover:shadow-[0_16px_34px_-22px_rgba(255,90,31,0.7)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          >
+            <span className="relative block aspect-[2/1] overflow-hidden rounded-[8px] bg-cream">
+              <Image
+                src="/img/pages/hero-shopping-thumb.png"
+                alt="Growmerce ecommerce article"
+                fill
+                sizes="340px"
+                className="object-cover transition-transform duration-300 group-hover:scale-[1.025]"
+              />
+            </span>
+            <span className="mt-2 block px-1 text-[13px] leading-snug text-body-mute transition-colors group-hover:text-brand">
+              The Growmerce blog
+            </span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={MENU_PANEL}>
+      {WHY_US_GROUPS.map((group, i) => (
+        <LinkColumn key={group.title} group={group} className={COLUMNS[i]} onNavigate={onNavigate} />
+      ))}
+    </div>
+  );
+}
+
+/* The panel continues the header: same cream, no seam at the top, and only
+   its lower corners rounded, so it reads as the header opening downwards.
+
+   Every menu is drawn, stacked in one grid cell, and only the open one is
+   shown. The cell is as tall as the tallest of them, so the panel keeps one
+   height as the pointer runs across the triggers — at every width, without a
+   number to keep in step with the content. The hidden ones are inert, so
+   neither the keyboard nor a screen reader reaches them. */
 export default function HeaderMegaMenu({
   variant,
+  scope,
   onNavigate,
   onMouseEnter,
   onMouseLeave,
 }: {
   variant: HeaderMegaMenuVariant;
+  scope: "growmerce" | "growsearch";
   onNavigate: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
 }) {
-  const isPlatform = variant === "platform" || variant === "growsearch";
-  const isResources = variant === "resources";
-  const groups = isResources ? RESOURCE_GROUPS : WHY_US_GROUPS;
-  const label = isPlatform ? "Platform" : isResources ? "Resources" : "Why us";
-
   return (
     <div
       id="header-mega-menu"
       role="region"
-      aria-label={`${label} menu`}
+      aria-label={`${LABELS[variant]} menu`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      className="mega-menu-enter fixed top-[84px] left-1/2 z-60 w-[calc(100vw-64px)] max-w-[1160px] overflow-hidden rounded-b-[38px] border-x border-b border-brand/15 bg-cream font-bricolage shadow-[0_28px_64px_-34px_rgba(73,28,8,0.34)]"
+      className="mega-menu-enter fixed top-[84px] left-1/2 z-60 grid w-[calc(100vw-64px)] max-w-[1300px] rounded-b-[24px] border-x border-b border-line/80 bg-cream font-bricolage shadow-[0_30px_70px_-30px_rgba(73,28,8,0.32)]"
     >
-      {isPlatform ? (
-        <PlatformMegaMenuContent
-          scope={variant === "growsearch" ? "growsearch" : "growmerce"}
-          onNavigate={onNavigate}
-        />
-      ) : isResources ? (
-        <div className="grid h-[282px] grid-cols-[1fr_1fr_0.95fr] gap-12 px-16 py-7">
-          {groups.map((group) => (
-            <LinkGroup key={group.title} group={group} onNavigate={onNavigate} />
-          ))}
-          <Link
-            href="/about#updates-title"
-            onClick={onNavigate}
-            className="group flex min-h-[210px] flex-col rounded-[22px] border border-brand bg-white p-3 transition-[transform,box-shadow] duration-200 hover-lift hover:shadow-[0_16px_34px_-22px_rgba(255,90,31,0.7)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-brand"
-          >
-            <span className="text-[11px] font-medium tracking-[0.04em] text-muted uppercase">Read it</span>
-            <span className="relative mt-2 min-h-0 flex-1 overflow-hidden rounded-[13px] bg-cream">
-              <Image
-                src="/img/pages/hero-shopping-thumb.png"
-                alt="Growmerce ecommerce article"
-                fill
-                sizes="280px"
-                className="object-cover transition-transform duration-300 group-hover:scale-[1.025]"
-              />
-            </span>
-          </Link>
+      {VARIANTS.map((v) => (
+        <div
+          key={v}
+          inert={v !== variant}
+          aria-hidden={v !== variant || undefined}
+          className={`col-start-1 row-start-1 ${v === variant ? "" : "invisible"}`}
+        >
+          <Panel variant={v} scope={scope} onNavigate={onNavigate} />
         </div>
-      ) : (
-        <div className="grid h-[282px] grid-cols-3 gap-16 px-20 py-9">
-          {groups.map((group) => (
-            <LinkGroup key={group.title} group={group} onNavigate={onNavigate} />
-          ))}
-        </div>
-      )}
+      ))}
     </div>
   );
 }

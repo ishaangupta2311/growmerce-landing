@@ -1,104 +1,223 @@
 import Image from "next/image";
 import Link from "next/link";
-import { PLATFORMS, PlatformMark } from "./PlatformStrip";
-import { GROWSEARCH_FEATURES, GROWSEARCH_HOME } from "@/lib/site-urls";
+import {
+  ArrowRight,
+  BookOpen,
+  ChartNoAxesColumnIncreasing,
+  FileText,
+  Newspaper,
+  Search,
+  ShoppingBag,
+  Users,
+} from "lucide-react";
+import { ComingSoon, PLATFORMS, PlatformMark, type Platform } from "./PlatformStrip";
+import {
+  MENU_COLUMN,
+  MENU_COLUMN_FIRST,
+  MENU_COLUMN_LAST,
+  MENU_PANEL,
+  MENU_ROW_STATIC,
+  MENU_TILE,
+  TintedTile,
+  type MenuIcon,
+  MenuHeading,
+  MenuRow,
+  MenuRows,
+} from "./MegaMenuParts";
+import {
+  GROWMERCE_EXPLORE,
+  GROWMERCE_PLATFORMS,
+  GROWSEARCH_EXPLORE,
+  GROWSEARCH_PLATFORMS,
+  MORE_PRODUCTS,
+  PRODUCTS,
+  type PlatformName,
+  type PlatformRow,
+} from "./nav-links";
 
-type MenuIconType = "question" | "check" | "new" | "price";
+/* Status comes from PLATFORMS; only the art changes per menu. */
+function platformArt(name: PlatformName, art: { src: string; w: number; h: number }): Platform {
+  return { ...PLATFORMS.find((p) => p.name === name)!, ...art };
+}
 
-const GROWMERCE_PRIMARY_LINKS = [
-  {
-    label: "What is Growmerce?",
-    note: "The complete platform overview",
-    href: "/about",
-    icon: "question",
+/* ─── Growmerce, and every page that is not Growsearch's ─────────────────── */
+
+const GROWMERCE_ICONS: Record<string, MenuIcon> = {
+  search: { icon: Search, tint: "orange" },
+  assistant: { icon: ShoppingBag, tint: "orange" },
+  analytics: { icon: ChartNoAxesColumnIncreasing, tint: "orange" },
+  how: { icon: BookOpen, tint: "blue" },
+  store: { icon: FileText, tint: "green" },
+  blogs: { icon: Newspaper, tint: "purple" },
+  webinar: { icon: Users, tint: "orange" },
+};
+
+/* The platforms' own marks, sized to sit in the same tile as the icons. */
+const GROWMERCE_PLATFORM_TILES: Record<PlatformName, { platform: Platform; tile: string; mark: string }> = {
+  Shopify: {
+    platform: platformArt("Shopify", { src: "/img/logos/shopify-bag.svg", w: 64, h: 74 }),
+    tile: "bg-[#eef6e7]",
+    mark: "h-[22px] w-auto",
   },
-  {
-    label: "Solutions",
-    note: "AI products we build for you",
-    href: "/solutions",
-    icon: "check",
+  WooCommerce: {
+    platform: platformArt("WooCommerce", { src: "/img/logos/woo-bubble.svg", w: 54, h: 32 }),
+    tile: "bg-[#f4ecf5]",
+    mark: "h-auto w-7",
   },
-  {
-    label: "Latest Product Update",
-    note: "New releases",
-    href: "/about#updates-title",
-    icon: "new",
+  BigCommerce: {
+    platform: platformArt("BigCommerce", { src: "/img/logos/logo-bigcommerce.svg", w: 81, h: 81 }),
+    tile: "bg-[#eff0f4]",
+    mark: "size-6",
   },
-] as const;
+};
 
-const GROWSEARCH_PRIMARY_LINKS = [
-  {
-    label: "What is Growsearch?",
-    note: "Storefront search that never dead-ends",
-    href: GROWSEARCH_HOME,
-    icon: "question",
-  },
-  {
-    label: "Growsearch Features",
-    note: "Everything Growsearch does",
-    href: GROWSEARCH_FEATURES,
-    icon: "check",
-  },
-  {
-    label: "Pricing & Plans",
-    note: "Choose the right search volume",
-    href: "/pricing",
-    icon: "price",
-  },
-] as const;
-
-/* `size` is the height to draw at; w/h are the mark's own dimensions, which are
-   not all square. Passing the display size as both makes the computed height
-   disagree with the attribute, and Next warns about the squashed ratio. */
-const GROWMERCE_WORKFLOWS = [
-  { name: "Search", src: "/img/icon-search-circle.svg", size: 42, w: 66, h: 63 },
-  { name: "Growth", src: "/img/icon-growth.svg", size: 40, w: 104, h: 104 },
-  { name: "Automation", src: "/img/icon-workflow.svg", size: 36, w: 41, h: 41 },
-  { name: "Revenue", src: "/img/icon-wallet.svg", size: 36, w: 41, h: 41 },
-] as const;
-
-const GROWSEARCH_WORKFLOWS = [
-  { name: "Intent search", src: "/img/icon-search-circle.svg", size: 42, w: 66, h: 63 },
-  { name: "Recovery", src: "/img/icon-workflow.svg", size: 36, w: 41, h: 41 },
-  { name: "Conversation", src: "/img/icon-sparkle.svg", size: 34, w: 23, h: 23 },
-  { name: "Analytics", src: "/img/icon-growth.svg", size: 40, w: 104, h: 104 },
-] as const;
-
-function MenuIcon({ type }: { type: MenuIconType }) {
-  if (type === "question") {
-    return (
-      <svg viewBox="0 0 32 32" fill="none" aria-hidden className="size-7">
-        <circle cx="16" cy="16" r="13" stroke="currentColor" strokeWidth="2.4" />
-        <path d="M12.8 12.2a3.5 3.5 0 1 1 5.7 2.7c-1.4 1.1-2.5 1.7-2.5 3.6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-        <circle cx="16" cy="23.1" r="1.35" fill="currentColor" />
-      </svg>
-    );
-  }
-
-  if (type === "check") {
-    return (
-      <svg viewBox="0 0 32 32" fill="none" aria-hidden className="size-7">
-        <path d="m5 17 4.2 4.5L18 9.8M13.6 19.2l3.8 4.1L27 10" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
-
-  if (type === "price") {
-    return (
-      <Image
-        src="/img/icon-wallet.svg"
-        alt=""
-        width={28}
-        height={28}
-        className="size-7 object-contain"
-      />
-    );
-  }
-
+function GrowmercePlatformRow({ row }: { row: PlatformRow }) {
+  const { platform, tile, mark } = GROWMERCE_PLATFORM_TILES[row.name];
   return (
-    <span aria-hidden className="grid h-6 min-w-9 place-items-center rounded-[3px] border-2 border-current px-1 text-[9px] leading-none font-extrabold tracking-[-0.03em]">
-      NEW
+    <div className={MENU_ROW_STATIC}>
+      <span className={`${MENU_TILE} ${tile}`}>
+        <PlatformMark platform={platform} className={mark} dim="opacity-65" />
+      </span>
+      <span className="min-w-0 flex-1">
+        {/* The status sits beside the name rather than under it, so an
+            unshipped platform's row is no taller than a live one's. */}
+        <span className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
+          <span className="text-[15px] leading-tight font-semibold text-charcoal">{row.label}</span>
+          {platform.live ? null : <ComingSoon />}
+        </span>
+        <span className="mt-0.5 block text-[13px] leading-snug text-body-mute">{row.note}</span>
+      </span>
+    </div>
+  );
+}
+
+function GrowmercePanel({ onNavigate }: { onNavigate: () => void }) {
+  return (
+    <div className={MENU_PANEL}>
+      <div className={MENU_COLUMN_FIRST}>
+        <MenuHeading title="Growmerce" />
+        <MenuRows>
+          {PRODUCTS.map((item) => (
+            <MenuRow key={item.id} item={item} tile={<TintedTile {...GROWMERCE_ICONS[item.id]} />} onNavigate={onNavigate} />
+          ))}
+        </MenuRows>
+      </div>
+
+      <div className={MENU_COLUMN}>
+        <MenuHeading title="Platforms" />
+        <MenuRows>
+          {GROWMERCE_PLATFORMS.map((row) => (
+            <GrowmercePlatformRow key={row.name} row={row} />
+          ))}
+        </MenuRows>
+      </div>
+
+      <div className={MENU_COLUMN_LAST}>
+        <MenuHeading title="Explore" />
+        <MenuRows>
+          {GROWMERCE_EXPLORE.map((item) => (
+            <MenuRow key={item.id} item={item} tile={<TintedTile {...GROWMERCE_ICONS[item.id]} />} onNavigate={onNavigate} />
+          ))}
+        </MenuRows>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Growsearch ─────────────────────────────────────────────────────────── */
+
+/* The Figma's own glyphs, at their own sizes — they are not square, and a
+   shared size would squash the ones that aren't. */
+const GROWSEARCH_ICONS: Record<string, { src: string; w: number; h: number }> = {
+  search: { src: "/img/menu/search.svg", w: 30, h: 30 },
+  assistant: { src: "/img/menu/bag.svg", w: 31, h: 34 },
+  analytics: { src: "/img/menu/analytics.svg", w: 34.4999, h: 27.5 },
+  how: { src: "/img/menu/book.svg", w: 41, h: 41 },
+  store: { src: "/img/menu/file.svg", w: 38, h: 38 },
+  blogs: { src: "/img/menu/article.svg", w: 41, h: 41 },
+  video: { src: "/img/menu/laptop-video.svg", w: 34.7503, h: 28.4169 },
+};
+
+/* The glyphs were drawn for a 49px tile; one factor fits them to ours and
+   keeps their relative sizes. */
+const GLYPH_SCALE = 0.7;
+
+const GROWSEARCH_WORDMARKS: Record<PlatformName, { platform: Platform; mark: string }> = {
+  Shopify: { platform: PLATFORMS.find((p) => p.name === "Shopify")!, mark: "h-6 w-auto" },
+  WooCommerce: { platform: PLATFORMS.find((p) => p.name === "WooCommerce")!, mark: "h-[21px] w-auto" },
+  BigCommerce: {
+    platform: platformArt("BigCommerce", { src: "/img/logos/logo-bigcommerce-wordmark.png", w: 492, h: 112 }),
+    mark: "h-7 w-auto",
+  },
+};
+
+function GlyphTile({ id }: { id: string }) {
+  const icon = GROWSEARCH_ICONS[id];
+  return (
+    <span className={`${MENU_TILE} bg-peach`}>
+      <Image
+        src={icon.src}
+        alt=""
+        width={Math.round(icon.w)}
+        height={Math.round(icon.h)}
+        style={{ width: icon.w * GLYPH_SCALE, height: icon.h * GLYPH_SCALE }}
+      />
     </span>
+  );
+}
+
+function GrowsearchPanel({ onNavigate }: { onNavigate: () => void }) {
+  return (
+    <div className={MENU_PANEL}>
+      <div className={MENU_COLUMN_FIRST}>
+        <MenuHeading title="Growmerce" note="AI products to grow your ecommerce business" />
+        <MenuRows>
+          {PRODUCTS.map((item) => (
+            <MenuRow key={item.id} item={item} tile={<GlyphTile id={item.id} />} onNavigate={onNavigate} />
+          ))}
+        </MenuRows>
+        <Link
+          href={MORE_PRODUCTS.href!}
+          onClick={onNavigate}
+          className="group mt-3 inline-flex items-center gap-2 rounded-[6px] text-[15px] font-semibold text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        >
+          {MORE_PRODUCTS.label}
+          <ArrowRight aria-hidden strokeWidth={2.2} className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
+        </Link>
+      </div>
+
+      <div className={MENU_COLUMN}>
+        <MenuHeading title="Explore" note="Learn, see and get inspired" />
+        <MenuRows>
+          {GROWSEARCH_EXPLORE.map((item) => (
+            <MenuRow key={item.id} item={item} tile={<GlyphTile id={item.id} />} onNavigate={onNavigate} />
+          ))}
+        </MenuRows>
+      </div>
+
+      <div className={MENU_COLUMN_LAST}>
+        <MenuHeading title="Platforms" note="Works with the tools you love" />
+        <ul className="flex flex-col gap-2">
+          {GROWSEARCH_PLATFORMS.map((row) => {
+            const { platform, mark } = GROWSEARCH_WORDMARKS[row.name];
+            return (
+              <li
+                key={row.name}
+                className="flex min-h-[56px] items-center gap-4 rounded-[12px] border border-line bg-white px-4 py-2"
+              >
+                <span className="flex w-[40%] shrink-0 items-center">
+                  <PlatformMark platform={platform} className={`max-w-full ${mark}`} dim="opacity-65" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[13px] leading-snug text-body-mute">{row.note}</span>
+                  {platform.live ? null : <ComingSoon className="mt-0.5" />}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
   );
 }
 
@@ -109,108 +228,9 @@ export default function PlatformMegaMenuContent({
   scope: "growmerce" | "growsearch";
   onNavigate: () => void;
 }) {
-  const isGrowsearch = scope === "growsearch";
-  const primaryLinks = isGrowsearch
-    ? GROWSEARCH_PRIMARY_LINKS
-    : GROWMERCE_PRIMARY_LINKS;
-  const workflows = isGrowsearch
-    ? GROWSEARCH_WORKFLOWS
-    : GROWMERCE_WORKFLOWS;
-
-  return (
-    <div className="grid h-[282px] grid-cols-[minmax(220px,0.95fr)_minmax(340px,1.35fr)_minmax(250px,0.9fr)] gap-6 px-6 py-5">
-      <div className="flex flex-col justify-start border-r border-line pr-6">
-          {primaryLinks.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              onClick={onNavigate}
-              className="group flex items-start gap-3 rounded-[8px] px-2 py-2 text-charcoal transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-            >
-              <span className="mt-0.5 shrink-0 text-muted transition-colors group-hover:text-brand">
-                <MenuIcon type={item.icon} />
-              </span>
-              <span>
-                <span className="block text-[clamp(1rem,1.2vw,1.18rem)] leading-tight font-semibold">
-                  {item.label}
-                </span>
-                <span className="mt-0.5 block text-[clamp(0.78rem,0.9vw,0.88rem)] leading-snug font-normal text-muted">
-                  {item.note}
-                </span>
-              </span>
-            </Link>
-          ))}
-      </div>
-
-      <div className="flex flex-col justify-start">
-          <Link
-            href={GROWSEARCH_FEATURES}
-            onClick={onNavigate}
-            className="w-fit text-[clamp(1.1rem,1.4vw,1.3rem)] leading-tight font-semibold underline decoration-brand decoration-2 underline-offset-4 transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
-          >
-            {isGrowsearch ? "What Growsearch does" : "The workflows we build"}
-          </Link>
-          <div className="mt-4 grid grid-cols-4 gap-3">
-            {workflows.map((workflow) => (
-              <div key={workflow.name} className="flex min-w-0 flex-col items-center gap-2">
-                <span className="grid size-14 place-items-center rounded-full bg-white">
-                  <Image
-                    src={workflow.src}
-                    alt=""
-                    width={workflow.w}
-                    height={workflow.h}
-                    style={{ height: workflow.size, width: "auto" }}
-                    className="max-w-11 object-contain"
-                  />
-                </span>
-                <span className="text-[11px] font-medium text-muted">{workflow.name}</span>
-              </div>
-            ))}
-          </div>
-
-          <p className="mt-5 text-[clamp(1.1rem,1.4vw,1.3rem)] leading-tight font-semibold">
-            Available on
-          </p>
-          <div className="mt-3 grid grid-cols-4 gap-3">
-            {PLATFORMS.map((platform) => (
-              // No label here — at this size the menu would turn into a list of
-              // captions. The grey carries it.
-              <span key={platform.name} title={platform.name} className="grid size-14 place-items-center rounded-full bg-white p-2.5">
-                <PlatformMark platform={platform} className="h-auto max-h-9 w-full" dim="opacity-65" />
-              </span>
-            ))}
-          </div>
-      </div>
-
-      <Link
-          href={GROWSEARCH_HOME}
-          onClick={onNavigate}
-          className="group flex min-h-0 flex-col rounded-[22px] border border-brand bg-white p-3 transition-[transform,box-shadow] duration-200 hover-lift hover:shadow-[0_16px_34px_-22px_rgba(255,90,31,0.7)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-brand"
-        >
-          <span className="text-[12px] font-medium tracking-[0.04em] text-muted uppercase">Live now</span>
-          <span className="relative mt-2 min-h-0 flex-1 overflow-hidden rounded-[13px] bg-cream">
-            {/* Cropped to the slot's own 1.91 ratio and filled rather than
-                contained. A whole mock letterboxed into 273x143 is unreadable
-                at any zoom; this keeps the search bar and one row of results
-                edge to edge, which is the shape that reads at thumbnail size. */}
-            <Image
-              src="/img/demos/gifts-thumb.webp"
-              alt="A storefront search for “gift for someone who has everything”, returning gift products"
-              fill
-              sizes="(min-width: 1280px) 360px, 290px"
-              className="object-cover object-top transition-transform duration-300 group-hover:scale-[1.025]"
-            />
-          </span>
-          <span className="mt-2 flex items-center justify-between gap-3">
-            <span>
-              <span className="block text-[clamp(0.95rem,1.1vw,1.05rem)] font-semibold text-charcoal">Growsearch</span>
-              <span className="block text-[11px] leading-snug font-normal text-muted">Storefront search that never dead-ends</span>
-            </span>
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden className="size-5 shrink-0 text-brand transition-transform duration-200 group-hover:translate-x-1">
-              <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-      </Link>
-    </div>
+  return scope === "growsearch" ? (
+    <GrowsearchPanel onNavigate={onNavigate} />
+  ) : (
+    <GrowmercePanel onNavigate={onNavigate} />
   );
 }

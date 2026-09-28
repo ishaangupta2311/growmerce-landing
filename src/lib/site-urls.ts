@@ -8,7 +8,7 @@ export const GROWSEARCH_FEATURES = "https://search.growmerce.ai/features";
  * move the id and this follows.
  *
  * "See demo" no longer points here: it opens the live demo store behind the
- * email gate. This is now only the Resources menu's "Videos" entry.
+ * email gate. This is now only the header menus' "Video" and "Videos" entries.
  */
 export const GROWSEARCH_DEMO = `${GROWSEARCH_FEATURES}#demo`;
 
