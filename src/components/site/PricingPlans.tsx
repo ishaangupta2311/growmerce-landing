@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { APP_STORE_SEARCH, GROWSEARCH_HOME } from "@/lib/site-urls";
+import { GROWSEARCH_HOME, PLAN_BUY_URL } from "@/lib/site-urls";
 
 type Plan = {
   name: string;
@@ -132,7 +132,7 @@ export default function PricingPlans() {
             <div className="flex items-center justify-between gap-4 rounded-b-[20px] border-t border-line bg-[#f5f5f5] px-7 py-4">
               <p className="text-[14px] font-semibold">14 days free trial</p>
               <a
-                href={APP_STORE_SEARCH}
+                href={PLAN_BUY_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`${plan.featured ? "cta-primary" : "cta-secondary"} px-5! py-2! text-[15px]!`}

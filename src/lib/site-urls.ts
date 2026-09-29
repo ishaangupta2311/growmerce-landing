@@ -27,16 +27,11 @@ export const DEMO_STORE_ENTRANCE = `${DEMO_STORE}/password`;
 export const DEMO_STORE_PASSWORD = "demo";
 
 /**
- * PLACEHOLDER — this is the Shopify App Store home page, not our listing. The
- * Growmerce listing is still in review, and this stands in so nothing 404s in
- * the meantime.
- *
- * When the listing goes live, replace the string below with its URL. Every
- * "Install on Shopify" CTA reads this constant through
- * src/components/site/InstallOnShopify.tsx, so the address lives here and
- * nowhere else — then flip `SHOPIFY_LISTING_LIVE` to send visitors to it.
+ * Our Shopify App Store listing, published 2026-09-30. Every "Install on
+ * Shopify" CTA reads this constant through src/components/site/InstallOnShopify.tsx,
+ * so the address lives here and nowhere else.
  */
-export const SHOPIFY_APP_LISTING = "https://apps.shopify.com/";
+export const SHOPIFY_APP_LISTING = "https://apps.shopify.com/smarter-search";
 
 /**
  * Whether that listing is something we can actually send a merchant to.
@@ -55,15 +50,16 @@ export const SHOPIFY_APP_LISTING = "https://apps.shopify.com/";
  * Typed `boolean` rather than left to infer `false`, so the live branch is not
  * narrowed away as dead code while we wait.
  */
-export const SHOPIFY_LISTING_LIVE: boolean = false;
+export const SHOPIFY_LISTING_LIVE: boolean = true;
 
 /**
- * Where a plan card's Buy button goes: the App Store's own search for
- * Growsearch. Plans are bought through Shopify billing only (App Store review
- * 1.2.3), so buying starts from the App Store, never from a form of ours. A
- * search rather than the listing URL, because the listing is not public yet.
+ * Where a plan card's Buy button goes. Plans are bought through Shopify billing
+ * only (App Store review 1.2.3), so buying always starts on the App Store: the
+ * listing once it is live, and a search for Growsearch before that.
  */
-export const APP_STORE_SEARCH = "https://apps.shopify.com/search?q=growsearch";
+export const PLAN_BUY_URL = SHOPIFY_LISTING_LIVE
+  ? SHOPIFY_APP_LISTING
+  : "https://apps.shopify.com/search?q=growsearch";
 
 /**
  * Where every pricing link goes. Until the listing is live that is our own
