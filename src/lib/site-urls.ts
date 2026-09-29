@@ -58,12 +58,12 @@ export const SHOPIFY_APP_LISTING = "https://apps.shopify.com/";
 export const SHOPIFY_LISTING_LIVE: boolean = false;
 
 /**
- * Where every pricing link goes: the App Store listing, not a page of ours.
+ * Where every pricing link goes. Until the listing is live that is our own
+ * /pricing page, which shows the Shopify-billed plans and nothing else; once
+ * `SHOPIFY_LISTING_LIVE` flips, every pricing link goes to the listing.
  *
- * Shopify requires every plan to be bought through Shopify billing, and App
- * Store review (1.2.3) rejected the old /pricing page because its Enterprise
- * "custom pricing" block sent merchants to us to arrange a plan directly. The
- * plans and their prices now live on the listing alone; /pricing redirects
- * there too (next.config.ts), so old links and bookmarks follow.
+ * App Store review (1.2.3) rejected an Enterprise "custom pricing" block on
+ * /pricing that sent merchants to us to arrange a plan directly. Every plan
+ * must be bought through Shopify billing, so do not add one back.
  */
-export const PRICING_URL = SHOPIFY_APP_LISTING;
+export const PRICING_URL = SHOPIFY_LISTING_LIVE ? SHOPIFY_APP_LISTING : "/pricing";

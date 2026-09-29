@@ -580,7 +580,7 @@ function DemoStoreCard() {
           href={PRICING_URL}
           className="mt-4 block text-center text-[13.5px] font-semibold text-charcoal underline underline-offset-4 transition-colors hover:text-brand"
         >
-          See plans on Shopify
+          See plans
         </Link>
       </div>
     </aside>

@@ -34,7 +34,7 @@ export default function PricingBand() {
           </h2>
           <div className="mt-8">
             <Link href={PRICING_URL} className="cta-primary-inverse">
-              See plans on Shopify
+              See plans
               <Arrow className="cta-arrow" />
             </Link>
           </div>

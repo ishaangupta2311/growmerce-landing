@@ -67,7 +67,7 @@ const SECTIONS: LegalSection[] = [
           href={PRICING_URL}
           className="font-semibold text-brand underline underline-offset-2"
         >
-          Shopify App Store listing
+          pricing page
         </Link>
         , which forms part of these terms. Charges are billed through Shopify on
         your regular store invoice.
