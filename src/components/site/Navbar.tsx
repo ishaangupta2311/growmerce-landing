@@ -13,7 +13,7 @@ import {
   WHY_US_GROUPS,
   type MenuLink,
 } from "./nav-links";
-import { GROWMERCE_HOME } from "@/lib/site-urls";
+import { GROWMERCE_HOME, PRICING_URL } from "@/lib/site-urls";
 
 type NavEntry = { label: string; menu?: HeaderMegaMenuVariant; href?: string };
 
@@ -23,7 +23,7 @@ const NAV: NavEntry[] = [
   { label: "Platform", menu: "platform" },
   { label: "Resources", menu: "resources" },
   { label: "Why us", menu: "why-us" },
-  { label: "Pricing", href: "/pricing" },
+  { label: "Pricing", href: PRICING_URL },
 ];
 
 /* "Get started" is the free preview on the visitor's own store. */

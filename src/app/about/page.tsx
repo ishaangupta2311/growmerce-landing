@@ -16,7 +16,6 @@ import BuiltForEcommerce from "./components/BuiltForEcommerce";
 import InAction from "./components/InAction";
 import SkipTheCall from "./components/SkipTheCall";
 import NotAllAi from "./components/NotAllAi";
-import CustomPlanForm from "./components/CustomPlanForm";
 
 /* The latest blog posts are shown near the foot, so the page is rebuilt with
    the blog: at most once a minute, and at once when a post is published. */
@@ -124,7 +123,6 @@ export default async function AboutPage() {
         <InAction />
         <SkipTheCall />
         <NotAllAi />
-        <CustomPlanForm />
 
         {/* The latest posts; left out entirely while the blog is empty. */}
         {posts.length ? (

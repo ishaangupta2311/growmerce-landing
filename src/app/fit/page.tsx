@@ -241,7 +241,7 @@ export default function FitPage() {
                 href="/contact"
                 className="cta-primary mt-7"
               >
-                Talk to sales
+                Talk to us
                 <Arrow className="cta-arrow size-5" />
               </Link>
             </div>

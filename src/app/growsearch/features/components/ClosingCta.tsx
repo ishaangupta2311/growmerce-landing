@@ -1,6 +1,6 @@
 import Reveal from "@/components/site/Reveal";
 import CtaPair from "@/components/site/CtaPair";
-import { GROWSEARCH_HOME } from "@/lib/site-urls";
+import { GROWSEARCH_HOME, PRICING_URL } from "@/lib/site-urls";
 
 export default function ClosingCta() {
   return (
@@ -17,7 +17,7 @@ export default function ClosingCta() {
           </p>
           <CtaPair
             className="mt-8 justify-center"
-            primaryHref="/pricing"
+            primaryHref={PRICING_URL}
             primaryLabel="Get started"
             secondaryHref={GROWSEARCH_HOME}
             secondaryLabel="Back to Growsearch"

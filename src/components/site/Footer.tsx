@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { GROWSEARCH_FEATURES, GROWSEARCH_HOME } from "@/lib/site-urls";
+import { GROWSEARCH_FEATURES, GROWSEARCH_HOME, PRICING_URL } from "@/lib/site-urls";
 
 const COLUMNS = [
   {
@@ -21,7 +21,7 @@ const COLUMNS = [
   {
     heading: "Explore more",
     links: [
-      { label: "Pricing", href: "/pricing" },
+      { label: "Pricing", href: PRICING_URL },
       { label: "Affiliate program", href: "/affiliates" },
       { label: "Coming soon", href: "#" },
     ],

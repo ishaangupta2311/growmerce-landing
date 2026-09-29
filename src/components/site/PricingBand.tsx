@@ -2,6 +2,7 @@ import Link from "next/link";
 import Arrow from "./Arrow";
 import PricingOrbit from "./PricingOrbit";
 import Reveal from "./Reveal";
+import { PRICING_URL } from "@/lib/site-urls";
 
 export default function PricingBand() {
   return (
@@ -32,8 +33,8 @@ export default function PricingBand() {
             Choose the perfect plan for your business
           </h2>
           <div className="mt-8">
-            <Link href="/pricing" className="cta-primary-inverse">
-              Get my custom plan
+            <Link href={PRICING_URL} className="cta-primary-inverse">
+              See plans on Shopify
               <Arrow className="cta-arrow" />
             </Link>
           </div>

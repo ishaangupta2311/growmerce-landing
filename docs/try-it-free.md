@@ -133,8 +133,8 @@ Nothing in this pipeline may log the visitor's email.
   - a browser-chrome frame holding the screenshot (or the synthesised
     storefront when null) with the **Growsearch widget** over it;
   - a side card: "Your demo store is open in another tab" + the password +
-    an "Open it again" button (same hidden-form trick) + "Get my custom
-    plan" → `/pricing`;
+    an "Open it again" button (same hidden-form trick) + "See plans on
+    Shopify" → `PRICING_URL` (the App Store listing);
   - a short line saying what was matched ("Colours matched from your live
     styles" / "…from your stylesheet" / "We used default colours").
   `robots: { index: false }`. Handles a missing/invalid token by sending the
@@ -148,5 +148,5 @@ Nothing in this pipeline may log the visitor's email.
 
 Design language: the site's existing tokens and utilities (`cta-primary`,
 `font-poppins`/`font-bricolage`, `bg-cream`, `text-body-mute`, `Reveal`,
-`hero-enter`). Read `src/app/pricing/page.tsx`, `src/app/fit/page.tsx` and
+`hero-enter`). Read `src/app/fit/page.tsx` and
 `src/components/site/DemoStoreButton.tsx` for the voice and the shapes.

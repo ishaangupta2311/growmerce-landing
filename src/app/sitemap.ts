@@ -10,7 +10,7 @@ const SITE = "https://growmerce.ai";
 
 /* The public marketing pages on growmerce.ai. Growsearch's own pages live on
    search.growmerce.ai, and the /v concepts are archived — neither belongs here. */
-const PAGES = ["/", "/about", "/products/ai-search", "/pricing", "/solutions", "/compare", "/fit", "/try", "/contact", "/help", "/blog", "/privacy", "/terms"];
+const PAGES = ["/", "/about", "/products/ai-search", "/solutions", "/compare", "/fit", "/try", "/contact", "/help", "/blog", "/privacy", "/terms"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await sitemapPosts();

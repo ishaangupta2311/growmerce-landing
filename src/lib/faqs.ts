@@ -1,3 +1,5 @@
+import { PRICING_URL } from "./site-urls";
+
 export type FaqItem = { q: string; a: string };
 
 /**
@@ -270,7 +272,7 @@ export const HELP_TOPICS = [
     id: "pricing",
     title: "Pricing and the trial",
     blurb: "What counts as a search, what happens if you go over, and how to cancel.",
-    href: "/pricing",
+    href: PRICING_URL,
     hrefLabel: "Pricing",
     items: PRICING_FAQ,
   },

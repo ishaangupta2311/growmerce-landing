@@ -1,6 +1,6 @@
 import Reveal from "@/components/site/Reveal";
 import CtaPair from "@/components/site/CtaPair";
-import { GROWSEARCH_HOME } from "@/lib/site-urls";
+import { GROWSEARCH_HOME, PRICING_URL } from "@/lib/site-urls";
 
 export default function FeaturesHero() {
   return (
@@ -18,7 +18,7 @@ export default function FeaturesHero() {
         </p>
         <CtaPair
           className="mt-9"
-          primaryHref="/pricing"
+          primaryHref={PRICING_URL}
           primaryLabel="Get started"
           secondaryHref={GROWSEARCH_HOME}
           secondaryLabel="See all our products"

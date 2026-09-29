@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import LegalDoc, { type LegalSection } from "@/components/site/LegalDoc";
+import { PRICING_URL } from "@/lib/site-urls";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions",
@@ -63,10 +64,10 @@ const SECTIONS: LegalSection[] = [
         Plans, their monthly and annual prices, and what each one includes are
         listed on the{" "}
         <Link
-          href="/pricing"
+          href={PRICING_URL}
           className="font-semibold text-brand underline underline-offset-2"
         >
-          pricing page
+          Shopify App Store listing
         </Link>
         , which forms part of these terms. Charges are billed through Shopify on
         your regular store invoice.
@@ -81,7 +82,7 @@ const SECTIONS: LegalSection[] = [
     heading: "Search limits and fair use",
     body: [
       "Each plan includes a monthly allowance of shopper searches. The allowance for your plan is shown on the pricing page and in your dashboard, and it resets at the start of each billing period.",
-      "If you consistently exceed your allowance we will contact you about moving to a plan that fits rather than cutting your storefront off without warning. Enterprise catalogues and unusual volumes are handled by arrangement.",
+      "If you consistently exceed your allowance we will contact you about moving to a plan that fits rather than cutting your storefront off without warning.",
       "Automated traffic, load testing and scraping through the search endpoint are not covered by these allowances and may be rate limited.",
     ],
   },

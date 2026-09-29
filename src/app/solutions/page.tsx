@@ -8,7 +8,7 @@ import { SOLUTIONS_FAQ } from "@/lib/faqs";
 import Reveal from "@/components/site/Reveal";
 import DemoShot from "@/components/site/DemoShot";
 import Arrow from "@/components/site/Arrow";
-import { GROWSEARCH_HOME } from "@/lib/site-urls";
+import { GROWSEARCH_HOME, PRICING_URL } from "@/lib/site-urls";
 import StorefrontReveal from "./components/StorefrontReveal";
 
 export const metadata: Metadata = {
@@ -93,7 +93,7 @@ export default function SolutionsPage() {
               </p>
               <CtaPair
                 className="mt-9"
-                primaryHref="/pricing"
+                primaryHref={PRICING_URL}
                 secondaryHref={GROWSEARCH_HOME}
                 secondaryLabel="See Growsearch"
               />

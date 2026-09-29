@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { GROWSEARCH_FEATURES, GROWSEARCH_HOME } from "./src/lib/site-urls";
+import { GROWSEARCH_FEATURES, GROWSEARCH_HOME, PRICING_URL } from "./src/lib/site-urls";
 
 const nextConfig: NextConfig = {
   // The iMac dev server is viewed from the MacBook over Tailscale. Next
@@ -58,6 +58,9 @@ const nextConfig: NextConfig = {
          path may one day mean something again. */
       { source: "/affiliates/admin", destination: "/admin/affiliates", permanent: true },
       { source: "/affiliates/admin/:path*", destination: "/admin/affiliates/:path*", permanent: true },
+      /* Pricing lives on the App Store listing (see PRICING_URL). Not
+         permanent: the destination changes when the listing goes live. */
+      { source: "/pricing", destination: PRICING_URL, permanent: false },
       { source: "/admin/login", destination: "/affiliates/login?next=/admin", permanent: false },
       ...["growmerce.ai", "www.growmerce.ai"].flatMap((host) => [
         {

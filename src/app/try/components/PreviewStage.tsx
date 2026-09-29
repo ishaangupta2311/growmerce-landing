@@ -14,7 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Arrow from "@/components/site/Arrow";
 import { OpenDemoStoreButton } from "@/components/site/OpenDemoStore";
 import InstallOnShopify from "@/components/site/InstallOnShopify";
-import { DEMO_STORE_PASSWORD, SHOPIFY_LISTING_LIVE } from "@/lib/site-urls";
+import { DEMO_STORE_PASSWORD, SHOPIFY_LISTING_LIVE, PRICING_URL } from "@/lib/site-urls";
 import {
   DEFAULT_THEME,
   type PreviewErrorCode,
@@ -577,10 +577,10 @@ function DemoStoreCard() {
           source="try-preview"
         />
         <Link
-          href="/pricing"
+          href={PRICING_URL}
           className="mt-4 block text-center text-[13.5px] font-semibold text-charcoal underline underline-offset-4 transition-colors hover:text-brand"
         >
-          Get my custom plan
+          See plans on Shopify
         </Link>
       </div>
     </aside>
