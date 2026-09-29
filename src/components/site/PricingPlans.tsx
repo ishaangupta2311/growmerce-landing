@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { GROWSEARCH_HOME } from "@/lib/site-urls";
+import { APP_STORE_SEARCH, GROWSEARCH_HOME } from "@/lib/site-urls";
 
 type Plan = {
   name: string;
@@ -129,8 +129,17 @@ export default function PricingPlans() {
               </ul>
             </div>
 
-            <div className="rounded-b-[20px] border-t border-line bg-[#f5f5f5] px-7 py-4">
+            <div className="flex items-center justify-between gap-4 rounded-b-[20px] border-t border-line bg-[#f5f5f5] px-7 py-4">
               <p className="text-[14px] font-semibold">14 days free trial</p>
+              <a
+                href={APP_STORE_SEARCH}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${plan.featured ? "cta-primary" : "cta-secondary"} px-5! py-2! text-[15px]!`}
+              >
+                Buy {plan.name}
+                <span className="sr-only"> on the Shopify App Store (opens in a new tab)</span>
+              </a>
             </div>
           </article>
         ))}

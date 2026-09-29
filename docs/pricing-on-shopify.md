@@ -11,6 +11,8 @@ billing; a merchant must not be able to arrange a plan with us directly.
 - "Get my custom plan" is now "See plans". The Terms no longer say enterprise
   volumes are "handled by arrangement", and /fit says "Talk to us" rather than
   "Talk to sales".
+- Each plan card has a Buy button (Buy Basic, Buy Plus, Buy Pro) that opens
+  `APP_STORE_SEARCH`, the App Store searched for "growsearch", in a new tab.
 - Every pricing link reads `PRICING_URL` in `src/lib/site-urls.ts`: /pricing
   while the listing is in review, the App Store listing once
   `SHOPIFY_LISTING_LIVE` is true. Launch day needs no change here.

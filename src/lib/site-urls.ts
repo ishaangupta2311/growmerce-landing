@@ -58,6 +58,14 @@ export const SHOPIFY_APP_LISTING = "https://apps.shopify.com/";
 export const SHOPIFY_LISTING_LIVE: boolean = false;
 
 /**
+ * Where a plan card's Buy button goes: the App Store's own search for
+ * Growsearch. Plans are bought through Shopify billing only (App Store review
+ * 1.2.3), so buying starts from the App Store, never from a form of ours. A
+ * search rather than the listing URL, because the listing is not public yet.
+ */
+export const APP_STORE_SEARCH = "https://apps.shopify.com/search?q=growsearch";
+
+/**
  * Where every pricing link goes. Until the listing is live that is our own
  * /pricing page, which shows the Shopify-billed plans and nothing else; once
  * `SHOPIFY_LISTING_LIVE` flips, every pricing link goes to the listing.
