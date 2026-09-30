@@ -41,6 +41,12 @@ export const metadata: Metadata = {
     siteName: "Growmerce",
     type: "website",
   },
+  /* Proves ownership of the domain to Google Search Console. Next renders it
+     as <meta name="google-site-verification">; the tag must stay on every
+     page for as long as the property is verified. */
+  verification: {
+    google: "Cs1nGjC-TCZhgMuRwTDa7ivC6-hhMJYrjaQOfr9PlAw",
+  },
 };
 
 export const viewport: Viewport = {
