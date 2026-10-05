@@ -50,7 +50,7 @@ any preview domain). Emailed confirmation and recovery links land there.
 ## The schema
 
 `migrations/0002_affiliate.sql`, applied, and
-`migrations/0010_affiliate_referral_ownership.sql`, **not yet applied**. Six tables in their own `affiliate`
+`migrations/0010_affiliate_referral_ownership.sql`, both applied. Six tables in their own `affiliate`
 schema:
 
 - **`partner`** — one per affiliate account, keyed to a Supabase `auth.users`
