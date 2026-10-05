@@ -31,6 +31,7 @@ function referralNote(referrals: DashboardSummary["referrals"]): string {
     [referrals.trialing, "on trial"],
     [referrals.linked, "not yet paying"],
     [referrals.cancelled, "cancelled"],
+    [referrals.replaced, "moved to another partner"],
   ];
   return buckets
     .filter(([count]) => count > 0)

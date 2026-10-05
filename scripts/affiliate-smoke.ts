@@ -68,6 +68,10 @@ const REFUND_SHOP = `smoke-refund-${RUN}.myshopify.com`;
 const CHURN_SHOP = `smoke-churn-${RUN}.myshopify.com`;
 const ORDER_CODE = `SMOKEOD${RUN.slice(0, 4)}`.toUpperCase();
 const ORDER_SHOP = `smoke-order-${RUN}.myshopify.com`;
+const FIRST_CODE = `SMOKEO1${RUN.slice(0, 4)}`.toUpperCase();
+const SECOND_CODE = `SMOKEO2${RUN.slice(0, 4)}`.toUpperCase();
+const LATE_CODE = `SMOKEO3${RUN.slice(0, 4)}`.toUpperCase();
+const MOVED_SHOP = `smoke-moved-${RUN}.myshopify.com`;
 
 let failures = 0;
 
@@ -146,8 +150,8 @@ async function main() {
     "applied",
   );
   check(
-    "a second code cannot take a store that already belongs to someone",
-    (await send({ type: "referral.linked", shop: AGENCY_SHOP, code: CREATOR_CODE })).detail,
+    "re-entering the partner's own code moves nothing",
+    (await send({ type: "referral.linked", shop: AGENCY_SHOP, code: AGENCY_CODE })).detail,
     "shop_already_referred",
   );
 
@@ -451,6 +455,57 @@ async function main() {
     (await sql!<{ n: number }[]>`select count(*)::int as n from affiliate.code where partner_id = ${created.id}`)[0].n,
     1,
   );
+
+  console.log("\nownership");
+
+  /* A referral lasts while the store stays subscribed, and the merchant may
+     move it. Three partners and one store: the store is brought by the first,
+     moves to the second, moves to a creator, cancels, and comes back. */
+  const firstId = await makePartner("agency", FIRST_CODE, 2000);
+  const secondId = await makePartner("agency", SECOND_CODE, 2000);
+  const lateId = await makePartner("influencer", LATE_CODE, 3000);
+  const movedCharge = (n: number) => ({
+    type: "charge.succeeded", shop: MOVED_SHOP, chargeId: `smoke-${RUN}-m${n}`,
+    amountCents: 4900, currency: "USD",
+  });
+
+  await send({ type: "referral.linked", shop: MOVED_SHOP, code: FIRST_CODE });
+  await send(movedCharge(1));
+  check(
+    "another partner's code moves a subscribed store",
+    (await send({ type: "referral.linked", shop: MOVED_SHOP, code: SECOND_CODE })).detail,
+    "referral_replaced",
+  );
+  check("the first partner's referral ends as replaced", (await referralsFor(firstId, "USD"))[0]?.status, "replaced");
+  check("the new one carries the subscription over", (await referralsFor(secondId, "USD"))[0]?.status, "active");
+  await send(movedCharge(2));
+  check("a charge after the switch earns for the new partner", (await commissionsFor(secondId)).length, 1);
+  check("and the first keeps only what it earned before", (await commissionsFor(firstId)).length, 1);
+
+  await send({ type: "referral.linked", shop: MOVED_SHOP, code: LATE_CODE });
+  check(
+    "a creator who takes over a paying store earns no introduction fee",
+    (await send(movedCharge(3))).detail,
+    "already_paid_once",
+  );
+
+  await send({ type: "subscription.cancelled", shop: MOVED_SHOP });
+  check(
+    "a resubscription does not revive an ended referral",
+    (await send({ type: "subscription.activated", shop: MOVED_SHOP })).detail,
+    "referral_ended",
+  );
+  check("nor does a charge earn on it", (await send(movedCharge(4))).detail, "referral_cancelled");
+  check("so the creator earned nothing", (await commissionsFor(lateId)).length, 0);
+
+  check(
+    "a store that comes back can be linked afresh",
+    (await send({ type: "referral.linked", shop: MOVED_SHOP, code: FIRST_CODE })).detail,
+    "referral_linked",
+  );
+  check("as a second referral for that partner", await referralCountFor(firstId), 2);
+  await send(movedCharge(5));
+  check("which earns again", (await commissionsFor(firstId)).length, 2);
 
   console.log("\npaging");
 

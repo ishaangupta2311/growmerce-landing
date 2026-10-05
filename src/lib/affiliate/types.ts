@@ -58,8 +58,12 @@ export type AffiliateCode = {
  * store is not paying yet — which is the state most referrals sit in for their
  * first two weeks, and the reason the dashboard counts it separately from
  * anything that has earned money.
+ *
+ * `cancelled` and `replaced` are both ended, for good: the store left, or it
+ * moved to another partner's code. Neither earns again; a store that comes
+ * back is a new referral.
  */
-export type ReferralStatus = "linked" | "trialing" | "active" | "cancelled";
+export type ReferralStatus = "linked" | "trialing" | "active" | "cancelled" | "replaced";
 
 export type Referral = {
   id: number;
@@ -155,6 +159,8 @@ export type DashboardSummary = {
     /** Attributed but not yet paying — the pipeline. */
     linked: number;
     cancelled: number;
+    /** Moved to another partner's code. Ended, like `cancelled`. */
+    replaced: number;
   };
   /** The most recent commissions, newest first. */
   recentCommissions: Commission[];

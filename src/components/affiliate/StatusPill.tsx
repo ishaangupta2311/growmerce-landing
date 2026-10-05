@@ -33,6 +33,7 @@ const REFERRAL: Record<ReferralStatus, { tone: Tone; label: string }> = {
   trialing: { tone: "warn", label: "On trial" },
   active: { tone: "good", label: "Subscribed" },
   cancelled: { tone: "gone", label: "Cancelled" },
+  replaced: { tone: "gone", label: "Moved to another partner" },
 };
 
 export function ReferralPill({ status }: { status: ReferralStatus }) {

@@ -49,15 +49,18 @@ any preview domain). Emailed confirmation and recovery links land there.
 
 ## The schema
 
-`migrations/0002_affiliate.sql`, applied. Six tables in their own `affiliate`
+`migrations/0002_affiliate.sql`, applied, and
+`migrations/0010_affiliate_referral_ownership.sql`, **not yet applied**. Six tables in their own `affiliate`
 schema:
 
 - **`partner`** — one per affiliate account, keyed to a Supabase `auth.users`
   row. Carries `kind`, `status` and the negotiated `commission_rate_bps`.
 - **`code`** — the string a merchant types into Growsearch. A partner may hold
   several; retired rather than deleted, because referrals hang off them.
-- **`referral`** — one per store. `shop` is unique **across the whole table**:
-  a store belongs to whoever got there first, permanently.
+- **`referral`** — one per stretch of a store's subscription under one
+  partner. A store has at most one that is **live** (`ended_at is null`,
+  enforced by a partial unique index) and any number that have ended. See
+  *Who a store belongs to*, below.
 - **`commission`** — the ledger. Append-only in spirit; a wrong row is
   `reversed`, never deleted.
 - **`payout`** — one per transfer actually made.
@@ -93,9 +96,9 @@ valid forever. Sign the exact bytes you send; do not re-serialise.
 
 | type | required | what it does |
 | --- | --- | --- |
-| `referral.linked` | `code` | Attributes the store. First code wins. |
-| `subscription.activated` | — | Marks it subscribed. `plan` optional. |
-| `subscription.cancelled` | — | Marks it churned. Later charges earn nothing. |
+| `referral.linked` | `code` | Attributes the store, or moves it to another partner. |
+| `subscription.activated` | — | Marks the live referral subscribed. `plan` optional. |
+| `subscription.cancelled` | — | Ends the live referral for good. Sent on uninstall too. |
 | `charge.succeeded` | `chargeId`, `amountCents`, `currency` | **Creates the commission.** |
 | `charge.refunded` | `chargeId` | Reverses it, unless already paid out. |
 
@@ -119,6 +122,41 @@ nineteen cents and nobody would notice for months.
   "periodEnd": "2026-10-01T00:00:00Z"
 }
 ```
+
+### Who a store belongs to
+
+`migrations/0010_affiliate_referral_ownership.sql`. A referral lasts while the
+store stays subscribed, and the merchant may move it:
+
+- **A cancellation or an uninstall ends it.** `subscription.cancelled` sets
+  `ended_at`. A later `subscription.activated` answers `ignored:referral_ended`
+  and a later charge answers `ignored:referral_cancelled` — the partner earns
+  nothing more from that store.
+- **A store that comes back starts with nobody.** The next `referral.linked`
+  creates a new referral, for whichever partner's code it carries. A partner who
+  wins the same store twice sees it twice on their dashboard.
+- **A subscribed store can switch.** `referral.linked` with another partner's
+  code ends the old referral as `replaced` and starts a new one, answering
+  `applied:referral_replaced`. A code belonging to the partner the store already
+  has answers `ignored:shop_already_referred` and moves nothing.
+- **Charges are priced as of when they were collected.** `occurredAt` (or the
+  database's clock when it is absent) decides which referral a charge belongs
+  to and whether that referral had ended, so a switch or a cancellation never
+  takes away what was earned before it, and a charge replayed months later
+  still lands on the partner who had the store at the time.
+- **A creator's fee is still once per store.** A referral that takes over a
+  store which has already paid a commission is created with
+  `first_payment_taken`, so a creator whose code is swapped in mid-subscription
+  earns nothing. Without it a merchant could hand a different creator 30% of
+  every month by retyping a field.
+
+Whether an agency may apply its own code to a store it owns is not something
+the portal can see. Self-referral is banned by the affiliate agreement and has
+to be caught by a person reading the partner's stores.
+
+Ended referrals are kept, not deleted: commissions hang off them. Removing a
+store's domain from an ended referral once its commissions are settled is not
+built.
 
 **A 2xx means stop retrying.** That covers events applied, events deliberately
 ignored (an unknown code will not become known by asking again), and events
@@ -145,7 +183,8 @@ npm run smoke:affiliate
 Creates two scratch partners, feeds them the events above, asserts the money
 comes out right, and deletes everything it made — including on failure. It runs
 against the real database, so it is a developer tool rather than something to
-point at production casually. Twenty checks, covering the influencer
+point at production casually. It needs migration 0010. Its checks cover a store
+switching partner, cancelling and coming back, as well as the influencer
 double-payment guard, event replay, charge replay under a new event id, refund
 reversal, and charges arriving after cancellation.
 

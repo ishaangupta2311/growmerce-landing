@@ -446,7 +446,9 @@ export async function skippedChargeCount(partnerId: number): Promise<number> {
   const rows = await sql()<{ n: string }[]>`
     select count(*) as n
     from affiliate.event e
-    join affiliate.referral r on r.shop = e.shop
+    join affiliate.referral r
+      on r.id = affiliate.referral_at(
+           e.shop, coalesce((e.payload->>'occurredAt')::timestamptz, e.received_at))
     where r.partner_id = ${partnerId}
       and e.type = 'charge.succeeded'
       and e.outcome = 'ignored:partner_not_approved'
@@ -670,7 +672,9 @@ export async function replaySkippedCharges(
   const rows = await sql()<{ id: string; payload: unknown; received_at: Date }[]>`
     select e.id, e.payload, e.received_at
     from affiliate.event e
-    join affiliate.referral r on r.shop = e.shop
+    join affiliate.referral r
+      on r.id = affiliate.referral_at(
+           e.shop, coalesce((e.payload->>'occurredAt')::timestamptz, e.received_at))
     where r.partner_id = ${partnerId}
       and e.type = 'charge.succeeded'
       and e.outcome = 'ignored:partner_not_approved'

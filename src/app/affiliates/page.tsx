@@ -136,8 +136,12 @@ export default async function AffiliateProgramPage() {
         <dl className="mt-6 grid gap-6 sm:grid-cols-2">
           {[
             [
-              "A store belongs to whoever got there first.",
-              "The first code entered on a store wins, permanently. Nobody can take a client off you by talking the merchant into retyping a field.",
+              "A store is yours while it stays subscribed.",
+              "If it cancels, or the merchant enters another partner's code, your commission on it stops from that point. Everything it earned you before then stays yours.",
+            ],
+            [
+              "Not on your own stores.",
+              "A code is for clients you bring. Entering it on a store you own or control earns nothing.",
             ],
             [
               `Commission clears after ${HOLD_DAYS} days.`,

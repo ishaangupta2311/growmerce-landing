@@ -247,15 +247,24 @@ type ReferralContext = {
   partnerKind: PartnerKind;
   partnerStatus: PartnerStatus;
   rateBps: number;
-  cancelled: boolean;
-  /** When the store churned, so a charge can be judged against its own date. */
-  cancelledAt: Date | null;
+  /**
+   * When this referral stopped earning — the store cancelled, or moved to
+   * another partner's code — so a charge can be judged against its own date.
+   */
+  endedAt: Date | null;
+  /** The moment the charge was judged at: the sender's stamp, or the database's now. */
+  at: Date;
   hasEarned: boolean;
 };
 
 /**
- * The store this event is about, with everything needed to price a charge for
- * it, or null if we have never been told which partner it belongs to.
+ * The referral a charge on this store at `at` belongs to, with everything
+ * needed to price it, or null if we have never been told which partner the
+ * store belongs to.
+ *
+ * A store can have had several referrals — it cancelled and came back, or it
+ * switched partner — so which one is asked as of the charge's own moment; see
+ * `affiliate.referral_at` in `0010_affiliate_referral_ownership.sql`.
  *
  * `for update` on the referral is what stops two charges for the same store
  * arriving at once from both passing the "has this influencer been paid yet?"
@@ -266,6 +275,7 @@ type ReferralContext = {
 async function loadReferral(
   tx: Tx,
   shop: string,
+  at: Date | null,
 ): Promise<ReferralContext | null> {
   const rows = await tx<
     {
@@ -274,20 +284,27 @@ async function loadReferral(
       kind: PartnerKind;
       status: PartnerStatus;
       commission_rate_bps: number;
-      referral_status: string;
-      cancelled_at: Date | null;
+      ended_at: Date | null;
+      first_payment_taken: boolean;
+      at: Date;
     }[]
   >`
+    /* An unstamped charge is judged at the database's clock, not this
+       process's: linked_at and ended_at are written by the database, and a
+       charge that follows a switch by milliseconds must not be placed before
+       it by two clocks that disagree. */
+    with moment as (select coalesce(${at}::timestamptz, now()) as at)
     select r.id,
            r.partner_id,
            p.kind,
            p.status,
            p.commission_rate_bps,
-           r.status as referral_status,
-           r.cancelled_at
-    from affiliate.referral r
+           r.ended_at,
+           r.first_payment_taken,
+           moment.at
+    from moment, affiliate.referral r
     join affiliate.partner p on p.id = r.partner_id
-    where r.shop = ${shop}
+    where r.id = affiliate.referral_at(${shop}, moment.at)
     for update of r
   `;
 
@@ -311,30 +328,27 @@ async function loadReferral(
     partnerKind: row.kind,
     partnerStatus: row.status,
     rateBps: row.commission_rate_bps,
-    cancelled: row.referral_status === "cancelled",
-    cancelledAt: row.cancelled_at,
-    hasEarned: earned.length > 0,
+    endedAt: row.ended_at,
+    at: row.at,
+    /* A referral that took the store over mid-subscription inherits the fact
+       that its first payment has been commissioned, so an influencer's
+       once-per-store fee is not paid again for a store they did not bring. */
+    hasEarned: earned.length > 0 || row.first_payment_taken,
   };
 }
 
 /**
- * Whether the store had already churned when this charge was collected.
+ * Whether the referral had already ended when this charge was collected.
  *
- * `cancelled` on its own is the state *now*, which is the wrong question for a
- * charge being replayed months after the fact: a store that paid in March and
- * churned in June earned its partner the March commission, and reading the
- * June status would quietly withhold it. That is exactly what
+ * Asked of the charge's own moment rather than of now, which is the wrong
+ * question for a charge being replayed months after the fact: a store that
+ * paid in March and churned in June earned its partner the March commission,
+ * and reading the June status would quietly withhold it. That is exactly what
  * `replaySkippedCharges` does on approval, which is where this was losing
  * money.
- *
- * A cancelled referral with no `cancelled_at` cannot be placed in time, so it
- * counts as cancelled throughout — the conservative reading, and one
- * `setReferralStatus` makes unreachable anyway by always stamping the column.
  */
-function cancelledByCharge(referral: ReferralContext, chargeAt: Date): boolean {
-  if (!referral.cancelled) return false;
-  if (!referral.cancelledAt) return true;
-  return referral.cancelledAt.getTime() <= chargeAt.getTime();
+function endedByCharge(referral: ReferralContext): boolean {
+  return referral.endedAt !== null && referral.endedAt.getTime() <= referral.at.getTime();
 }
 
 /**
@@ -364,6 +378,12 @@ async function chargeWasRefunded(
   return refunds.length > 0;
 }
 
+/** When the sender says the event happened, or null to mean the database's now. */
+function stampedAt(event: AffiliateEvent): Date | null {
+  const stamped = event.occurredAt ? new Date(event.occurredAt) : null;
+  return stamped && !Number.isNaN(stamped.getTime()) ? stamped : null;
+}
+
 async function apply(tx: Tx, event: AffiliateEvent): Promise<IngestOutcome> {
   switch (event.type) {
     case "referral.linked":
@@ -382,11 +402,22 @@ async function apply(tx: Tx, event: AffiliateEvent): Promise<IngestOutcome> {
 /**
  * Attributes a store to the partner who owns the code the merchant entered.
  *
- * First code wins, permanently. `affiliate.referral.shop` is unique, so a store
- * that already belongs to somebody cannot be moved by entering a second code —
- * the insert conflicts and this reports it. That is a commercial decision as
- * much as a technical one: the alternative, last-write-wins, means an agency's
- * client can be taken by anyone who talks the merchant into retyping a field.
+ * A store has at most one live referral, and three things can be true when a
+ * code arrives:
+ *
+ * - **No live referral.** The store is new, or its last referral ended when it
+ *   cancelled. It is linked afresh; anything it earned somebody before stays
+ *   on the ended row.
+ * - **Live, and this partner's already.** Nothing moves.
+ * - **Live, and another partner's.** The merchant has chosen to move. The old
+ *   referral ends as `replaced` and a new one starts in the same breath,
+ *   carrying over where the store is in its subscription. Charges are priced
+ *   against the referral that was live when they were collected, so the old
+ *   partner keeps what the store paid before the switch.
+ *
+ * That last case used to be refused — first code won, permanently — on the
+ * grounds that anyone who talks a merchant into retyping a field takes the
+ * client. That is still what it means; it is now the merchant's call to make.
  */
 async function linkReferral(tx: Tx, event: AffiliateEvent): Promise<IngestOutcome> {
   const codes = await tx<{ id: string; partner_id: string; active: boolean }[]>`
@@ -396,51 +427,125 @@ async function linkReferral(tx: Tx, event: AffiliateEvent): Promise<IngestOutcom
   if (codes.length === 0) return { status: "ignored", detail: "unknown_code" };
   if (!codes[0].active) return { status: "ignored", detail: "retired_code" };
 
-  const inserted = await tx`
-    insert into affiliate.referral (partner_id, code_id, shop, shop_name)
-    values (${Number(codes[0].partner_id)}, ${Number(codes[0].id)}, ${event.shop}, ${
-      event.shopName ?? null
-    })
-    on conflict (shop) do nothing
-    returning id
+  const partnerId = Number(codes[0].partner_id);
+  const codeId = Number(codes[0].id);
+
+  /* Locked, so a charge for this store cannot be priced against a referral
+     that is ending in the same moment. */
+  const live = await tx<
+    {
+      id: string;
+      partner_id: string;
+      status: string;
+      plan: string | null;
+      shop_name: string | null;
+      activated_at: Date | null;
+      first_payment_taken: boolean;
+    }[]
+  >`
+    select id, partner_id, status, plan, shop_name, activated_at, first_payment_taken
+    from affiliate.referral
+    where shop = ${event.shop} and ended_at is null
+    for update
   `;
 
-  if (inserted.length === 0) {
-    /* Already attributed — possibly to this same partner, if the merchant
-       re-entered the code they already had. Either way nothing moves. */
+  if (live.length === 0) {
+    const inserted = await tx`
+      insert into affiliate.referral (partner_id, code_id, shop, shop_name)
+      values (${partnerId}, ${codeId}, ${event.shop}, ${event.shopName ?? null})
+      on conflict (shop) where ended_at is null do nothing
+      returning id
+    `;
+    /* A conflict here is two requests linking the same new store at once; the
+       other one got there first. */
+    return inserted.length > 0
+      ? { status: "applied", detail: "referral_linked" }
+      : { status: "ignored", detail: "shop_already_referred" };
+  }
+
+  const old = live[0];
+  if (Number(old.partner_id) === partnerId) {
+    /* The merchant re-entered a code belonging to the partner they already
+       have. Nothing moves. */
     return { status: "ignored", detail: "shop_already_referred" };
   }
 
-  return { status: "applied", detail: "referral_linked" };
+  const paid = await tx`
+    select 1 from affiliate.commission
+    where referral_id = ${Number(old.id)} and status <> 'reversed'
+    limit 1
+  `;
+
+  /* Ended before the insert, so the partial unique index sees one live row at
+     every statement boundary. */
+  await tx`
+    update affiliate.referral
+    set status = 'replaced', ended_at = now(), last_event_at = now()
+    where id = ${Number(old.id)}
+  `;
+  await tx`
+    insert into affiliate.referral
+      (partner_id, code_id, shop, shop_name, status, plan, activated_at, first_payment_taken)
+    values
+      (${partnerId}, ${codeId}, ${event.shop}, ${event.shopName ?? old.shop_name},
+       ${old.status}, ${old.plan}, ${old.activated_at},
+       ${old.first_payment_taken || paid.length > 0})
+  `;
+
+  return { status: "applied", detail: "referral_replaced" };
 }
 
+/**
+ * Marks the store's live referral subscribed, or ends it.
+ *
+ * Only a live referral can change. A cancellation ends it for good, so a
+ * `subscription.activated` that follows — the store resubscribing — finds
+ * nothing to revive and the partner earns nothing more from it. The store can
+ * be linked again, by any code, as a new referral.
+ */
 async function setReferralStatus(
   tx: Tx,
   event: AffiliateEvent,
   status: "active" | "cancelled",
 ): Promise<IngestOutcome> {
-  /* `coalesce(existing, now())` rather than an unconditional `now()`: these
-     events can arrive out of order, and a subscription.activated replayed after
-     a charge already marked the store live must not move the activation date
-     forward past the money it explains. */
-  const updated = await tx`
-    update affiliate.referral
-    set status = ${status},
-        plan = coalesce(${event.plan ?? null}, plan),
-        shop_name = coalesce(${event.shopName ?? null}, shop_name),
-        activated_at = case when ${status} = 'active'
-                            then coalesce(activated_at, now())
-                            else activated_at end,
-        cancelled_at = case when ${status} = 'cancelled'
-                            then coalesce(cancelled_at, now())
-                            else cancelled_at end,
-        last_event_at = now()
-    where shop = ${event.shop}
-    returning id
+  /* When it happened, if the sender said. A cancellation reported late must
+     end the referral when the store actually left, because charges are judged
+     against that moment; never earlier than the link itself. */
+  const at = stampedAt(event);
+
+  /* `coalesce(existing, …)` on the activation rather than an unconditional
+     overwrite: these events can arrive out of order, and a
+     subscription.activated replayed after a charge already marked the store
+     live must not move the activation date forward past the money it explains. */
+  const updated =
+    status === "active"
+      ? await tx`
+          update affiliate.referral
+          set status = 'active',
+              plan = coalesce(${event.plan ?? null}, plan),
+              shop_name = coalesce(${event.shopName ?? null}, shop_name),
+              activated_at = coalesce(activated_at, now()),
+              last_event_at = now()
+          where shop = ${event.shop} and ended_at is null
+          returning id
+        `
+      : await tx`
+          update affiliate.referral
+          set status = 'cancelled',
+              plan = coalesce(${event.plan ?? null}, plan),
+              shop_name = coalesce(${event.shopName ?? null}, shop_name),
+              cancelled_at = greatest(linked_at, coalesce(${at}::timestamptz, now())),
+              ended_at = greatest(linked_at, coalesce(${at}::timestamptz, now())),
+              last_event_at = now()
+          where shop = ${event.shop} and ended_at is null
+          returning id
+        `;
+  if (updated.length > 0) return { status: "applied", detail: `referral_${status}` };
+
+  const known = await tx`
+    select 1 from affiliate.referral where shop = ${event.shop} limit 1
   `;
-  return updated.length > 0
-    ? { status: "applied", detail: `referral_${status}` }
-    : { status: "ignored", detail: "unknown_shop" };
+  return { status: "ignored", detail: known.length > 0 ? "referral_ended" : "unknown_shop" };
 }
 
 /**
@@ -453,26 +558,27 @@ async function setReferralStatus(
  * and the sender gets a 200.
  */
 async function chargeSucceeded(tx: Tx, event: AffiliateEvent): Promise<IngestOutcome> {
-  const referral = await loadReferral(tx, event.shop);
+  /* The charge's own moment, not this request's. A replayed charge is months
+     old by the time it gets here, and which referral it belongs to, whether
+     that referral had ended, and whether the charge was refunded all have to
+     be asked as of then. An unparseable or absent timestamp falls back to now,
+     which is what a live charge means anyway. */
+  const chargeAt = stampedAt(event);
+
+  const referral = await loadReferral(tx, event.shop, chargeAt);
   if (!referral) return { status: "ignored", detail: "unknown_shop" };
 
   /* A store that pays is a store that is live, whatever order the events
      arrived in. Doing this before the commission means a charge that arrives
-     before its subscription.activated still leaves the dashboard correct. */
+     before its subscription.activated still leaves the dashboard correct. An
+     ended referral is left as it ended. */
   await tx`
     update affiliate.referral
-    set status = case when status = 'cancelled' then status else 'active' end,
+    set status = case when ended_at is null then 'active' else status end,
         activated_at = coalesce(activated_at, now()),
         last_event_at = now()
     where id = ${referral.referralId}
   `;
-
-  /* The charge's own moment, not this request's. A replayed charge is months
-     old by the time it gets here, and both the cancellation question and the
-     record of a refund have to be asked as of then. An unparseable or absent
-     timestamp falls back to now, which is what a live charge means anyway. */
-  const stamped = event.occurredAt ? new Date(event.occurredAt) : null;
-  const chargeAt = stamped && !Number.isNaN(stamped.getTime()) ? stamped : new Date();
 
   const decision = applyCharge({
     partnerKind: referral.partnerKind,
@@ -480,7 +586,7 @@ async function chargeSucceeded(tx: Tx, event: AffiliateEvent): Promise<IngestOut
     rateBps: referral.rateBps,
     chargeCents: event.amountCents!,
     referralHasEarned: referral.hasEarned,
-    referralCancelled: cancelledByCharge(referral, chargeAt),
+    referralCancelled: endedByCharge(referral),
     chargeRefunded: await chargeWasRefunded(tx, event.shop, event.chargeId!),
   });
 

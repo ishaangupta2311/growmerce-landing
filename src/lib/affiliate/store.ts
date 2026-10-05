@@ -478,13 +478,21 @@ export async function dashboardSummary(
        calls those stores "On trial" rather than subscribed, and two screens
        that count the same store differently is the bug this replaces. */
     sql()<
-      { total: string; active: string; trialing: string; linked: string; cancelled: string }[]
+      {
+        total: string;
+        active: string;
+        trialing: string;
+        linked: string;
+        cancelled: string;
+        replaced: string;
+      }[]
     >`
       select count(*)                                       as total,
              count(*) filter (where status = 'active')      as active,
              count(*) filter (where status = 'trialing')    as trialing,
              count(*) filter (where status = 'linked')      as linked,
-             count(*) filter (where status = 'cancelled')   as cancelled
+             count(*) filter (where status = 'cancelled')   as cancelled,
+             count(*) filter (where status = 'replaced')    as replaced
       from affiliate.referral
       where partner_id = ${partnerId}
     `,
@@ -509,6 +517,7 @@ export async function dashboardSummary(
       trialing: int(counts[0]?.trialing),
       linked: int(counts[0]?.linked),
       cancelled: int(counts[0]?.cancelled),
+      replaced: int(counts[0]?.replaced),
     },
     recentCommissions,
     recentReferrals,
