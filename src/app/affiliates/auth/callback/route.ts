@@ -12,10 +12,11 @@ import { supabaseServer } from "@/lib/supabase/server";
  * affiliate flow that must *write* the session cookies, and Next.js will not
  * let a Server Component set a cookie — the response has already begun.
  *
- * Two link shapes, because Supabase has two depending on how old the project's
- * email templates are. `?code=` is the PKCE flow, exchanged for a session.
- * `?token_hash=&type=` is the older one-time-token link, verified instead. Both
- * end in the same place: cookies set by `supabaseServer`, and a redirect —
+ * Two link shapes. `?token_hash=&type=` is the one our own emails carry — see
+ * `src/lib/email/auth-email.ts` — and is verified here directly. `?code=` is
+ * what Supabase's stock templates produce after bouncing through its verify
+ * URL, exchanged for a session; it stays so that a link mailed before the Send
+ * Email hook was switched on still works. Both end in the same place: cookies set by `supabaseServer`, and a redirect —
  * to `next` if the link carried one, otherwise to the admin for an admin and
  * the partner dashboard for everybody else.
  */

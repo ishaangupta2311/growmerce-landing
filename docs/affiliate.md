@@ -19,8 +19,8 @@ altered by a deploy, which is correct for a number somebody agreed to.
 ## What to set before it works
 
 Three environment variables beyond `DATABASE_URL`, plus `AFFILIATE_ADMIN_EMAILS`
-for the admin area (see *The admin side*, below). All five are listed in
-`.env.example`.
+for the admin area (see *The admin side*, below) and the mail settings (see
+*The emails*). All are listed in `.env.example`.
 
 ```bash
 # Supabase — Project Settings → API, same project as DATABASE_URL.
@@ -46,6 +46,51 @@ cannot safely accept an event that creates a commission.
 In Supabase, set **Authentication → URL Configuration → Redirect URLs** to
 include `https://growmerce.ai/affiliates/auth/callback` (and the equivalent for
 any preview domain). Emailed confirmation and recovery links land there.
+
+## The emails
+
+Supabase Auth decides when an email is due — confirming a new affiliate's
+address, the "forgot password" link — but it does not send them. Its own sender
+is a shared `supabase.io` address with a stock template and a limit of a few
+emails an hour. Instead the project's **Send Email hook** POSTs each one to
+`/api/auth/send-email`, which writes it (`src/lib/email/auth-email.ts`) and
+sends it through Resend from our own domain: the same Resend account, and the
+same variable names, as the Growsearch app's merchant email.
+
+To switch it on:
+
+1. Set the mail variables on the deployment. `EMAIL_FROM` must be on a domain
+   verified in Resend.
+
+   ```bash
+   RESEND_API_KEY=<the Resend key>
+   EMAIL_FROM="Growmerce <partners@growmerce.ai>"
+   EMAIL_REPLY_TO=admin@growmerce.ai   # optional
+   ```
+
+2. In Supabase, **Authentication → Hooks → Send Email hook**: type HTTPS, URL
+   `https://growmerce.ai/api/auth/send-email`. Generate the secret, and set it
+   on the deployment exactly as shown, `v1,whsec_` prefix included:
+
+   ```bash
+   SEND_EMAIL_HOOK_SECRET=v1,whsec_<base64>
+   ```
+
+3. Deploy, **then** enable the hook. In that order: once the hook is on,
+   Supabase sends nothing itself, and an endpoint that cannot verify or send
+   fails the sign-up that asked for the email.
+
+The hook belongs to the Supabase project, not to a deployment. A preview or a
+local `next dev` that signs somebody up still has its email sent by production;
+the link in it points back at whichever origin asked, provided that origin is in
+the redirect allow-list above.
+
+The link goes straight to `/affiliates/auth/callback?token_hash=…&type=…` on our
+domain, not through Supabase's own verify URL. Four emails are written: sign-up
+confirmation, password reset, invitation and magic link. Anything else Supabase
+might ask for — an email-address change, which nothing on the site offers — is
+refused, so the operation fails visibly instead of promising an email nobody
+sends. Failures are logged under `[auth-email]`, without the address.
 
 ## The schema
 
