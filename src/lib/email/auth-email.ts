@@ -19,8 +19,12 @@ const CALLBACK_PATH = "/affiliates/auth/callback";
 /**
  * Production, whatever deployment is sending. A mail client fetches this from
  * the open internet, so a preview or localhost origin would show a broken image.
+ *
+ * A PNG because Gmail and Outlook do not draw SVG. It is
+ * `public/brand/logo-black.svg` rendered at three times the size it is shown
+ * at, and has to be rendered again when that file changes.
  */
-const LOGO_URL = "https://growmerce.ai/brand/logo.png";
+const LOGO_URL = "https://www.growmerce.ai/brand/logo-black.png";
 
 /* The site's palette, from `src/app/globals.css`. */
 const BRAND = "#ff5a1f";
@@ -192,7 +196,7 @@ export function renderAuthEmail(request: AuthEmailRequest): RenderedEmail | null
 <tr><td align="center" style="padding:40px 16px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px">
 <tr><td style="padding:0 8px 24px">
-<a href="https://growmerce.ai" style="text-decoration:none"><img src="${LOGO_URL}" width="148" height="32" alt="Growmerce" style="display:block;border:0;height:32px;width:148px"></a>
+<a href="https://growmerce.ai" style="text-decoration:none"><img src="${LOGO_URL}" width="167" height="32" alt="Growmerce" style="display:block;border:0;height:32px;width:167px"></a>
 </td></tr>
 <tr><td style="background:#ffffff;border:1px solid ${LINE};border-radius:16px;padding:40px 36px;font-family:${FONT}">
 <h1 style="margin:0 0 20px;font-size:24px;line-height:32px;font-weight:700;letter-spacing:-0.01em;color:${CHARCOAL}">${escapeHtml(copy.heading)}</h1>
