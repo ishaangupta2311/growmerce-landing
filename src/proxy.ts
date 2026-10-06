@@ -26,13 +26,44 @@ import { refreshSession } from "@/lib/supabase/proxy";
  *
  * The matcher keeps this off the marketing pages, which are the bulk of this
  * site's traffic and none of which need a cookie read.
+ *
+ * One job here has nothing to do with sessions: a path typed with capitals is
+ * sent to its lower-case address. See `lowercased`.
  */
+
+/** The two areas that read a session at all. Mirrors the matcher below. */
+const SESSION_AREAS = ["/affiliates", "/admin"];
 
 /** Everything under these needs a session; the rest of `/affiliates` is public. */
 const GUARDED = ["/affiliates/dashboard", "/admin"];
 
 function isGuarded(pathname: string): boolean {
   return GUARDED.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
+
+/**
+ * Where the case of a path means something, and must be left alone: a preview
+ * token under `/admin`, a file name under `/uploads`.
+ */
+const CASE_SENSITIVE = ["/admin", "/api/", "/uploads/", "/_next/"];
+
+/**
+ * `/Pricing` and `/AFFILIATES` are somebody's caps lock or a link retyped from
+ * a slide, and Next.js matches paths exactly, so each was a 404. Every page on
+ * this site has a lower-case address — blog slugs included, see
+ * `src/lib/blog/slug.ts` — so the lower-case path is the one they meant.
+ *
+ * A path with a dot in it is a file in `public/`, and is not ours to rename.
+ */
+function lowercased(request: NextRequest): NextResponse | null {
+  const { pathname } = request.nextUrl;
+  const lower = pathname.toLowerCase();
+  if (lower === pathname || pathname.includes(".")) return null;
+  if (CASE_SENSITIVE.some((prefix) => lower.startsWith(prefix))) return null;
+
+  const url = request.nextUrl.clone();
+  url.pathname = lower;
+  return NextResponse.redirect(url, 308);
 }
 
 /**
@@ -89,6 +120,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  const recased = lowercased(request);
+  if (recased) return recased;
+
+  /* Everything past this point is about a session, and only these two areas
+     have one. A path that is here for its capitals alone — a file, or one of
+     the case-sensitive prefixes — goes on its way without a cookie read. */
+  if (!SESSION_AREAS.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))) {
+    return NextResponse.next();
+  }
+
   const guarded = isGuarded(pathname);
 
   if (!hasSupabaseSessionCookie(request)) {
@@ -102,6 +143,14 @@ export async function proxy(request: NextRequest) {
   return session.apply(NextResponse.next({ request }));
 }
 
+/* The last entry is every path with a capital letter in it, for `lowercased`
+   above. It is written as a pattern so that the marketing pages, at their
+   proper addresses, still never reach this file. */
 export const config = {
-  matcher: ["/affiliates/:path*", "/admin", "/admin/:path*"],
+  matcher: [
+    "/affiliates/:path*",
+    "/admin",
+    "/admin/:path*",
+    "/((?!api/|_next/|uploads/).*[A-Z].*)",
+  ],
 };

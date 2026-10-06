@@ -1,6 +1,34 @@
 import type { NextConfig } from "next";
 import { GROWSEARCH_FEATURES, GROWSEARCH_HOME } from "./src/lib/site-urls";
 
+/**
+ * Addresses people type from memory that are not where the page is: the
+ * singular for the plural, the other common name for the same thing. Each one
+ * forwards instead of ending on the 404 page.
+ *
+ * Temporary redirects, all of them. These are guesses about what a visitor
+ * meant, and a browser caches a permanent one for ever — /login or /partners
+ * may one day be a page of its own. Mixed-case addresses are handled
+ * separately, in `src/proxy.ts`; a path that is still unknown after both gets
+ * the suggestions on `src/app/not-found.tsx`.
+ */
+const ALIASES: Record<string, string[]> = {
+  "/affiliates": ["/partners", "/partner", "/referrals", "/referral", "/affiliate-program"],
+  "/affiliates/login": ["/login", "/signin", "/sign-in"],
+  "/affiliates/signup": ["/signup", "/sign-up", "/register", "/apply"],
+  "/pricing": ["/price", "/prices", "/plans"],
+  "/products/ai-search": ["/product", "/products"],
+  "/solutions": ["/solution"],
+  "/compare": ["/comparison"],
+  "/blog": ["/blogs"],
+  "/contact": ["/contact-us"],
+  "/about": ["/about-us"],
+  "/help": ["/faq", "/faqs", "/support"],
+  "/try": ["/demo"],
+  "/privacy": ["/privacy-policy"],
+  "/terms": ["/tos", "/terms-of-service", "/terms-and-conditions"],
+};
+
 const nextConfig: NextConfig = {
   // The iMac dev server is viewed from the MacBook over Tailscale. Next
   // blocks dev-only assets and HMR requests from that hostname unless it is
@@ -59,6 +87,15 @@ const nextConfig: NextConfig = {
       { source: "/affiliates/admin", destination: "/admin/affiliates", permanent: true },
       { source: "/affiliates/admin/:path*", destination: "/admin/affiliates/:path*", permanent: true },
       { source: "/admin/login", destination: "/affiliates/login?next=/admin", permanent: false },
+      /* The program lives at /affiliates, and the singular is what people type
+         from memory. Anything under it follows, so /affiliate/login works too. */
+      { source: "/affiliate", destination: "/affiliates", permanent: true },
+      { source: "/affiliate/:path*", destination: "/affiliates/:path*", permanent: true },
+      /* A post address with the same slip keeps its slug. */
+      { source: "/blogs/:path+", destination: "/blog/:path+", permanent: false },
+      ...Object.entries(ALIASES).flatMap(([destination, sources]) =>
+        sources.map((source) => ({ source, destination, permanent: false })),
+      ),
       ...["growmerce.ai", "www.growmerce.ai"].flatMap((host) => [
         {
           source: "/growsearch",

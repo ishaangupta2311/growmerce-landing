@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { sitemapPosts } from "@/lib/blog/public";
+import { MARKETING_PAGES } from "@/lib/site-pages";
 
 /* Rebuilt when a post is published or unpublished (revalidateBlog), and at
    least every minute — the same cadence as the blog pages — so a scheduled
@@ -8,15 +9,11 @@ export const revalidate = 60;
 
 const SITE = "https://growmerce.ai";
 
-/* The public marketing pages on growmerce.ai. Growsearch's own pages live on
-   search.growmerce.ai, and the /v concepts are archived — neither belongs here. */
-const PAGES = ["/", "/about", "/products/ai-search", "/pricing", "/solutions", "/compare", "/fit", "/try", "/contact", "/help", "/blog", "/privacy", "/terms"];
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await sitemapPosts();
 
   return [
-    ...PAGES.map((path) => ({
+    ...MARKETING_PAGES.map(({ path }) => ({
       url: `${SITE}${path === "/" ? "" : path}`,
       changeFrequency: (path === "/blog" ? "daily" : "monthly") as "daily" | "monthly",
       priority: path === "/" ? 1 : path === "/blog" ? 0.8 : 0.6,
