@@ -139,7 +139,7 @@ export default function TaxonomyManager({ kind, rows, query }: { kind: "category
                     <td className="px-3 py-3 font-mono text-xs text-zinc-500">{row.slug}</td>
                     {withDescription && (
                       <td className="max-w-xs px-3 py-3 text-zinc-600">
-                        <span className="line-clamp-2">{row.description || <span className="text-zinc-400">—</span>}</span>
+                        <span className="line-clamp-2">{row.description || <span className="text-zinc-400">-</span>}</span>
                       </td>
                     )}
                     <td className="px-3 py-3 text-right text-zinc-700 tabular-nums">{row.postCount}</td>

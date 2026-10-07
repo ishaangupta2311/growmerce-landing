@@ -30,8 +30,8 @@ export default function Thesis() {
                 doesn&rsquo;t exist yet.
               </p>
               <p>
-                What&rsquo;s on offer tends to split two ways. Narrow gadgets — a
-                chatbot widget, a single automation — that solve one small
+                What&rsquo;s on offer tends to split two ways. Narrow gadgets, such as a
+                chatbot widget or a single automation, that solve one small
                 thing and leave the rest of the store untouched. Or heavy
                 platforms that ask a team with no AI team to migrate their
                 entire stack on a promise. Neither fits how most stores
@@ -40,7 +40,7 @@ export default function Thesis() {
               <p>
                 Growmerce is built for the gap between those two. Tools you
                 install into the store you already run, not a platform you
-                migrate to — scoped narrow enough to ship fast, deep enough to
+                migrate to, scoped narrow enough to ship fast, deep enough to
                 do a real job, and proven with paying customers before we call
                 them done.
               </p>
@@ -53,7 +53,7 @@ export default function Thesis() {
                 &ldquo;We sell proof, not platform.&rdquo;
               </p>
               <p className="mt-4 text-[13px] leading-relaxed text-[var(--ink-40)]">
-                Note — by &ldquo;AI team&rdquo; we mean staff dedicated to
+                Note: by &ldquo;AI team&rdquo; we mean staff dedicated to
                 evaluating and building AI tooling: data scientists, ML
                 engineers, in-house prompt work. Most SMB and mid-market
                 operators run without one.

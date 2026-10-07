@@ -20,7 +20,7 @@ const PRINCIPLES = [
   {
     no: "04",
     title: "Install today, don’t migrate",
-    body: "Tools that fit the stack a store already runs — not a platform that asks them to rebuild around us.",
+    body: "Tools that fit the stack a store already runs, not a platform that asks them to rebuild around us.",
   },
 ];
 

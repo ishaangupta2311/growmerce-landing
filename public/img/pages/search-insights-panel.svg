@@ -57,5 +57,5 @@
     </g>
   </g>
   <rect x="32" y="483" width="656" height="1" fill="#E5E5E5"/>
-  <text x="32" y="516" fill="#8A8A8A" font-size="15">Every query, logged — including the ones you can't answer yet.</text>
+  <text x="32" y="516" fill="#8A8A8A" font-size="15">Every query, logged, including the ones you can't answer yet.</text>
 </svg>

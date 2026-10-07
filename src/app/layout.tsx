@@ -28,13 +28,13 @@ const caveat = Caveat({
 export const metadata: Metadata = {
   metadataBase: new URL("https://growmerce.ai"),
   title: {
-    default: "Growmerce — Shopping, made smarter for every customer",
+    default: "Growmerce: Shopping, made smarter for every customer",
     template: "%s · Growmerce",
   },
   description:
     "Growmerce turns browsing into buying with AI-powered personalization built for modern commerce.",
   openGraph: {
-    title: "Growmerce — Shopping, made smarter for every customer",
+    title: "Growmerce: Shopping, made smarter for every customer",
     description:
       "Growmerce turns browsing into buying with AI-powered personalization built for modern commerce.",
     url: "https://growmerce.ai",

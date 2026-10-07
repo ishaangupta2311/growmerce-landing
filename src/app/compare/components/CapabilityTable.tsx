@@ -78,7 +78,7 @@ const ROWS: Row[] = [
 
 const LABEL: Record<Mark, string> = {
   yes: "Yes",
-  part: "Partly — some products in the category do it, or do a piece of it",
+  part: "Partly: some products in the category do it, or do a piece of it",
   no: "No",
 };
 

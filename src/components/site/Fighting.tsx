@@ -115,7 +115,7 @@ export default function Fighting() {
               Growmerce doesn&apos;t sell a platform
             </p>
             <p className="mt-1 text-[clamp(1.0625rem,1.4vw,1.25rem)] leading-snug font-semibold">
-              It sells proof — shipped into your workflow,{" "}
+              It sells proof, shipped into your workflow,{" "}
               <span className="text-brand">this week.</span>
             </p>
           </div>

@@ -45,8 +45,8 @@ export default async function SettingsPage() {
                   {codes[0].referralCount === 0
                     ? "No store has used it yet."
                     : `${codes[0].referralCount} store${codes[0].referralCount === 1 ? " has" : "s have"} used it.`}{" "}
-                  Need a second code — one per campaign, or one per client —
-                  ask us and we will add it.
+                  Need a second code for each campaign or client?
+                  Ask us and we will add it.
                 </p>
               </>
             ) : (
@@ -74,7 +74,7 @@ export default async function SettingsPage() {
                       <span className="ml-2 text-[13.5px] text-muted">retired</span>
                     )}
                   </RowHeader>
-                  <Td>{code.label ?? <span className="text-muted">—</span>}</Td>
+                  <Td>{code.label ?? <span className="text-muted">-</span>}</Td>
                   <Td>{formatDate(code.createdAt)}</Td>
                   <Td numeric>{code.referralCount}</Td>
                 </Row>
@@ -119,7 +119,7 @@ export default async function SettingsPage() {
         <p className="mt-6 border-t border-line pt-5 text-[15px] leading-relaxed text-body-mute">
           {describeTerms(partner.kind, partner.commissionRateBps)} Commission
           clears {HOLD_DAYS} days after the payment it came from. These terms are
-          set on your account and are not editable here — if something needs to
+          set on your account and are not editable here. If something needs to
           change, write to us and we will change it properly.
         </p>
       </Panel>

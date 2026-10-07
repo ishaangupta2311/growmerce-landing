@@ -112,7 +112,7 @@ export default function PostEditor({ post, defaults, options }: Props) {
          back with the action's response. */
       if (!postId) router.replace(`/admin/blog/${result.data.id}/edit`);
     } catch {
-      notify("Could not reach the server. Your changes are still here — try again.", "error");
+      notify("Could not reach the server. Your changes are still here. Try again.", "error");
     } finally {
       setPending(null);
     }

@@ -50,7 +50,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           className="mt-6 rounded-[12px] border border-brand/25 bg-cream px-5 py-4 text-[15px] leading-relaxed text-charcoal"
         >
           <strong className="font-bold">Your application is with us.</strong> Your
-          code works already — share it and start referring. Commissions earned
+          code works already. Share it and start referring. Commissions earned
           before we approve you are recorded and held; they begin clearing the
           moment your account is approved.
         </p>

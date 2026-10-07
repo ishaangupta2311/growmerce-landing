@@ -43,7 +43,7 @@ const SECTIONS: LegalSection[] = [
     id: "store-access",
     heading: "Your store and the access you grant",
     body: [
-      "The app runs on permissions you grant through Shopify at install. We use that access only to operate the features you have enabled — building and refreshing your search index, serving results, and attributing checkouts to searches.",
+      "The app runs on permissions you grant through Shopify at install. We use that access only to operate the features you have enabled: building and refreshing your search index, serving results, and attributing checkouts to searches.",
       "Optional personalization, which reads a signed-in shopper’s recent order history to rank familiar products higher, is off unless you turn it on and grant the extra permission. You are responsible for deciding whether to enable it for your store and your shoppers.",
       "You are responsible for keeping your Shopify account secure and for the accuracy of the catalogue data the app indexes.",
     ],
@@ -102,7 +102,7 @@ const SECTIONS: LegalSection[] = [
         </Link>
         .
       </>,
-      "We may report on aggregated, de-identified usage — for example how often searches return nothing across all stores — in a form that does not identify you, your store or your shoppers.",
+      "We may report on aggregated, de-identified usage, for example how often searches return nothing across all stores, in a form that does not identify you, your store or your shoppers.",
     ],
   },
   {
@@ -135,7 +135,7 @@ const SECTIONS: LegalSection[] = [
     heading: "Intellectual property",
     body: [
       "The app, its interface, its models and configuration, and the Growmerce and Growsearch names and marks belong to us. Nothing in these terms transfers them to you; you get a licence to use the service while your subscription is active.",
-      "Everything you supply — your catalogue, your content, your trade marks — stays yours. You grant us only the permission needed to index, process and display it in the course of running the service for you.",
+      "Everything you supply, including your catalogue, your content and your trade marks, stays yours. You grant us only the permission needed to index, process and display it in the course of running the service for you.",
     ],
   },
   {
@@ -144,7 +144,7 @@ const SECTIONS: LegalSection[] = [
     body: [
       "You can cancel at any time from your dashboard, and you can uninstall the app from Shopify whenever you like. There is no notice period and no cancellation fee.",
       "On uninstall, your data is scheduled for erasure and permanently deleted within 30 days. Reinstalling inside that window cancels the deletion so your store resumes with its history intact.",
-      "We may end this agreement if you break these terms materially and do not put it right after we have asked, or if we discontinue the service — in which case we will give you reasonable notice and refund the unused part of any period you have paid for in advance.",
+      "We may end this agreement if you break these terms materially and do not put it right after we have asked, or if we discontinue the service, in which case we will give you reasonable notice and refund the unused part of any period you have paid for in advance.",
     ],
   },
   {

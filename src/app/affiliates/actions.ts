@@ -162,7 +162,7 @@ export async function signUp(_state: FormState, form: FormData): Promise<FormSta
   if (!data.session) {
     return {
       notice:
-        "Check your email — we have sent a link to confirm the address. Your dashboard is waiting behind it.",
+        "Check your email. We have sent a link to confirm the address. Your dashboard is waiting behind it.",
     };
   }
 
@@ -322,7 +322,7 @@ export async function saveProfile(_state: FormState, form: FormData): Promise<Fo
   const { partner } = await requirePartner();
 
   const name = text(form, "name", 120);
-  if (!name) return { error: "A name is required — it is what a payout is made out to." };
+  if (!name) return { error: "A name is required. It is what a payout is made out to." };
 
   const company = text(form, "company", 160);
   if (!company) return { error: COMPANY_MISSING };
@@ -352,7 +352,7 @@ export async function savePayoutPreferences(
      number and a reference, and people paste all four. */
   const details = text(form, "details", 600);
   if (!details) {
-    return { error: "We need somewhere to send the money — an account number or a PayPal address." };
+    return { error: "We need somewhere to send the money: an account number or a PayPal address." };
   }
 
   const currency = text(form, "currency", 3).toUpperCase();

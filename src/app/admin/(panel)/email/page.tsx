@@ -35,7 +35,7 @@ const STATUS: Record<ContactStatus, { label: string; tone: string }> = {
 
 /** A count, and what share of the emails sent it is. */
 function share(count: number, sent: number): string {
-  if (sent === 0) return "—";
+  if (sent === 0) return "-";
   return `${count} (${Math.round((count / sent) * 100)}%)`;
 }
 
@@ -144,7 +144,7 @@ export default async function AdminEmailPage() {
                     </span>
                   </RowHeader>
                   <ResultCells results={email} />
-                  <Td>{email.lastSentAt ? formatDate(new Date(email.lastSentAt)) : "—"}</Td>
+                  <Td>{email.lastSentAt ? formatDate(new Date(email.lastSentAt)) : "-"}</Td>
                 </Row>
               ))}
             </Body>
@@ -213,7 +213,7 @@ export default async function AdminEmailPage() {
                         <span className="mt-0.5 block text-[13px] text-muted">{contact.shop}</span>
                       )}
                     </RowHeader>
-                    <Td>{contact.email ?? <span className="text-muted">—</span>}</Td>
+                    <Td>{contact.email ?? <span className="text-muted">-</span>}</Td>
                     <Td>
                       <span className={`font-bold ${STATUS[contact.status].tone}`}>
                         {STATUS[contact.status].label}

@@ -72,7 +72,7 @@ export default function NoticeBoard() {
                 Other people&rsquo;s numbers, honestly labelled.
               </span>
             }
-            lead="The category has enough published proof to make the case for AI in a storefront. We put it up in lights because it is the reason we are building — not because it is ours."
+            lead="The category has enough published proof to make the case for AI in a storefront. We put it up in lights because it is the reason we are building, not because it is ours."
           />
         </Reveal>
 

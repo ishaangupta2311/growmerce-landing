@@ -14,11 +14,11 @@ export type FaqItem = { q: string; a: string };
 const HOME_FAQ: FaqItem[] = [
   {
     q: "What is Growsearch, and how is it different from Shopify's native search?",
-    a: "Growsearch replaces your store's default search bar with one that understands full sentences, not just keywords. Shoppers can ask for \"skincare under $10\" or \"warm but not bulky\" and get real, in-stock products back — something Shopify's built-in search can't do — and you get analytics showing exactly which searches turned into checkouts.",
+    a: "Growsearch replaces your store's default search bar with one that understands full sentences, not just keywords. Shoppers can ask for \"skincare under $10\" or \"warm but not bulky\" and get real, in-stock products back, something Shopify's built-in search can't do, and you get analytics showing exactly which searches turned into checkouts.",
   },
   {
     q: "What happens when a shopper searches for something you don't stock?",
-    a: "Never a dead end. Typos get corrected, intent gets read, and the nearest real shelf gets offered instead of an empty page — \"we don't have Kava drinks, but you might like these Kratom Seltzers.\" Every zero-result term is also logged as a buying list for you.",
+    a: "Never a dead end. Typos get corrected, intent gets read, and the nearest real shelf gets offered instead of an empty page: \"we don't have Kava drinks, but you might like these Kratom Seltzers.\" Every zero-result term is also logged as a buying list for you.",
   },
   {
     q: "Does Growsearch replace my Shopify search bar, or run alongside it?",
@@ -30,7 +30,7 @@ const HOME_FAQ: FaqItem[] = [
   },
   {
     q: "How long does setup take?",
-    a: "Install from the Shopify App Store, and the search bar matches your existing theme automatically — nothing to design. Your catalog indexes itself from Shopify webhooks and stays current as products change. No replatforming, no developer, no six-week onboarding.",
+    a: "Install from the Shopify App Store, and the search bar matches your existing theme automatically. There is nothing to design. Your catalog indexes itself from Shopify webhooks and stays current as products change. No replatforming, no developer, no six-week onboarding.",
   },
   {
     q: "How do I know it's actually making me money?",
@@ -49,7 +49,7 @@ const HOME_FAQ: FaqItem[] = [
 const GROWSEARCH_FAQ: FaqItem[] = [
   {
     q: "How is Growsearch different from Shopify's default search?",
-    a: "Default Shopify search matches keywords. Growsearch reads the sentence — intent, price, attributes and all — so “skincare under $20” or “warm but not bulky” returns real, in-stock products instead of nothing.",
+    a: "Default Shopify search matches keywords. Growsearch reads the sentence, including intent, price and attributes, so “skincare under $20” or “warm but not bulky” returns real, in-stock products instead of nothing.",
   },
   {
     q: "What happens when a shopper searches for something you don't carry?",
@@ -57,7 +57,7 @@ const GROWSEARCH_FAQ: FaqItem[] = [
   },
   {
     q: "Can shoppers refine results just by talking to it?",
-    a: "Yes. Shoppers can narrow, switch products or adjust filters through a short AI conversation instead of clicking through menus — “only under $20” filters results live, on top of your existing catalogue.",
+    a: "Yes. Shoppers can narrow, switch products or adjust filters through a short AI conversation instead of clicking through menus. “Only under $20” filters results live, on top of your existing catalogue.",
   },
   {
     q: "How do I know search is actually making money?",
@@ -65,18 +65,18 @@ const GROWSEARCH_FAQ: FaqItem[] = [
   },
   {
     q: "How long does installation take?",
-    a: "Install from the Shopify App Store and the search bar matches your theme automatically. Your catalogue indexes itself from Shopify webhooks and stays current as products change — no developer and no replatform.",
+    a: "Install from the Shopify App Store and the search bar matches your theme automatically. Your catalogue indexes itself from Shopify webhooks and stays current as products change. No developer and no replatform.",
   },
 ];
 
 const FEATURES_FAQ: FaqItem[] = [
   {
     q: "Do the filters work through conversation, or do shoppers still click through menus?",
-    a: "Both work. Shoppers can click filter chips as usual, or just say “only under $20” and have the assistant apply, combine, or reset filters live — on top of your existing catalogue, with nothing to rebuild.",
+    a: "Both work. Shoppers can click filter chips as usual, or just say “only under $20” and have the assistant apply, combine, or reset filters live, on top of your existing catalogue, with nothing to rebuild.",
   },
   {
     q: "Can shoppers add products to their cart directly from search results?",
-    a: "Yes. Add-to-cart works straight from the results panel, and the cart count updates immediately — shoppers never have to leave the search experience to buy.",
+    a: "Yes. Add-to-cart works straight from the results panel, and the cart count updates immediately. Shoppers never have to leave the search experience to buy.",
   },
   {
     q: "Does the AI slow search down?",
@@ -84,22 +84,22 @@ const FEATURES_FAQ: FaqItem[] = [
   },
   {
     q: "What exactly do I see in the merchant dashboard?",
-    a: "Searches and unique visitors, click-through rate, add-to-cart rate, cart-to-purchase conversion, search-attributed checkouts via the Shopify Web Pixel, zero-result rate, average response time, and trending terms — updated continuously.",
+    a: "Searches and unique visitors, click-through rate, add-to-cart rate, cart-to-purchase conversion, search-attributed checkouts via the Shopify Web Pixel, zero-result rate, average response time, and trending terms, updated continuously.",
   },
   {
     q: "Is the “ten you see” side just vanity metrics?",
-    a: "No — every number ties back to a step a shopper actually took, from search to click to cart to checkout, so you can judge the AI on revenue rather than on vibes.",
+    a: "No. Every number ties back to a step a shopper actually took, from search to click to cart to checkout, so you can judge the AI on revenue rather than on vibes.",
   },
 ];
 
 const SOLUTIONS_FAQ: FaqItem[] = [
   {
     q: "Does Growsearch replace my Shopify search or sit on top of it?",
-    a: "It sits on top. Your native results still render instantly — Growsearch layers intent matching, recovery and ranking over them, so the shopper never waits on a model and nothing breaks if the AI has an off day.",
+    a: "It sits on top. Your native results still render instantly. Growsearch layers intent matching, recovery and ranking over them, so the shopper never waits on a model and nothing breaks if the AI has an off day.",
   },
   {
     q: "We already have a filter app. Is this the same thing?",
-    a: "No. Filters make the shopper do the work of narrowing. Growsearch reads the narrowing out of their sentence, and lets them keep adjusting it in conversation — “only under $20”, “actually show me sunscreens instead”.",
+    a: "No. Filters make the shopper do the work of narrowing. Growsearch reads the narrowing out of their sentence, and lets them keep adjusting it in conversation: “only under $20”, “actually show me sunscreens instead”.",
   },
   {
     q: "How quickly would we see whether it helped?",
@@ -114,30 +114,30 @@ const SOLUTIONS_FAQ: FaqItem[] = [
 const PRICING_FAQ: FaqItem[] = [
   {
     q: "Is there really a free trial?",
-    a: "Yes — 14 days on every plan, no credit card required. You install Growsearch, point it at your catalogue and watch what your own shoppers search for before you decide anything.",
+    a: "Yes. 14 days on every plan, no credit card required. You install Growsearch, point it at your catalogue and watch what your own shoppers search for before you decide anything.",
   },
   {
     q: "What counts as a search?",
-    a: "One shopper query against your storefront. Follow-up refinements in the same conversation — “only under $20”, “show me sunscreens instead” — are part of that session, not new searches, so a browsing shopper doesn't burn your allowance.",
+    a: "One shopper query against your storefront. Follow-up refinements in the same conversation, such as “only under $20”, “show me sunscreens instead”, are part of that session, not new searches, so a browsing shopper doesn't burn your allowance.",
   },
   {
     q: "What happens if I go over my plan's searches?",
-    a: "Search keeps working — we never switch your storefront off mid-month. We'll flag that you're trending over and suggest the tier that fits; if it was a one-off spike, nothing changes.",
+    a: "Search keeps working. We never switch your storefront off mid-month. We'll flag that you're trending over and suggest the tier that fits; if it was a one-off spike, nothing changes.",
   },
   {
-    q: "Monthly or yearly — what's the difference?",
+    q: "Monthly or yearly: what's the difference?",
     a: "Only the price. Yearly saves between 7% and 15% depending on the tier; the product is identical. Start monthly if you want to stay light on your feet.",
   },
   {
     q: "Can I cancel, and do you take a cut of revenue?",
-    a: "Cancel any time from your dashboard, and no — there is no revenue share and no per-seat pricing. A flat monthly number you can predict, which is the whole point.",
+    a: "Cancel any time from your dashboard, and no, there is no revenue share and no per-seat pricing. A flat monthly number you can predict, which is the whole point.",
   },
 ];
 
 const ABOUT_FAQ: FaqItem[] = [
   {
     q: "So what is Growmerce, exactly?",
-    a: "An ecommerce AI studio. We own, build and operate the tools ourselves rather than reselling somebody else's model — Growsearch today, more to follow once each one has paying customers.",
+    a: "An ecommerce AI studio. We own, build and operate the tools ourselves rather than reselling somebody else's model. Growsearch today, more to follow once each one has paying customers.",
   },
   {
     q: "Why only one product?",
@@ -145,11 +145,11 @@ const ABOUT_FAQ: FaqItem[] = [
   },
   {
     q: "Who is behind it?",
-    a: "It's founder-led and serves stores globally. The person who writes the code is the person who answers your demo call — which is an advantage while we're small, and we intend to keep it as long as possible.",
+    a: "It's founder-led and serves stores globally. The person who writes the code is the person who answers your demo call, which is an advantage while we're small, and we intend to keep it as long as possible.",
   },
   {
     q: "What's next after Growsearch?",
-    a: "Whatever the searches tell us. The zero-result terms and shopper questions Growsearch collects are the best product roadmap we could ask for — so the next tool will come out of real customer behaviour, not a brainstorm.",
+    a: "Whatever the searches tell us. The zero-result terms and shopper questions Growsearch collects are the best product roadmap we could ask for, so the next tool will come out of real customer behaviour, not a brainstorm.",
   },
   {
     q: "How do I get in touch?",
@@ -164,19 +164,19 @@ const ABOUT_FAQ: FaqItem[] = [
 const FIT_FAQ: FaqItem[] = [
   {
     q: "How small is too small a catalogue?",
-    a: "There is no hard number, but under roughly a hundred products a shopper can usually reach anything from your menus in two clicks, and search never becomes the path they take. The better signal is your own search volume: if the bar is barely used, fix that first — Growsearch makes search better, it does not make people start using it.",
+    a: "There is no hard number, but under roughly a hundred products a shopper can usually reach anything from your menus in two clicks, and search never becomes the path they take. The better signal is your own search volume: if the bar is barely used, fix that first. Growsearch makes search better, it does not make people start using it.",
   },
   {
     q: "How do I tell whether search actually drives my sales?",
-    a: "Shopify reports on it. Compare the conversion rate of sessions that used search against sessions that did not — searchers usually convert several times better. If the gap is wide and the share of searching sessions is meaningful, search is a lever. If almost nobody searches, it is not.",
+    a: "Shopify reports on it. Compare the conversion rate of sessions that used search against sessions that did not. Searchers usually convert several times better. If the gap is wide and the share of searching sessions is meaningful, search is a lever. If almost nobody searches, it is not.",
   },
   {
     q: "We are on WooCommerce, not Shopify. Can we use it?",
-    a: "Not yet. Growsearch installs as a Shopify app today and WooCommerce is next on the roadmap — so for now the honest answer for a Woo store is to wait.",
+    a: "Not yet. Growsearch installs as a Shopify app today and WooCommerce is next on the roadmap, so for now the honest answer for a Woo store is to wait.",
   },
   {
     q: "What if we're not sure and want a second opinion?",
-    a: "Say so. Send us your storefront and roughly what share of sessions use search, and we will tell you if it is not worth your money — we would rather lose the sale than have you cancel in month two.",
+    a: "Say so. Send us your storefront and roughly what share of sessions use search, and we will tell you if it is not worth your money. We would rather lose the sale than have you cancel in month two.",
   },
   {
     q: "If we are a fit, how do we find out for certain?",
@@ -191,7 +191,7 @@ const COMPARE_FAQ: FaqItem[] = [
   },
   {
     q: "How is Growsearch different from an AI chatbot?",
-    a: "A chatbot usually sits beside the shopping experience. Growsearch works inside product discovery itself — understanding the query, ranking products, recovering failed searches, and connecting search activity to revenue.",
+    a: "A chatbot usually sits beside the shopping experience. Growsearch works inside product discovery itself: understanding the query, ranking products, recovering failed searches, and connecting search activity to revenue.",
   },
   {
     q: "Recommendation apps already help increase AOV. Why add search?",
@@ -231,7 +231,7 @@ export const HELP_TOPICS = [
   {
     id: "growsearch",
     title: "Growsearch",
-    blurb: "The product itself — what it does to a query and what it does with the result.",
+    blurb: "The product itself: what it does to a query and what it does with the result.",
     href: "/growsearch",
     hrefLabel: "Growsearch",
     items: GROWSEARCH_FAQ,

@@ -13,7 +13,7 @@ const TOTAL = HELP_TOPICS.reduce((n, t) => n + t.items.length, 0);
 export const metadata: Metadata = {
   title: "Help centre",
   description:
-    "Every question answered across the site, collected in one place — Growsearch, pricing and the trial, whether it suits your store, and how it compares with the alternatives.",
+    "Every question answered across the site, collected in one place: Growsearch, pricing and the trial, whether it suits your store, and how it compares with the alternatives.",
 };
 
 /**
@@ -46,7 +46,7 @@ export default function HelpPage() {
             style={{ animationDelay: "170ms" }}
           >
             {TOTAL} questions, gathered from across the site and grouped by what
-            they are about. Nothing here is written twice &mdash; each answer
+            they are about. Nothing here is written twice; each answer
             also appears on the page it belongs to.
           </p>
 

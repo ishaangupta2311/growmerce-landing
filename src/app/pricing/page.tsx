@@ -32,7 +32,7 @@ export default function PricingPage() {
             style={{ animationDelay: "120ms" }}
           >
             One flat monthly number per store. Every plan carries the whole
-            product &mdash; the assistant, the recovery, the analytics &mdash;
+            product, including the assistant, the recovery and the analytics,
             and the tiers only change how much searching your shoppers do.
           </p>
           <CtaPair
@@ -61,7 +61,7 @@ export default function PricingPage() {
           <p className="mt-3 max-w-[38ch] text-center text-[14px] text-muted">
             {SHOPIFY_LISTING_LIVE
               ? "Opens the Shopify App Store in a new tab."
-              : "The listing is in review — we'll send your install link the day it's live."}
+              : "The listing is in review. We'll send your install link the day it's live."}
           </p>
         </div>
 

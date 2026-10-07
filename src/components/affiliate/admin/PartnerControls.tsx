@@ -64,7 +64,7 @@ export function StatusControls({ partner }: { partner: Partner }) {
       <p className="text-[14px] leading-relaxed text-body-mute">
         {partner.status === "approved"
           ? "Approved. Charges from their referred stores earn commission, and it clears 30 days later."
-          : "Not approved. Charges from their stores earn nothing at all while this is the case — approving replays any that were held."}
+          : "Not approved. Charges from their stores earn nothing at all while this is the case. Approving replays any that were held."}
       </p>
     </form>
   );
@@ -92,8 +92,7 @@ export function RateControls({ partner }: { partner: Partner }) {
         Applies to commission earned from here on.{" "}
         <strong className="font-bold text-charcoal">
           Nothing already in their ledger changes
-        </strong>{" "}
-        — every commission keeps the rate it was calculated at, so their past
+        </strong>. Every commission keeps the rate it was calculated at, so their past
         earnings stay reconcilable against what they were told at the time.
       </p>
 
@@ -127,7 +126,7 @@ export function ReplayControls({ partner, held }: { partner: Partner; held: numb
         </strong>{" "}
         from this partner&rsquo;s stores arrived while the account was not
         approved, and earned nothing. Replaying re-runs them through the ledger
-        at the partner&rsquo;s current rate. Safe to press twice — a charge
+        at the partner&rsquo;s current rate. Safe to press twice. A charge
         already credited is refused by the ledger, not paid again.
       </p>
 

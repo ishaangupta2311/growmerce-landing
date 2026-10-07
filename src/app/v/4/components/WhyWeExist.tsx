@@ -121,7 +121,7 @@ export default function WhyWeExist() {
             <p
               className={`${styles.display} relative max-w-3xl text-[clamp(1.5rem,3vw,2.25rem)] leading-[1.12] font-extrabold text-balance text-white`}
             >
-              So we build the middle — tools you install this afternoon and
+              So we build the middle: tools you install this afternoon and
               judge by the numbers this month.
             </p>
             <p className="relative mt-4 max-w-2xl text-[15.5px] leading-relaxed text-white">

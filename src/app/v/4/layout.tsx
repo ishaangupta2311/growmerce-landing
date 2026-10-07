@@ -30,7 +30,7 @@ const signwriter = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
-  title: "Growmerce — the high street of AI tools for ecommerce, after dark",
+  title: "Growmerce: the high street of AI tools for ecommerce, after dark",
   description:
     "Growmerce builds practical AI tools for the people actually running stores. First shop open and lit: Growsearch, storefront search that never dead-ends.",
 };

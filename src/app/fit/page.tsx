@@ -27,7 +27,7 @@ import {
 export const metadata: Metadata = {
   title: "Is Growmerce a fit for me?",
   description:
-    "Growmerce is built for stores where search is a real lever — a growing catalogue, shoppers who use the search bar, no appetite for a six-week install. Here's where it fits, and where it doesn't.",
+    "Growmerce is built for stores where search is a real lever: a growing catalogue, shoppers who use the search bar, no appetite for a six-week install. Here's where it fits, and where it doesn't.",
 };
 
 const NOT_A_FIT = [
@@ -41,7 +41,7 @@ const NOT_A_FIT = [
     n: "02",
     Icon: SearchOffIcon,
     title: "Search does not drive your sales",
-    body: "If most of your customers find products through menus, collections or ads — and rarely use search — Growmerce may not create enough impact right now.",
+    body: "If most of your customers find products through menus, collections or ads and rarely use search, Growmerce may not create enough impact right now.",
   },
   {
     n: "03",
@@ -178,7 +178,7 @@ export default function FitPage() {
             </h2>
             <p className="mx-auto mt-5 max-w-[52ch] text-center text-[17px] leading-relaxed text-body-mute">
               Not every store needs AI. Here are a few cases where Growmerce may
-              not be the best match &mdash; yet.
+              not be the best match yet.
             </p>
           </Reveal>
 

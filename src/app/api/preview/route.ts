@@ -43,7 +43,7 @@ const MESSAGES: Record<PreviewErrorCode, string> = {
   unauthorized: "This preview link has expired. Pop your store in again and we'll rebuild it.",
   rate_limited: "That's a few previews in a row. Give it ten minutes and try again.",
   blocked: "We can only preview shops that are live on the public internet.",
-  refused: "That store's security turned us away before we could look — some shops block automated visits. Nothing to fix on your end.",
+  refused: "That store's security turned us away before we could look; some shops block automated visits. Nothing to fix on your end.",
   unreachable: "We couldn't reach that store. Check the domain and try again.",
   timeout: "That store took too long to answer, so we stopped waiting.",
   internal: "Something went wrong on our side while building your preview.",

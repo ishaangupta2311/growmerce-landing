@@ -34,7 +34,7 @@ export default function BlogIndex({
               className="hero-enter section-lede mx-auto mt-5 max-w-[58ch]"
               style={{ animationDelay: "140ms" }}
             >
-              Practical writing for people running ecommerce stores — what we are building, what we are learning, and
+              Practical writing for people running ecommerce stores: what we are building, what we are learning, and
               what actually moves revenue.
             </p>
           </div>

@@ -28,9 +28,9 @@ export const metadata: Metadata = {
 };
 
 const CONVICTIONS = [
-  "One tool at a time — Growsearch first, and the next one gets a name when it has customers",
+  "One tool at a time: Growsearch first, and the next one gets a name when it has customers",
   "It installs into the store you already run: no replatforming, no migration, no AI team",
-  "Grounded in your catalogue — the model never invents a product, a price or a promise",
+  "Grounded in your catalogue. The model never invents a product, a price or a promise",
   "Every tool reports on itself, so it is judged on revenue rather than on vibes",
   "Priced as a flat monthly number you can cancel, with no revenue share",
 ];

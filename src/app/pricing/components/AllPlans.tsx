@@ -6,7 +6,7 @@ const GROUPS = [
   {
     name: "Search and discovery",
     items: [
-      "Natural-language queries — price, attributes and intent read from the sentence",
+      "Natural-language queries: price, attributes and intent read from the sentence",
       "Conversational refinement: combine, remove or reset filters mid-conversation",
       "Never-zero-results recovery with typo correction and close alternatives",
     ],
@@ -30,7 +30,7 @@ const GROUPS = [
   {
     name: "Setup and support",
     items: [
-      "Install from the Shopify App Store — the search bar matches your theme automatically",
+      "Install from the Shopify App Store. The search bar matches your theme automatically",
       "Catalogue stays current from Shopify product webhooks, with no manual re-indexing",
       "Deep theme-editor customisation, plus founder-led onboarding help",
     ],

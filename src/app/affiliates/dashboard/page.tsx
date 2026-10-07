@@ -64,7 +64,7 @@ export default async function OverviewPage() {
         </h2>
         <p className="mt-2 max-w-[60ch] text-[15px] leading-relaxed text-body-mute">
           The merchant types this into Growsearch when they install it. Dashes
-          and capitals do not matter — <code className="font-poppins">acme7k2m9</code>{" "}
+          and capitals do not matter: <code className="font-poppins">acme7k2m9</code>{" "}
           and <code className="font-poppins">ACME-7K2M9</code> are the same code.
         </p>
         <div className="mt-5">
@@ -72,7 +72,7 @@ export default async function OverviewPage() {
             <CopyCode code={primary.code} />
           ) : (
             <p className="text-[15px] text-body-mute">
-              No code yet — write to us and we will sort it out today.
+              No code yet. Write to us and we will sort it out today.
             </p>
           )}
         </div>
@@ -134,7 +134,7 @@ export default async function OverviewPage() {
         {summary.recentCommissions.length === 0 ? (
           <div className="p-5">
             <Empty title="Nothing earned yet">
-              The first commission appears the day one of your stores pays us —
+              The first commission appears the day one of your stores pays us,
               not when they install, and not when they start a trial.
             </Empty>
           </div>
@@ -187,7 +187,7 @@ export default async function OverviewPage() {
           <div className="p-5">
             <Empty title="No stores yet">
               A store appears here the moment a merchant enters your code in
-              Growsearch — before they pay anything.
+              Growsearch, before they pay anything.
             </Empty>
           </div>
         ) : (

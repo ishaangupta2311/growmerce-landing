@@ -46,7 +46,7 @@ export default function PayoutForm({ due }: { due: AmountDue }) {
         <p className="mt-2 text-[14px] leading-relaxed text-body-mute">
           Settles {due.commissionCount} commission
           {due.commissionCount === 1 ? "" : "s"}. Record this only after the
-          money has actually left — this marks them paid.
+          money has actually left; this marks them paid.
         </p>
       </div>
 
@@ -60,7 +60,7 @@ export default function PayoutForm({ due }: { due: AmountDue }) {
           </p>
         ) : (
           <p className="mt-1.5 text-[15px] leading-relaxed text-body-mute">
-            They have not filled in payout details yet. Ask them before paying —
+            They have not filled in payout details yet. Ask them before paying;
             there is nowhere to send this.
           </p>
         )}

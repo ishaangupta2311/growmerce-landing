@@ -73,7 +73,7 @@ export async function updateStatus(_state: FormState, form: FormData): Promise<F
       notice +=
         earned > 0
           ? ` Replayed ${replayed} charge${replayed === 1 ? "" : "s"} that arrived while the application was pending; ${earned} earned commission.`
-          : ` Replayed ${replayed} held charge${replayed === 1 ? "" : "s"}; none earned — check the ledger.`;
+          : ` Replayed ${replayed} held charge${replayed === 1 ? "" : "s"}; none earned. Check the ledger.`;
     }
   }
 
@@ -103,7 +103,7 @@ export async function updateRate(_state: FormState, form: FormData): Promise<For
 
   const bps = Math.round(percent * 100);
   if (Math.abs(percent * 100 - bps) > 1e-9) {
-    return { error: "One decimal place at most — 17.5% is fine, 17.53% is not." };
+    return { error: "One decimal place at most: 17.5% is fine, 17.53% is not." };
   }
 
   await setCommissionRate(partnerId, bps);
@@ -138,7 +138,7 @@ export async function createPayout(_state: FormState, form: FormData): Promise<F
   if (!currency) return { error: "Which currency?" };
   if (!METHODS.includes(method)) return { error: "Choose how this was paid." };
   if (!Number.isInteger(expectedCents) || expectedCents <= 0) {
-    return { error: "That page is stale — reload it and try again." };
+    return { error: "That page is stale. Reload it and try again." };
   }
 
   /* Not required, and deliberately so. The reference is whatever the bank
@@ -161,11 +161,11 @@ export async function createPayout(_state: FormState, form: FormData): Promise<F
     if (result.reason === "nothing_owed") {
       return {
         error:
-          "Nothing is owed in that currency any more — somebody may have recorded this payout already. Reload before trying again.",
+          "Nothing is owed in that currency any more. Somebody may have recorded this payout already. Reload before trying again.",
       };
     }
     return {
-      error: `The amount owed moved to ${formatMoney(result.actualCents, currency)} while this form was open — commissions cleared the refund window. Reload and check the figure before recording it.`,
+      error: `The amount owed moved to ${formatMoney(result.actualCents, currency)} while this form was open; commissions cleared the refund window. Reload and check the figure before recording it.`,
     };
   }
 
@@ -207,7 +207,7 @@ export async function replayHeld(_state: FormState, form: FormData): Promise<For
   if (!partner) return { error: "No partner with that id." };
   if (partner.status !== "approved") {
     return {
-      error: `${partner.company} is ${partner.status}, so replaying would earn them nothing. Approve them instead — that replays the held charges itself.`,
+      error: `${partner.company} is ${partner.status}, so replaying would earn them nothing. Approve them instead; that replays the held charges itself.`,
     };
   }
 

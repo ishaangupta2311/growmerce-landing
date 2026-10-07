@@ -10,7 +10,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: "Blog",
   description:
-    "Practical writing on ecommerce search, conversion and running a store — from the team building Growmerce.",
+    "Practical writing on ecommerce search, conversion and running a store, from the team building Growmerce.",
   alternates: { canonical: "/blog" },
   openGraph: {
     title: "The Growmerce blog",

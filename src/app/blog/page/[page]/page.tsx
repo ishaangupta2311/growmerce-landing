@@ -18,7 +18,7 @@ function parse(value: string): number | null {
 export async function generateMetadata({ params }: PageProps<"/blog/page/[page]">): Promise<Metadata> {
   const page = parse((await params).page);
   return {
-    title: page ? `Blog — page ${page}` : "Blog",
+    title: page ? `Blog: page ${page}` : "Blog",
     alternates: { canonical: page ? `/blog/page/${page}` : "/blog" },
   };
 }

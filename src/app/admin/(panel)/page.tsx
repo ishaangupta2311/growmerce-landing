@@ -101,7 +101,7 @@ export default async function OverviewPage() {
     },
     {
       label: "Owed now",
-      value: owed ? formatMoney(owed.cents, owed.currency) : "—",
+      value: owed ? formatMoney(owed.cents, owed.currency) : "-",
       icon: Banknote,
       tone: "bg-emerald-50 text-emerald-600",
       href: "/admin/affiliates/payouts",
@@ -109,7 +109,7 @@ export default async function OverviewPage() {
     },
     {
       label: "Still clearing",
-      value: clearing ? formatMoney(clearing.cents, clearing.currency) : "—",
+      value: clearing ? formatMoney(clearing.cents, clearing.currency) : "-",
       icon: Hourglass,
       tone: "bg-sky-50 text-sky-600",
       href: "/admin/affiliates",

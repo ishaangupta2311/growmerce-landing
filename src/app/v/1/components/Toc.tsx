@@ -4,7 +4,7 @@ import Reveal from "@/components/site/Reveal";
 
 const ENTRIES = [
   { no: "01", label: "The thesis", href: "#thesis" },
-  { no: "02", label: "Exhibit A — Growsearch", href: "#products" },
+  { no: "02", label: "Exhibit A: Growsearch", href: "#products" },
   { no: "03", label: "Doctrine", href: "#principles" },
   { no: "04", label: "Proof, cited", href: "#proof" },
 ];

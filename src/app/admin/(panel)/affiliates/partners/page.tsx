@@ -135,7 +135,7 @@ export default async function AdminPartnersPage({
                     <Td numeric>
                       {partner.headline
                         ? formatMoney(partner.headline.lifetimeCents, partner.headline.currency)
-                        : "—"}
+                        : "-"}
                     </Td>
                     <Td>{formatDate(partner.createdAt)}</Td>
                   </Row>

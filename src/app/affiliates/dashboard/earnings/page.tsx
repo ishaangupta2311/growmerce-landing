@@ -105,7 +105,7 @@ export default async function EarningsPage({
         {commissions.length === 0 ? (
           <Empty title="Nothing earned yet">
             Commission is created the day a store you referred actually pays us.
-            An install or a free trial does not earn — the payment does.
+            An install or a free trial does not earn; the payment does.
           </Empty>
         ) : (
           <Table caption="Every commission you have earned">
@@ -142,7 +142,7 @@ export default async function EarningsPage({
                         {formatDate(commission.periodStart)} – {formatDate(commission.periodEnd)}
                       </span>
                     ) : (
-                      <span className="text-muted">—</span>
+                      <span className="text-muted">-</span>
                     )}
                   </Td>
                   <Td numeric>

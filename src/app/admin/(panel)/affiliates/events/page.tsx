@@ -26,13 +26,13 @@ const OUTCOME_HELP: Record<string, string> = {
   "ignored:retired_code": "The code exists but has been retired.",
   "ignored:shop_already_referred": "That store is already linked to this partner, so nothing moved.",
   "ignored:referral_ended": "The store's referral had ended. A resubscription does not revive it.",
-  "ignored:unknown_shop": "We have no referral for that store — the code event never arrived.",
+  "ignored:unknown_shop": "We have no referral for that store; the code event never arrived.",
   "ignored:partner_not_approved": "The partner was not approved, so the charge earned nothing.",
   "ignored:already_paid_once": "A creator's referral had already earned its one-time fee.",
-  "ignored:referral_cancelled": "The referral had already ended — the store churned or moved to another partner.",
+  "ignored:referral_cancelled": "The referral had already ended; the store churned or moved to another partner.",
   "ignored:charge_already_credited": "The same charge under a different event id.",
   "ignored:zero_amount": "A zero-value charge, so there was nothing to take a share of.",
-  "ignored:already_paid_out": "The refunded commission had already been paid — not reversible here.",
+  "ignored:already_paid_out": "The refunded commission had already been paid; not reversible here.",
   "ignored:no_commission_for_charge": "A refund for a charge that never earned anything.",
 };
 
@@ -121,7 +121,7 @@ export default async function AdminEventsPage({
                     <Td>
                       <code className="text-[14px]">{event.type}</code>
                     </Td>
-                    <Td>{event.shop ?? <span className="text-muted">—</span>}</Td>
+                    <Td>{event.shop ?? <span className="text-muted">-</span>}</Td>
                     <Td>
                       {event.outcome ? (
                         <>

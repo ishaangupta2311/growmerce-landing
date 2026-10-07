@@ -71,12 +71,12 @@ export function PayoutForm({ partner }: { partner: Partner }) {
         required
         defaultValue={partner.payoutCurrency}
         options={[
-          { value: "USD", label: "USD — US dollar" },
-          { value: "EUR", label: "EUR — Euro" },
-          { value: "GBP", label: "GBP — Pound sterling" },
-          { value: "INR", label: "INR — Indian rupee" },
-          { value: "AUD", label: "AUD — Australian dollar" },
-          { value: "CAD", label: "CAD — Canadian dollar" },
+          { value: "USD", label: "USD: US dollar" },
+          { value: "EUR", label: "EUR: Euro" },
+          { value: "GBP", label: "GBP: Pound sterling" },
+          { value: "INR", label: "INR: Indian rupee" },
+          { value: "AUD", label: "AUD: Australian dollar" },
+          { value: "CAD", label: "CAD: Canadian dollar" },
         ]}
         hint="Your commissions are recorded in whatever currency the store was charged in. This is what we convert to when we pay you."
       />

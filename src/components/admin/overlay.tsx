@@ -201,7 +201,7 @@ export function useIsClient(): boolean {
  */
 export function LocalTime({ iso, mode = "datetime" }: { iso: string | null; mode?: "date" | "datetime" }) {
   const isClient = useIsClient();
-  if (!iso) return <span className="text-zinc-400">—</span>;
+  if (!iso) return <span className="text-zinc-400">-</span>;
 
   const date = new Date(iso);
   const options: Intl.DateTimeFormatOptions =

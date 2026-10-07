@@ -70,8 +70,8 @@ export default function CampaignForm({
         required
         defaultValue={values?.audience ?? "installed"}
         options={[
-          { value: "installed", label: `Merchants with Growsearch installed — ${reach(audiences.installed)}` },
-          { value: "all", label: `Everyone, including stores that uninstalled — ${reach(audiences.all)}` },
+          { value: "installed", label: `Merchants with Growsearch installed: ${reach(audiences.installed)}` },
+          { value: "all", label: `Everyone, including stores that uninstalled: ${reach(audiences.all)}` },
         ]}
         hint="Unsubscribed addresses are never included. Stores that uninstalled did not ask to hear from us again: use that audience sparingly."
       />

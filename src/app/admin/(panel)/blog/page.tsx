@@ -104,8 +104,8 @@ export default async function BlogsPage({ searchParams }: PageProps<"/admin/blog
                         </Link>
                         <p className="mt-0.5 truncate text-xs text-zinc-400">/blog/{post.slug}</p>
                       </td>
-                      <td className="px-3 py-3 text-zinc-600">{post.authorName ?? <span className="text-zinc-400">—</span>}</td>
-                      <td className="px-3 py-3 text-zinc-600">{post.categoryName ?? <span className="text-zinc-400">—</span>}</td>
+                      <td className="px-3 py-3 text-zinc-600">{post.authorName ?? <span className="text-zinc-400">-</span>}</td>
+                      <td className="px-3 py-3 text-zinc-600">{post.categoryName ?? <span className="text-zinc-400">-</span>}</td>
                       <td className="px-3 py-3">
                         <StatusBadge status={post.status} />
                       </td>
@@ -117,7 +117,7 @@ export default async function BlogsPage({ searchParams }: PageProps<"/admin/blog
                         ) : post.status === "published" ? (
                           <LocalTime iso={post.publishedAt} mode="date" />
                         ) : (
-                          <span className="text-zinc-400">—</span>
+                          <span className="text-zinc-400">-</span>
                         )}
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap text-zinc-600">

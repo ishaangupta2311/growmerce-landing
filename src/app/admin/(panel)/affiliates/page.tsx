@@ -53,7 +53,7 @@ export default async function AdminOverviewPage() {
           />
           <StatCard
             label="Owed now"
-            value={owed ? formatMoney(owed.cents, owed.currency) : "—"}
+            value={owed ? formatMoney(owed.cents, owed.currency) : "-"}
             note={
               owed
                 ? `Cleared and unpaid, across ${owed.partners} partner${owed.partners === 1 ? "" : "s"}.`
@@ -63,7 +63,7 @@ export default async function AdminOverviewPage() {
           />
           <StatCard
             label="Still clearing"
-            value={clearing ? formatMoney(clearing.cents, clearing.currency) : "—"}
+            value={clearing ? formatMoney(clearing.cents, clearing.currency) : "-"}
             note="Earned, inside the 30-day refund window."
           />
           <StatCard
@@ -84,7 +84,7 @@ export default async function AdminOverviewPage() {
               .slice(1)
               .map((row) => formatMoney(row.cents, row.currency))
               .join(", ")}
-            . Currencies are never added together — a payout moves one of them.
+            . Currencies are never added together; a payout moves one of them.
           </p>
         )}
 
@@ -167,7 +167,7 @@ export default async function AdminOverviewPage() {
                     <Td>
                       <PartnerPill status={row.status} />
                     </Td>
-                    <Td>{row.waitingSince ? formatDate(row.waitingSince) : "—"}</Td>
+                    <Td>{row.waitingSince ? formatDate(row.waitingSince) : "-"}</Td>
                     <Td numeric>{formatMoney(row.owedCents, row.currency)}</Td>
                   </Row>
                 ))}

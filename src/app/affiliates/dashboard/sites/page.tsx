@@ -72,7 +72,7 @@ export default async function SitesPage({
                   <Td>
                     <ReferralPill status={referral.status} />
                   </Td>
-                  <Td>{referral.plan ?? <span className="text-muted">—</span>}</Td>
+                  <Td>{referral.plan ?? <span className="text-muted">-</span>}</Td>
                   <Td>{formatDate(referral.linkedAt)}</Td>
                   <Td>
                     <code className="font-poppins text-[14px] text-body-mute">{referral.code}</code>

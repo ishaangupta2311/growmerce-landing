@@ -71,7 +71,7 @@ export default async function AffiliateProgramPage() {
           </p>
           <p className="mt-4 text-[16px] leading-relaxed text-body-mute">
             You install Growsearch for a client and keep looking after it, so you
-            keep earning from it — for as long as that store stays subscribed.
+            keep earning from it, for as long as that store stays subscribed.
             One client on an annual plan is not a one-off cheque, it is a line
             in next year&apos;s revenue too.
           </p>
@@ -87,7 +87,7 @@ export default async function AffiliateProgramPage() {
           <p className="mt-4 text-[16px] leading-relaxed text-body-mute">
             A higher share, paid once per store you bring. You made the
             introduction rather than the ongoing relationship, and this is the
-            offer that reflects it — no ties, no reporting, no client work.
+            offer that reflects it: no ties, no reporting, no client work.
           </p>
         </article>
       </div>
@@ -108,7 +108,7 @@ export default async function AffiliateProgramPage() {
             },
             {
               step: "It gets entered",
-              body: "The merchant types it into Growsearch when they install it. That is the whole attribution — no cookies, no expiry window.",
+              body: "The merchant types it into Growsearch when they install it. That is the whole attribution: no cookies, no expiry window.",
             },
             {
               step: "You get paid",
@@ -149,7 +149,7 @@ export default async function AffiliateProgramPage() {
             ],
             [
               "Refunds reverse the commission.",
-              "Visibly, on the row it came from — never by quietly shrinking your balance. Anything already paid out to you stays paid out.",
+              "Visibly, on the row it came from, never by quietly shrinking your balance. Anything already paid out to you stays paid out.",
             ],
             [
               "You are paid in your currency.",

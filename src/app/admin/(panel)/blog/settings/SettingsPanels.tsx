@@ -61,7 +61,7 @@ export function SignInCard() {
   return (
     <Card title="Signing in" description="One account for the whole admin: blog and affiliates.">
       <p className="text-sm leading-relaxed text-zinc-600">
-        You sign in with your Growmerce account — the same login the affiliate program uses. Access to the
+        You sign in with your Growmerce account, using the same login the affiliate program uses. Access to the
         admin comes from the server&rsquo;s allowlist, not from anything on this page. To change your password,
         use &ldquo;Forgot password&rdquo; on the sign-in page.
       </p>

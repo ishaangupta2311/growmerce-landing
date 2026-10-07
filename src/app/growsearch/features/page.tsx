@@ -12,7 +12,7 @@ import { FEATURE_ROWS } from "./rows-data";
 import { FEATURES_FAQ } from "@/lib/faqs";
 
 export const metadata: Metadata = {
-  title: "Growsearch features — Everything your search bar should be doing",
+  title: "Growsearch features: Everything your search bar should be doing",
   description:
     "Twenty things Growsearch does that default Shopify search doesn't. Ten your shoppers feel, ten you see.",
   alternates: { canonical: GROWSEARCH_FEATURES },

@@ -128,7 +128,7 @@ export default function DemoStoreButton({
     e.preventDefault();
     const value = email.trim();
     if (!EMAIL.test(value)) {
-      setError("That address looks incomplete — check it and try again.");
+      setError("That address looks incomplete. Check it and try again.");
       inputRef.current?.focus();
       return;
     }
@@ -220,7 +220,7 @@ export default function DemoStoreButton({
                     <p className="mt-3 text-[15.5px] leading-relaxed text-body-mute">
                       Growsearch already runs on a demo Shopify store, so
                       there&apos;s nothing to install. It sits behind a
-                      password — tell us where to reach you and we&apos;ll hand
+                      password. Tell us where to reach you and we&apos;ll hand
                       it over.
                     </p>
 
@@ -272,7 +272,7 @@ export default function DemoStoreButton({
 
                     <p className="mt-4 text-[12.5px] leading-relaxed text-muted">
                       No card, no install. We&apos;ll use your email to follow
-                      up about Growmerce — see our{" "}
+                      up about Growmerce. See our{" "}
                       <Link
                         href="/privacy"
                         className="underline underline-offset-2 hover:text-brand"
@@ -311,7 +311,7 @@ export default function DemoStoreButton({
 
                     <p className="mt-4 text-[15.5px] leading-relaxed text-body-mute">
                       The storefront asks for it before it opens. Paste it in,
-                      then search the way a shopper actually talks — &ldquo;something
+                      then search the way a shopper actually talks, &ldquo;something
                       warm for a rainy commute&rdquo;.
                     </p>
 

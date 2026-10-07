@@ -43,7 +43,7 @@ const STEPS = [
 const THEME_SOURCE_LINE: Record<PreviewResult["themeSource"], string> = {
   computed: "Colours matched from your live styles.",
   stylesheet: "Colours matched from your stylesheet.",
-  default: "We used default colours — we couldn't read yours.",
+  default: "We used default colours; we couldn't read yours.",
 };
 
 /* The API's own `message` carries the detail; this is only the headline, and
@@ -347,7 +347,7 @@ function StageCaption({
         <span className="font-semibold text-charcoal">
           Your own search, as a shopper first meets it.
         </span>{" "}
-        We opened it and took a screenshot &mdash; nothing typed, nothing
+        We opened it and took a screenshot, nothing typed, nothing
         redrawn. The box waits for a keyword; Growsearch takes the whole
         sentence.
         {capturedAt ? (
@@ -387,7 +387,7 @@ function StageCaption({
       <span className="font-semibold text-charcoal">
         {THEME_SOURCE_LINE[result.themeSource]}
       </span>{" "}
-      A mock-up of Growsearch on {result.store} &mdash; nothing was installed
+      A mock-up of Growsearch on {result.store}. Nothing was installed
       and nothing on your store changed.
     </>
   );
@@ -458,7 +458,7 @@ function LoadingPanel({ store, step }: { store: string; step: number }) {
       </h2>
       <p className="mt-3 max-w-[52ch] text-[15.5px] leading-relaxed text-body-mute">
         This takes about twenty seconds. We&apos;re reading the public page
-        only &mdash; nothing is being installed and nothing changes.
+        only. Nothing is being installed and nothing changes.
       </p>
       <div className="mt-8" aria-live="polite">
         <StepList active={step} done={false} />
@@ -522,7 +522,7 @@ function DemoStoreCard() {
       </h2>
       <p className="mt-2.5 text-[14.5px] leading-relaxed text-body-mute">
         A live Shopify storefront running Growsearch, so there is nothing to
-        install. Search it the way a shopper actually talks &mdash;
+        install. Search it the way a shopper actually talks,
         &ldquo;something warm for a rainy commute&rdquo;.
       </p>
 
@@ -566,8 +566,7 @@ function DemoStoreCard() {
             </>
           ) : (
             <>
-              Seen enough? The listing is still in Shopify&apos;s review queue
-              &mdash; take a place in the queue and we&apos;ll send your install
+              Seen enough? The listing is still in Shopify&apos;s review queue. Take a place in the queue and we&apos;ll send your install
               link the day it clears.
             </>
           )}
@@ -672,7 +671,7 @@ function PreviewRun({
           status: "error",
           code: timedOut ? "timeout" : "unreachable",
           message: timedOut
-            ? `${store} took longer than we're willing to make you wait. Big stores sometimes do — it's worth another go in a minute.`
+            ? `${store} took longer than we're willing to make you wait. Big stores sometimes do. It's worth another go in a minute.`
             : `We couldn't reach ${store} just now.`,
         });
       }
@@ -731,7 +730,7 @@ function PreviewRun({
               title={errorTitle(state.code, store)}
               body={
                 state.message ||
-                "The store didn't answer in time. Here's what Growsearch looks like anyway — the real thing wears your colours, your radius and your products."
+                "The store didn't answer in time. Here's what Growsearch looks like anyway. The real thing wears your colours, your radius and your products."
               }
               action={
                 <Link href="/try" className="cta-secondary">

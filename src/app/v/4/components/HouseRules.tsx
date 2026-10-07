@@ -13,7 +13,7 @@ const RULES = [
   },
   {
     rule: "Depth over breadth",
-    body: "One workflow done properly, end to end — not forty features done to demo standard.",
+    body: "One workflow done properly, end to end, not forty features done to demo standard.",
   },
   {
     rule: "Install, don’t migrate",
@@ -21,7 +21,7 @@ const RULES = [
   },
   {
     rule: "Build in public",
-    body: "Founder-led and openly worked on — the wrong turns included.",
+    body: "Founder-led and openly worked on, the wrong turns included.",
   },
 ];
 

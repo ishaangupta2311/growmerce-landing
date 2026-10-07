@@ -18,7 +18,7 @@ const NOTICES = [
   "First shop lit: Growsearch",
   "Built in public, serving global ecommerce",
   "Founder answers the demo calls",
-  "Install tonight — no migration",
+  "Install tonight, no migration",
 ];
 
 export default function Nav() {

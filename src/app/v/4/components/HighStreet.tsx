@@ -109,7 +109,7 @@ function GrowsearchShop() {
                 Growsearch
               </h3>
               <p className="mt-3 max-w-lg text-[15.5px] leading-relaxed text-[#e3cab4]">
-                Storefront search that never dead-ends — and analytics that
+                Storefront search that never dead-ends, and analytics that
                 prove what search sells. For Shopify stores with catalogues
                 worth browsing.
               </p>
@@ -150,7 +150,7 @@ function GrowsearchShop() {
                 0 results for “kava drinks”
               </p>
               <p className="mt-1.5 rounded-2xl bg-[#ff5c1a]/16 px-3.5 py-2.5 text-[14px] leading-snug font-medium text-[#fff2e4] ring-1 ring-[#ff8a3c]/25">
-                “We don&rsquo;t have kava drinks — but you might like these
+                “We don&rsquo;t have kava drinks, but you might like these
                 Kratom Seltzers ✨”
               </p>
               <p className="mt-2 text-[13.5px]">
@@ -178,7 +178,7 @@ function GrowsearchShop() {
                 ))}
               </div>
               <p className="mt-2.5 text-[13.5px]">
-                Price, attribute and intent are read out of the sentence — no
+                Price, attribute and intent are read out of the sentence. No
                 filter archaeology required.
               </p>
             </WindowCard>
@@ -211,7 +211,7 @@ function GrowsearchShop() {
                 </button>
               </div>
               <p className="mt-2.5 text-[13.5px]">
-                Try it — the counter above is the shopper&rsquo;s cart, updating
+                Try it. The counter above is the shopper&rsquo;s cart, updating
                 where they already are.
               </p>
             </WindowCard>
@@ -280,7 +280,7 @@ function ShutteredShop({
   return (
     <article
       className={`${styles.shopShut} group relative ${className ?? ""}`}
-      aria-label={`Unit ${unit} — opening soon`}
+      aria-label={`Unit ${unit}: opening soon`}
     >
       <div
         className={`${styles.panel} relative overflow-hidden rounded-[30px]`}
@@ -312,7 +312,7 @@ function ShutteredShop({
               <span
                 className={`${styles.hand} rounded-full bg-[#20140c] px-3 py-1 text-[16px] leading-tight text-[#ffc46b] opacity-0 ring-1 ring-[#ffc46b]/35 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100`}
               >
-                psst — soon
+                psst: soon
               </span>
             </div>
           </div>
@@ -364,12 +364,12 @@ export default function HighStreet() {
                   One shop lit. More being built.
                 </span>
               }
-              lead="Every Growmerce tool gets its own shopfront — its own product, its own price, its own proof. We only switch a sign on once the thing behind it works."
+              lead="Every Growmerce tool gets its own shopfront, with its own product, its own price, its own proof. We only switch a sign on once the thing behind it works."
             />
             <p
               className={`${styles.hand} max-w-[15rem] text-[21px] leading-tight text-[#bda28c]`}
             >
-              have a look in the window &mdash; the cart is real
+              have a look in the window; the cart is real
             </p>
           </div>
         </Reveal>

@@ -65,7 +65,7 @@ export default function Hero() {
             className="hero-enter mt-7 max-w-[38rem] text-[clamp(1.0625rem,1.45vw,1.25rem)] leading-relaxed text-[#e3cab4]"
             style={{ animationDelay: "220ms" }}
           >
-            AI is becoming table stakes for online stores — but most owners
+            AI is becoming table stakes for online stores, but most owners
             don&rsquo;t have an AI team, and most tools are either narrow
             gadgets or heavy platforms you&rsquo;d have to migrate to. Growmerce
             builds the practical middle: small, sharp tools you install today.

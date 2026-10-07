@@ -40,7 +40,7 @@ export const FEATURE_ROWS: FeatureRowData[] = [
     bullets: [
       "Combine, remove, or reset filters without losing your place",
       "Ask a follow-up instead of starting a new search",
-      "Works on top of your existing catalogue — nothing to rebuild",
+      "Works on top of your existing catalogue, nothing to rebuild",
     ],
     group: "feel",
     videoSrc: "/video/endless-refinement",
@@ -49,7 +49,7 @@ export const FEATURE_ROWS: FeatureRowData[] = [
     eyebrow: "SHOPPER EXPERIENCE",
     title: "Never a dead end.",
     bullets: [
-      "No typos, no gaps, no empty search bar — shoppers always land on something they can buy",
+      "No typos, no gaps, no empty search bar. Shoppers always land on something they can buy",
       "Recovers from typos and out-of-stock automatically",
       "Suggests close alternatives",
     ],
@@ -60,7 +60,7 @@ export const FEATURE_ROWS: FeatureRowData[] = [
     eyebrow: "BUYER EXPERIENCE",
     title: "Close enough is still useful.",
     bullets: [
-      "When the exact product isn't there, shoppers see relevant alternatives — not a dead page",
+      "When the exact product isn't there, shoppers see relevant alternatives, not a dead page",
       "Related products shown automatically",
       "No generic “no matches found”",
     ],
@@ -93,7 +93,7 @@ export const FEATURE_ROWS: FeatureRowData[] = [
     eyebrow: "MERCHANT INSIGHTS",
     title: "Watch every search, step by step.",
     bullets: [
-      "See exactly what shoppers searched, what the AI said, and what they clicked — end to end",
+      "See exactly what shoppers searched, what the AI said, and what they clicked, end to end",
       "Replays the exact sequence of queries, AI responses and product actions, timestamped",
       "AI responses shown alongside",
     ],
@@ -127,7 +127,7 @@ export const FEATURE_ROWS: FeatureRowData[] = [
     title: "It tells you what to fix first.",
     bullets: [
       "Missing products, skipped results and slow queries surfaced as ranked opportunities",
-      "“strip” has no exact match, 2 searches — consider adding the product",
+      "“strip” has no exact match, 2 searches; consider adding the product",
       "Sorted into fix first and worth checking, from the last 30 days of search activity",
     ],
     group: "see",

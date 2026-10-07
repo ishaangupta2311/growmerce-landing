@@ -13,7 +13,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Growmerce — The Ledger",
+  title: "Growmerce: The Ledger",
   description:
     "Growmerce builds practical AI tools for the people actually running ecommerce stores. Read the thesis, meet Growsearch, and see the doctrine.",
 };

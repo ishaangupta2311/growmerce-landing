@@ -108,7 +108,7 @@ const STEPS: Step[] = [
     n: "02",
     icon: Brain,
     title: "Build what matters",
-    body: "We create focused AI tools designed around real store problems — not generic features.",
+    body: "We create focused AI tools designed around real store problems, not generic features.",
     scene: <BuildScene />,
   },
   {

@@ -158,10 +158,10 @@ export default function InstallWaitlist({
        told both at once rather than made to submit twice. */
     const badStore = target
       ? null
-      : "That doesn't look like a store address yet — try yourstore.com.";
+      : "That doesn't look like a store address yet. Try yourstore.com.";
     const badEmail = EMAIL.test(address)
       ? null
-      : "That address looks incomplete — check it and try again.";
+      : "That address looks incomplete. Check it and try again.";
     setStoreError(badStore);
     setEmailError(badEmail);
     if (badStore || badEmail) {
@@ -192,7 +192,7 @@ export default function InstallWaitlist({
         setSending(false);
         setFormError(
           res.status === 429
-            ? "That's a few tries in a row — give it a minute and we'll take it."
+            ? "That's a few tries in a row. Give it a minute and we'll take it."
             : "We couldn't save your place just then. Try once more, or email admin@growmerce.ai and we'll add you by hand.",
         );
         return;
@@ -273,7 +273,7 @@ export default function InstallWaitlist({
                       Shopify is still reviewing the Growsearch listing, so
                       there&apos;s nothing to install today. Tell us which store
                       it&apos;s for and we&apos;ll send your link the day it
-                      goes live &mdash; before we announce it anywhere else.
+                      goes live, before we announce it anywhere else.
                     </p>
 
                     <form onSubmit={submit} noValidate className="mt-6">
@@ -416,7 +416,7 @@ export default function InstallWaitlist({
                     <p className="mt-4 text-[12.5px] leading-relaxed text-muted">
                       No card, and nothing is installed on your store. We&apos;ll
                       use your email to tell you the listing is live and to
-                      follow up about Growmerce &mdash; see our{" "}
+                      follow up about Growmerce. See our{" "}
                       <Link
                         href="/privacy"
                         className="underline underline-offset-2 hover:text-brand"

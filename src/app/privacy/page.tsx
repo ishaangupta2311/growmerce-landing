@@ -64,18 +64,18 @@ const SECTIONS: LegalSection[] = [
         list: [
           <>
             <strong className="font-semibold text-charcoal">OpenRouter</strong>{" "}
-            &mdash; converts product text and images, and shopper queries, into
+            converts product text and images, and shopper queries, into
             the numeric representations used for search, and answers shopper
             follow-up questions about results.
           </>,
           <>
             <strong className="font-semibold text-charcoal">Pinecone</strong>{" "}
-            &mdash; stores those numeric representations of the product catalog.
+            stores those numeric representations of the product catalog.
             Each store is isolated in its own namespace.
           </>,
           <>
             <strong className="font-semibold text-charcoal">Render</strong>{" "}
-            &mdash; hosts the application and its database.
+            hosts the application and its database.
           </>,
         ],
       },
@@ -129,11 +129,11 @@ export default function PrivacyPage() {
       updated="September 2, 2026"
       intro={
         <>
-          Growsearch &mdash; listed on the Shopify App Store as Smart Search
-          &mdash; is a Shopify app that replaces a store&rsquo;s built-in search
+          Growsearch, listed on the Shopify App Store as Smart Search,
+          is a Shopify app that replaces a store&rsquo;s built-in search
           with AI-assisted product search and reports on how shoppers use it.
           This policy explains what the app collects, why, and how long it is
-          kept &mdash; and what this website collects from the people who
+          kept, and what this website collects from the people who
           visit it.
         </>
       }

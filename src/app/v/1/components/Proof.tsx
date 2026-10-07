@@ -17,7 +17,7 @@ export default function Proof() {
             The category is already moving.
           </h2>
           <p className="mt-5 max-w-[58ch] text-[16px] leading-relaxed text-[var(--ink-70)]">
-            We&rsquo;re early — these are published category benchmarks, not
+            We&rsquo;re early. These are published category benchmarks, not
             Growmerce customer results. They&rsquo;re the reason we&rsquo;re
             building here.
           </p>

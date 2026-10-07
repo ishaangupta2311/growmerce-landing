@@ -39,7 +39,7 @@ const JOBS: Layer[] = [
   {
     id: "intent",
     label: "Understands intent",
-    detail: "Vague, misspelled or oddly worded — it still finds the right shelf",
+    detail: "Vague, misspelled or oddly worded: it still finds the right shelf",
     face: "#f4ebe4",
     edge: "#dbcabd",
   },

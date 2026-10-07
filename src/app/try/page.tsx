@@ -8,7 +8,7 @@ import TryForm from "./components/TryForm";
 export const metadata: Metadata = {
   title: "Try it free",
   description:
-    "Give us your store's domain and we'll draw Growsearch on your own storefront — your colours, your products, in about twenty seconds. No install, no card.",
+    "Give us your store's domain and we'll draw Growsearch on your own storefront, your colours, your products, in about twenty seconds. No install, no card.",
 };
 
 /* These describe what the job actually does, and they have to keep doing so.
@@ -21,7 +21,7 @@ const NEXT = [
   {
     n: "1",
     title: "We read your public storefront",
-    body: "Colours, type, corner radius and a few of your products — all from the page a shopper already sees.",
+    body: "Colours, type, corner radius and a few of your products, all from the page a shopper already sees.",
   },
   {
     n: "2",
@@ -59,7 +59,7 @@ export default function TryPage() {
                 style={{ animationDelay: "170ms" }}
               >
                 Tell us your domain and we&apos;ll read your storefront the way
-                a shopper does &mdash; then draw the search your shoppers would
+                a shopper does, then draw the search your shoppers would
                 get, in your own colours. It takes about twenty seconds.
               </p>
 
@@ -117,7 +117,7 @@ export default function TryPage() {
 
               <p className="mt-9 max-w-[44ch] border-l-2 border-brand/30 pl-5 text-[14.5px] leading-relaxed text-body-mute">
                 The preview is a mock-up. We read your public storefront and
-                nothing else &mdash; no app to install, no theme edit, no
+                nothing else: no app to install, no theme edit, no
                 access to your admin.
               </p>
             </div>

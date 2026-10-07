@@ -43,7 +43,7 @@ export default async function ApplyPage() {
   return (
     <AuthShell
       title="One more step"
-      lede="This is what your account will be set up as. Change anything that is not right — after this, the way you are paid is only editable by us."
+      lede="This is what your account will be set up as. Change anything that is not right. After this, the way you are paid is only editable by us."
     >
       <ApplyForm
         defaults={{

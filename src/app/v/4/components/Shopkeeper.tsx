@@ -56,7 +56,7 @@ export default function Shopkeeper() {
               <SectionHeading
                 eyebrow="the last light on the street"
                 title={<span id="shopkeeper-title">Meet the shopkeeper.</span>}
-                lead="Growmerce is founder-led and built in public. That means the person who answers your questions is the person shipping the thing you are asking about — usually at this hour."
+                lead="Growmerce is founder-led and built in public. That means the person who answers your questions is the person shipping the thing you are asking about, usually at this hour."
               />
               <ul className="mt-8 space-y-3.5">
                 {COUNTER_NOTES.map((note) => (
@@ -147,7 +147,7 @@ export default function Shopkeeper() {
                     I started Growmerce because I kept meeting store owners who
                     were told AI was now essential, quoted a platform migration,
                     and left to work out the rest alone. So we build small,
-                    sharp tools instead — sold to real stores from day one, kept
+                    sharp tools instead, sold to real stores from day one, kept
                     only if they keep earning their place.
                   </p>
                   <p className="relative mt-4 text-[16px] leading-relaxed text-[#f3ddca]">
@@ -159,7 +159,7 @@ export default function Shopkeeper() {
                   <p
                     className={`${styles.hand} relative mt-7 text-[27px] leading-none text-[#ffc46b]`}
                   >
-                    — the shopkeeper
+                    The shopkeeper
                   </p>
 
                   <SillThings className="absolute right-4 bottom-0 h-[54px] w-[120px]" />
@@ -185,7 +185,7 @@ export default function Shopkeeper() {
               <p
                 className={`${styles.hand} mt-12 text-center text-[21px] leading-tight text-[#bda28c]`}
               >
-                still up, still shipping — it&rsquo;s a founder-led shop
+                still up, still shipping. It&rsquo;s a founder-led shop
               </p>
             </div>
           </Reveal>
@@ -211,11 +211,11 @@ export default function Shopkeeper() {
                   <h2
                     className={`${styles.display} text-[clamp(2.1rem,4.6vw,3.3rem)] leading-[1.02] font-extrabold text-balance text-white`}
                   >
-                    Come in — we&rsquo;re open.
+                    Come in. We&rsquo;re open.
                   </h2>
                   <p className="mt-5 text-[17px] leading-relaxed text-white">
                     Get early access to Growsearch, or book a demo with the
-                    founder. It really is the founder — there is no sales team
+                    founder. It really is the founder. There is no sales team
                     to hand you off to.
                   </p>
 

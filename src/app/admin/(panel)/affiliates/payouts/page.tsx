@@ -148,7 +148,7 @@ export default async function AdminPayoutsPage({
                     <Td>
                       <span className="capitalize">{payout.method}</span>
                     </Td>
-                    <Td>{payout.reference ?? <span className="text-muted">—</span>}</Td>
+                    <Td>{payout.reference ?? <span className="text-muted">-</span>}</Td>
                     <Td numeric>{payout.commissionCount}</Td>
                     <Td numeric>{formatMoney(payout.amountCents, payout.currency)}</Td>
                   </Row>

@@ -24,7 +24,7 @@ export default function ClosedPage() {
       </h1>
       <p className="mt-4 text-[16px] leading-relaxed text-body-mute">
         Your affiliate account is closed for now, so the dashboard is not
-        available. If that is a surprise, write to us — it is a short
+        available. If that is a surprise, write to us. It is a short
         conversation and we would rather have it than not.
       </p>
 

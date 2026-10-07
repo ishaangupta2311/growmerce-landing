@@ -118,23 +118,23 @@ export default async function AdminPartnerPage({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Owed now"
-          value={headline ? formatMoney(headline.approvedCents, headline.currency) : "—"}
+          value={headline ? formatMoney(headline.approvedCents, headline.currency) : "-"}
           note="Cleared and unpaid."
           emphasis={Boolean(headline?.approvedCents)}
         />
         <StatCard
           label="Clearing"
-          value={headline ? formatMoney(headline.pendingCents, headline.currency) : "—"}
+          value={headline ? formatMoney(headline.pendingCents, headline.currency) : "-"}
           note={`Inside the ${HOLD_DAYS}-day window.`}
         />
         <StatCard
           label="Paid out"
-          value={headline ? formatMoney(headline.paidCents, headline.currency) : "—"}
+          value={headline ? formatMoney(headline.paidCents, headline.currency) : "-"}
           note={`${payouts.length} payout${payouts.length === 1 ? "" : "s"} recorded.`}
         />
         <StatCard
           label="Lifetime"
-          value={headline ? formatMoney(headline.lifetimeCents, headline.currency) : "—"}
+          value={headline ? formatMoney(headline.lifetimeCents, headline.currency) : "-"}
           note={`${referralCount} store${referralCount === 1 ? "" : "s"} referred.`}
         />
       </div>
@@ -218,7 +218,7 @@ export default async function AdminPartnerPage({
                     </code>
                     {!code.active && <span className="ml-2 text-[13.5px] text-muted">retired</span>}
                   </RowHeader>
-                  <Td>{code.label ?? <span className="text-muted">—</span>}</Td>
+                  <Td>{code.label ?? <span className="text-muted">-</span>}</Td>
                   <Td>{formatDate(code.createdAt)}</Td>
                   <Td numeric>{code.referralCount}</Td>
                 </Row>
@@ -341,7 +341,7 @@ export default async function AdminPartnerPage({
                   <Td>
                     <span className="capitalize">{payout.method}</span>
                   </Td>
-                  <Td>{payout.reference ?? <span className="text-muted">—</span>}</Td>
+                  <Td>{payout.reference ?? <span className="text-muted">-</span>}</Td>
                   <Td numeric>{payout.commissionCount}</Td>
                   <Td numeric>{formatMoney(payout.amountCents, payout.currency)}</Td>
                 </Row>

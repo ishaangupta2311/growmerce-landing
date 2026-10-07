@@ -34,7 +34,7 @@ export default function AffiliateError({
         We could not load your dashboard.
       </h1>
       <p className="mt-4 text-[16px] leading-relaxed text-body-mute">
-        Nothing has been lost — your referrals and your balance are safe. This is
+        Nothing has been lost. Your referrals and your balance are safe. This is
         us failing to read them, and it is usually over in a moment.
       </p>
 

@@ -46,7 +46,7 @@ export default function Hero() {
             className="hero-enter mt-7 max-w-[46ch] text-[17px] leading-relaxed text-[var(--ink-70)] sm:text-lg"
             style={{ animationDelay: "160ms" }}
           >
-            AI is becoming table stakes for ecommerce — but most operators
+            AI is becoming table stakes for ecommerce, but most operators
             have no AI team, and most tools on offer are narrow gadgets or
             heavy platforms. Growmerce builds practical tools that install
             into the store you already run.
@@ -94,7 +94,7 @@ export default function Hero() {
         >
           <Image
             src="/img/hero-shopper.jpg"
-            alt="A shopper on a city street at dusk — the person every search result is for."
+            alt="A shopper on a city street at dusk, the person every search result is for."
             fill
             sizes="(min-width: 1024px) 400px, 100vw"
             className={`${styles.plateImage} object-cover`}
@@ -103,7 +103,7 @@ export default function Hero() {
           <div className={styles.plateTint} aria-hidden />
           <div className={styles.plateScrim} aria-hidden />
           <p className="absolute bottom-4 left-4 right-4 text-[11px] font-semibold tracking-[0.14em] text-[var(--paper)]/90 uppercase">
-            Fig. 0 — Behind every search, a shopper.
+            Fig. 0: Behind every search, a shopper.
           </p>
         </div>
       </div>

@@ -67,7 +67,7 @@ export default function TryForm() {
       if (data.error === "rate_limited") {
         setSending(false);
         setFormError(
-          "You've tried a few times — give it a minute and we'll pick this back up.",
+          "You've tried a few times. Give it a minute and we'll pick this back up.",
         );
         return;
       }
@@ -75,12 +75,12 @@ export default function TryForm() {
         setSending(false);
         if (data.error === "invalid_store") {
           setStoreError(
-            "We couldn't use that domain — check it and try again.",
+            "We couldn't use that domain. Check it and try again.",
           );
           storeRef.current?.focus();
         } else {
           setEmailError(
-            "That address looks incomplete — check it and try again.",
+            "That address looks incomplete. Check it and try again.",
           );
           emailRef.current?.focus();
         }
@@ -110,12 +110,12 @@ export default function TryForm() {
 
     setStoreError(
       badStore
-        ? "That doesn't look like a domain — try something like yourstore.com."
+        ? "That doesn't look like a domain. Try something like yourstore.com."
         : null,
     );
     setEmailError(
       badEmail
-        ? "That address looks incomplete — check it and try again."
+        ? "That address looks incomplete. Check it and try again."
         : null,
     );
 
@@ -190,7 +190,7 @@ export default function TryForm() {
                 </span>
               </>
             ) : (
-              "Paste the whole URL if that's easier — we'll trim it."
+              "Paste the whole URL if that's easier; we'll trim it."
             )}
           </p>
         )}
@@ -241,7 +241,7 @@ export default function TryForm() {
             className="mt-2 text-[13.5px] leading-relaxed text-muted"
           >
             The preview opens right here. We&apos;ll use your address to follow
-            up about Growmerce &mdash; see our{" "}
+            up about Growmerce. See our{" "}
             <Link
               href="/privacy"
               className="underline underline-offset-2 hover:text-brand"
@@ -280,7 +280,7 @@ export default function TryForm() {
           </p>
         ) : (
           <p className="text-[12.5px] leading-relaxed text-muted">
-            No card, no install, and we never touch your storefront &mdash; we
+            No card, no install, and we never touch your storefront. We
             only read the public page.
           </p>
         )}

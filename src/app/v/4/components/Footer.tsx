@@ -9,8 +9,8 @@ const COLUMNS = [
     heading: "The shops",
     links: [
       { label: "Growsearch", href: "#high-street" },
-      { label: "Unit 02 — opening soon", href: "#high-street" },
-      { label: "Unit 03 — opening soon", href: "#high-street" },
+      { label: "Unit 02: opening soon", href: "#high-street" },
+      { label: "Unit 03: opening soon", href: "#high-street" },
     ],
   },
   {

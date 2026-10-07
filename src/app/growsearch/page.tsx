@@ -12,7 +12,7 @@ import PricingPlans from "@/components/site/PricingPlans";
 import { GROWSEARCH_FAQ } from "@/lib/faqs";
 
 export const metadata: Metadata = {
-  title: "Growsearch — Storefront search that never dead-ends",
+  title: "Growsearch: Storefront search that never dead-ends",
   description:
     "Growsearch understands what shoppers mean, recovers zero-result searches, and shows you exactly which searches turn into checkouts.",
   alternates: { canonical: GROWSEARCH_HOME },

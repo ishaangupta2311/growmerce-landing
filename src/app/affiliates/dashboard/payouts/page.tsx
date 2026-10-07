@@ -125,7 +125,7 @@ export default async function PayoutsPage() {
                         {payout.reference}
                       </code>
                     ) : (
-                      <span className="text-muted">—</span>
+                      <span className="text-muted">-</span>
                     )}
                   </Td>
                   <Td>
@@ -167,8 +167,7 @@ export default async function PayoutsPage() {
           Anything unclear or missing?{" "}
           <Link href="/help" className="font-bold text-brand underline">
             Ask us
-          </Link>{" "}
-          — we would rather explain it than have you guess.
+          </Link>. We would rather explain it than have you guess.
         </p>
       </section>
     </div>

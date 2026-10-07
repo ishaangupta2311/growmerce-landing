@@ -14,7 +14,7 @@ import StorefrontReveal from "./components/StorefrontReveal";
 export const metadata: Metadata = {
   title: "Solutions",
   description:
-    "Native storefront search matches strings, not intent. Growsearch turns failed searches into sales — same catalog, same traffic, different outcome.",
+    "Native storefront search matches strings, not intent. Growsearch turns failed searches into sales: same catalog, same traffic, different outcome.",
 };
 
 /* Figma leaves the "leak" panel empty; these are the four leaks it frames. */
@@ -43,8 +43,8 @@ const LEAKS = [
 
 const COMPARE = [
   {
-    without: "Matches strings — “kava drinks” returns nothing",
-    with: "Reads intent — offers the nearest real shelf instead",
+    without: "Matches strings: “kava drinks” returns nothing",
+    with: "Reads intent: offers the nearest real shelf instead",
   },
   {
     without: "Shopper has to learn your filter menus",
@@ -88,7 +88,7 @@ export default function SolutionsPage() {
                 style={{ animationDelay: "170ms" }}
               >
                 Native Shopify search matches strings, not intent. Every query it
-                fails is a shopper who was ready to buy &mdash; and left without
+                fails is a shopper who was ready to buy and left without
                 telling you.
               </p>
               <CtaPair
@@ -232,7 +232,7 @@ export default function SolutionsPage() {
                 better than unassisted ones at Kendra Scott (iAdvize); early
                 access to Bloomreach&rsquo;s Loomi averaged +9% CVR and +20% AOV.
                 These are published category benchmarks from other vendors, not
-                Growmerce results &mdash; we would rather you measured us against
+                Growmerce results. We would rather you measured us against
                 your own store.
               </p>
             </div>

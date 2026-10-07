@@ -6,7 +6,7 @@ const STEPS = [
   {
     n: "01",
     title: "Install",
-    body: "Add Growsearch from the Shopify App Store in a couple of clicks — no developer or replatform required.",
+    body: "Add Growsearch from the Shopify App Store in a couple of clicks, no developer or replatform required.",
   },
   {
     n: "02",

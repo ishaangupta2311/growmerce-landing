@@ -18,14 +18,14 @@ const ITEMS = [
   {
     title: "Intent, not keywords",
     body:
-      "Shoppers type sentences, not search terms — \"something warm for a rainy commute\" or \"linen shirt but not white.\" Growsearch reads the price, the attribute, and the intent straight out of that sentence. There are no filter menus to dig through, and your customer never has to learn how to talk to your store.",
+      "Shoppers type sentences, not search terms, such as \"something warm for a rainy commute\" or \"linen shirt but not white.\" Growsearch reads the price, the attribute, and the intent straight out of that sentence. There are no filter menus to dig through, and your customer never has to learn how to talk to your store.",
     media: "/img/pages/ai-not-a-chatbot.svg",
     alt: "A shopper's natural-language intent being understood by the search experience",
   },
   {
     title: "Grounded in your data, or it doesn\u2019t ship",
     body:
-      "Every answer we return is tied to something you actually have in your catalog — real SKUs, real stock, real prices, synced from Shopify as they change. If the model can't point to an actual record, it can't say it. We would rather return nothing than return something invented.",
+      "Every answer we return is tied to something you actually have in your catalog: real SKUs, real stock, real prices, synced from Shopify as they change. If the model can't point to an actual record, it can't say it. We would rather return nothing than return something invented.",
     media: "/img/pages/ai-grounded.svg",
     alt: "Product data feeding into one grounded search answer",
   },
@@ -46,7 +46,7 @@ const ITEMS = [
   {
     title: "Judged on revenue, not on vibes",
     body:
-      "Every AI decision we make reports on itself in the open — what it was asked, what it returned, and whether that ended in a checkout. We track search-attributed revenue, add-to-cart rate, and zero-result rate so you can judge the AI on revenue, not on a demo.",
+      "Every AI decision we make reports on itself in the open: what it was asked, what it returned, and whether that ended in a checkout. We track search-attributed revenue, add-to-cart rate, and zero-result rate so you can judge the AI on revenue, not on a demo.",
     media: "/img/pages/ai-measured.svg",
     alt: "A search journey measured from query to checkout",
   },
@@ -89,7 +89,7 @@ export default function AiSection() {
           <h2 className="section-title mt-4">AI at Growmerce</h2>
           <p className="section-lede mt-4 max-w-[46ch]">
             Every tool we ship runs on the same few convictions about where AI
-            belongs in a store &mdash; and where it doesn&rsquo;t.
+            belongs in a store, and where it doesn&rsquo;t.
           </p>
 
           <ul className="mt-8">

@@ -11,14 +11,14 @@ const VARIANTS = [
     href: "/v/4",
     name: "04 · Night Market",
     blurb:
-      "The high street after dark — a row of AI tools as neon-lit shops, string lights overhead, and only Growsearch's open.",
+      "The high street after dark, a row of AI tools as neon-lit shops, string lights overhead, and only Growsearch's open.",
   },
 ];
 
 export default function VariantHub() {
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center gap-6 px-6 py-20">
-      <h1 className="text-4xl font-bold">Growmerce — design variants</h1>
+      <h1 className="text-4xl font-bold">Growmerce: design variants</h1>
       <p className="text-body-mute">
         Two directions built on the same brand and Growsearch story. The
         current production page stays at <Link href="/" className="text-brand underline">/</Link>.

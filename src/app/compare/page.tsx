@@ -15,7 +15,7 @@ import ScrambleHeadline from "./components/ScrambleHeadline";
 export const metadata: Metadata = {
   title: "Growmerce vs the alternatives",
   description:
-    "Traditional search, recommendation apps and general AI plugins each solve a piece of it. Compare the capabilities that actually shape the ecommerce experience — and see the same search run through both.",
+    "Traditional search, recommendation apps and general AI plugins each solve a piece of it. Compare the capabilities that actually shape the ecommerce experience, and see the same search run through both.",
 };
 
 const JOURNEY = [

@@ -26,12 +26,12 @@ const FACTS = [
   {
     name: "Never zero results",
     dv: "100%",
-    body: "“0 results for kava drinks” becomes “we don’t have kava drinks — but you might like these Kratom Seltzers”. Typos fixed, intent understood, a real shelf offered instead of an apology.",
+    body: "“0 results for kava drinks” becomes “we don’t have kava drinks, but you might like these Kratom Seltzers”. Typos fixed, intent understood, a real shelf offered instead of an apology.",
   },
   {
     name: "Plain-language queries",
     dv: "100%",
-    body: "“skincare under $10”, “warm but not bulky”, “gift, arrives friday”. Price, attribute and intent are read straight out of the sentence — no filter archaeology.",
+    body: "“skincare under $10”, “warm but not bulky”, “gift, arrives friday”. Price, attribute and intent are read straight out of the sentence. No filter archaeology.",
   },
   {
     name: "Add to cart from results",
@@ -154,7 +154,7 @@ export default function StorefrontReveal() {
                 Unit 01 is open.
               </h2>
               <p className="mt-1 text-[15px] text-body-mute">
-                Growsearch &mdash; live now on Shopify.
+                Growsearch: live now on Shopify.
               </p>
             </div>
 
@@ -222,7 +222,7 @@ export default function StorefrontReveal() {
                               Growsearch
                             </h3>
                             <p className="mt-2 text-[13px] leading-snug font-semibold text-body-mute">
-                              Storefront search that never dead-ends &mdash; and
+                              Storefront search that never dead-ends, and
                               analytics that prove what search sells.
                             </p>
 
