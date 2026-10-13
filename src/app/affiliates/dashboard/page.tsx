@@ -8,6 +8,7 @@ import { codesFor, dashboardSummary } from "@/lib/affiliate/store";
 import type { DashboardSummary } from "@/lib/affiliate/types";
 import CopyCode from "@/components/affiliate/CopyCode";
 import Empty from "@/components/affiliate/Empty";
+import OnboardingVideo from "@/components/affiliate/OnboardingVideo";
 import Panel from "@/components/affiliate/Panel";
 import StatCard from "@/components/affiliate/StatCard";
 import { Body, Head, Row, RowHeader, Table, Td, Th } from "@/components/affiliate/Table";
@@ -77,6 +78,18 @@ export default async function OverviewPage() {
           )}
         </div>
       </section>
+
+      <Panel title="How to onboard a client">
+        <OnboardingVideo />
+        <p className="mt-4 max-w-[70ch] text-[14.5px] leading-relaxed text-body-mute">
+          A minute and a half, no sound: from copying your code to the first
+          search on your client&apos;s store. Stuck on a step? Write to{" "}
+          <a href="mailto:admin@growmerce.ai" className="font-bold text-brand underline">
+            admin@growmerce.ai
+          </a>
+          .
+        </p>
+      </Panel>
 
       <section>
         <h2 className="sr-only">Earnings</h2>

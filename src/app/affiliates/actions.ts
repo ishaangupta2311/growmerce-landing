@@ -3,11 +3,19 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 
 import { isAdminEmail, landingFor } from "@/lib/admin/session";
-import { createPartner, updatePartnerProfile, updatePayoutPreferences } from "@/lib/affiliate/store";
+import {
+  codesFor,
+  createPartner,
+  updatePartnerProfile,
+  updatePayoutPreferences,
+} from "@/lib/affiliate/store";
 import { requirePartner } from "@/lib/affiliate/session";
-import type { PartnerKind, PayoutMethod } from "@/lib/affiliate/types";
+import type { Partner, PartnerKind, PayoutMethod } from "@/lib/affiliate/types";
+import { sendEmail } from "@/lib/email/resend";
+import { renderWelcomeEmail } from "@/lib/email/welcome-email";
 import { safeNext } from "@/lib/supabase/safe-next";
 import { supabaseServer, currentUser } from "@/lib/supabase/server";
 
@@ -196,8 +204,9 @@ export async function completeApplication(_state: FormState, form: FormData): Pr
     return { error: "Choose whether you are joining as an agency or a creator." };
   }
 
+  let partner: Partner;
   try {
-    await createPartner({
+    partner = await createPartner({
       userId: user.id,
       kind,
       name,
@@ -218,6 +227,28 @@ export async function completeApplication(_state: FormState, form: FormData): Pr
     console.error(`[affiliate] could not create partner — ${why.slice(0, 200)}`);
     return { error: "We could not set your account up just now. Please try again in a moment." };
   }
+
+  /* The tutorial, by email. After the response, because the account exists
+     whether or not this goes and nobody should wait on Resend to see their
+     dashboard; and never fatal, for the same reason. Keyed on the partner so a
+     replayed request cannot send it twice. The origin is read now: the request
+     is what it comes from. */
+  const site = await origin();
+  after(async () => {
+    const codes = await codesFor(partner.id).catch(() => []);
+    const sent = await sendEmail({
+      to: partner.email,
+      ...renderWelcomeEmail({
+        origin: site,
+        name: partner.name,
+        kind: partner.kind,
+        code: (codes.find((code) => code.active) ?? codes[0])?.code ?? null,
+      }),
+      idempotencyKey: `affiliate-welcome/${partner.id}`,
+    });
+    if (sent.ok) console.info(`[affiliate] sent welcome email — ${sent.id ?? "no id"}`);
+    else console.error(`[affiliate] welcome email not sent — ${sent.reason}: ${sent.detail}`);
+  });
 
   redirect("/affiliates/dashboard");
 }

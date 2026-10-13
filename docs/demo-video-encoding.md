@@ -213,3 +213,24 @@ scale to the well width and centre-crop to the well height:
 
     ffmpeg -ss <t> -i <clip>.mp4 -frames:v 1 \
       -vf "scale=492:-1,crop=492:673" /tmp/frame.png
+
+## The affiliate onboarding tutorial
+
+`public/video/affiliate-onboarding.*`, played by
+`src/components/affiliate/OnboardingVideo.tsx` on the partner dashboard, is a
+different surface and was encoded by hand rather than with the script:
+
+| | |
+|---|---|
+| Resolution | 1920 wide. The player is ~1075 CSS px on desktop and goes full screen. |
+| Frame rate | 30 |
+| CRF | AV1 44, H.264 26. Lower than the reel clips: the small UI text has to stay readable full screen. |
+| GOP | 150 frames (5s). It has controls and is scrubbed, so keyframes earn their keep here. |
+| AV1 preset | 8. Preset 4 at 1080p ran past half an hour on the iMac. |
+| Result | 96s: AV1 3.4 MB, H.264 5.2 MB, from a 16 MB master |
+
+The AV1 comes out at level 4.0, the same `av01.0.08M.08` the reel clips
+declare. The poster is the title card at 1.6s. `preload="none"`, so a partner
+who never presses play downloads only the poster.
+
+The master and its source live in `artifacts/growsearch-video/tutorial/`.

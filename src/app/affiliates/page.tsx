@@ -4,6 +4,8 @@ import Link from "next/link";
 import { DEFAULT_RATE_BPS, formatRate, HOLD_DAYS } from "@/lib/affiliate/commission";
 import { optionalAdmin } from "@/lib/admin/session";
 import { optionalPartner } from "@/lib/affiliate/session";
+import OnboardingVideo from "@/components/affiliate/OnboardingVideo";
+import { TUTORIAL_ANCHOR } from "@/lib/email/welcome-email";
 
 export const metadata: Metadata = {
   title: "Affiliate program",
@@ -127,6 +129,17 @@ export default async function AffiliateProgramPage() {
             </li>
           ))}
         </ol>
+
+        <h3 id={TUTORIAL_ANCHOR} className="mt-12 scroll-mt-8 font-poppins text-[19px] font-bold">
+          Watch a client being set up
+        </h3>
+        <p className="mt-2 max-w-[62ch] text-[15px] leading-relaxed text-body-mute">
+          The whole thing in a minute and a half, no sound: from copying your
+          code to the first search on your client&apos;s store.
+        </p>
+        <div className="mt-6">
+          <OnboardingVideo />
+        </div>
       </section>
 
       <section className="mt-16 rounded-[16px] border border-line bg-cream p-7 sm:p-9">
