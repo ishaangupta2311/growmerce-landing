@@ -96,6 +96,9 @@ const nextConfig: NextConfig = {
       ...Object.entries(ALIASES).flatMap(([destination, sources]) =>
         sources.map((source) => ({ source, destination, permanent: false })),
       ),
+      /* Growsearch lives on its own host. Its two files below are only ever
+         meant to be reached through the rewrites, and answering for them on the
+         main site would put a second sitemap and robots.txt in front of it. */
       ...["growmerce.ai", "www.growmerce.ai"].flatMap((host) => [
         {
           source: "/growsearch",
@@ -107,6 +110,18 @@ const nextConfig: NextConfig = {
           source: "/growsearch/features",
           has: [{ type: "host" as const, value: host }],
           destination: GROWSEARCH_FEATURES,
+          permanent: true,
+        },
+        {
+          source: "/growsearch/sitemap.xml",
+          has: [{ type: "host" as const, value: host }],
+          destination: `${GROWSEARCH_HOME}sitemap.xml`,
+          permanent: true,
+        },
+        {
+          source: "/growsearch/robots.txt",
+          has: [{ type: "host" as const, value: host }],
+          destination: `${GROWSEARCH_HOME}robots.txt`,
           permanent: true,
         },
       ]),
@@ -124,6 +139,18 @@ const nextConfig: NextConfig = {
           source: "/features",
           has: [{ type: "host", value: "search.growmerce.ai" }],
           destination: "/growsearch/features",
+        },
+        /* This host's own sitemap and robots.txt. The root ones belong to the
+           main site and name its pages. */
+        {
+          source: "/sitemap.xml",
+          has: [{ type: "host", value: "search.growmerce.ai" }],
+          destination: "/growsearch/sitemap.xml",
+        },
+        {
+          source: "/robots.txt",
+          has: [{ type: "host", value: "search.growmerce.ai" }],
+          destination: "/growsearch/robots.txt",
         },
       ],
       afterFiles: [],
