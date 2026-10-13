@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   title: "Solutions",
   description:
     "Native storefront search matches strings, not intent. Growsearch turns failed searches into sales: same catalog, same traffic, different outcome.",
+  alternates: { canonical: "/solutions" },
 };
 
 /* Figma leaves the "leak" panel empty; these are the four leaks it frames. */

@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Terms & Conditions",
   description:
     "The terms you agree to when you install and use Growsearch, including plans, billing, the free trial, acceptable use and cancellation.",
+  alternates: { canonical: "/terms" },
 };
 
 const CONTACT = "admin@growmerce.ai";

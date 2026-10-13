@@ -28,6 +28,7 @@ export const metadata: Metadata = {
   title: "Is Growmerce a fit for me?",
   description:
     "Growmerce is built for stores where search is a real lever: a growing catalogue, shoppers who use the search bar, no appetite for a six-week install. Here's where it fits, and where it doesn't.",
+  alternates: { canonical: "/fit" },
 };
 
 const NOT_A_FIT = [

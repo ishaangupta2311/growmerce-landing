@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: "Try it free",
   description:
     "Give us your store's domain and we'll draw Growsearch on your own storefront, your colours, your products, in about twenty seconds. No install, no card.",
+  alternates: { canonical: "/try" },
 };
 
 /* These describe what the job actually does, and they have to keep doing so.

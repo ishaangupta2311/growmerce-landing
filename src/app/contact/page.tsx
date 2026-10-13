@@ -7,6 +7,7 @@ import ContactForm from "./components/ContactForm";
 export const metadata: Metadata = {
   title: "Contact us",
   description: "Talk to Growmerce about Growsearch, your store, support, or a partnership.",
+  alternates: { canonical: "/contact" },
 };
 
 export default function ContactPage() {

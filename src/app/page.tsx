@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Navbar from "@/components/site/Navbar";
 import Hero from "@/components/site/Hero";
 import HomeIntro from "@/components/site/HomeIntro";
@@ -13,6 +14,16 @@ import Faq from "@/components/site/Faq";
 import HomeFinalCta from "@/components/site/HomeFinalCta";
 import { HOME_FAQ } from "@/lib/faqs";
 import Footer from "@/components/site/Footer";
+
+/* The title and description come from the root layout. The canonical is set
+   here, page by page, and never in a layout: one set at the root would be
+   inherited by every page that does not override it. Resolved against
+   metadataBase, so it is the www address on search.growmerce.ai too, which is
+   what marks the copy served there as a duplicate. "/" renders without the
+   trailing slash, the same address the sitemap lists. */
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default function Home() {
   return (
