@@ -6,6 +6,42 @@ const ACCEPTED = new Set(MEDIA_ACCEPT.split(","));
 export type UploadReport = { uploaded: MediaItem[]; errors: string[] };
 
 /**
+ * The images on a clipboard or a drag, in order.
+ *
+ * A copied image arrives as a file even when it has no name — a screenshot
+ * pasted straight from the system clipboard is `image/png` with an empty
+ * name — so the name is only used for the stored filename, never to decide
+ * whether this is an image.
+ */
+export function imageFilesFrom(data: DataTransfer | null | undefined): File[] {
+  if (!data) return [];
+  const files = Array.from(data.files ?? []).filter((file) => file.type.startsWith("image/"));
+  if (files.length > 0) return files;
+
+  /* Safari and some apps expose the image through `items` only. */
+  return Array.from(data.items ?? [])
+    .filter((item) => item.kind === "file" && item.type.startsWith("image/"))
+    .map((item) => item.getAsFile())
+    .filter((file): file is File => file !== null);
+}
+
+/**
+ * A `data:` image URL as a File, so it can go through the same upload as any
+ * other image. Pasting from Word, Google Docs or a mail client often embeds
+ * images this way rather than attaching them to the clipboard as files.
+ */
+export async function dataUriToFile(uri: string, name: string): Promise<File | null> {
+  try {
+    const blob = await (await fetch(uri)).blob();
+    if (!blob.type.startsWith("image/")) return null;
+    const extension = blob.type.split("/")[1]?.split("+")[0] ?? "png";
+    return new File([blob], `${name}.${extension}`, { type: blob.type });
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Uploads files one request at a time. Sequential on purpose: each request
  * stays under the platform's body limit, and one bad file costs only itself.
  * The size and type checks here are for a fast answer — the server decodes

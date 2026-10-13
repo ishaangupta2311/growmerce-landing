@@ -6,7 +6,7 @@ import Image from "@tiptap/extension-image";
 import { TableKit } from "@tiptap/extension-table";
 import TextAlign from "@tiptap/extension-text-align";
 import { Placeholder } from "@tiptap/extensions";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   AlignCenter,
   AlignJustify,
@@ -22,6 +22,7 @@ import {
   Link2,
   List,
   ListOrdered,
+  LoaderCircle,
   Minus,
   Quote,
   Redo2,
@@ -34,7 +35,8 @@ import {
 } from "lucide-react";
 import { clsx } from "@/lib/clsx";
 import MediaPicker from "./MediaPicker";
-import { Modal } from "./overlay";
+import { dataUriToFile, imageFilesFrom, uploadFiles, type UploadReport } from "./media-upload";
+import { Modal, useToast } from "./overlay";
 import { Button, Field, Input } from "./ui";
 
 /**
@@ -49,14 +51,108 @@ export default function RichTextEditor({
   initialHtml,
   onChange,
   invalid,
+  /* Injectable so the paste and drop paths can be exercised without a real
+     upload; production always uses the media library. */
+  uploadImages = uploadFiles,
 }: {
   initialHtml: string;
   onChange: (html: string) => void;
   invalid?: boolean;
+  uploadImages?: (files: File[]) => Promise<UploadReport>;
 }) {
+  const notify = useToast();
   const [picking, setPicking] = useState(false);
   const [linkDialog, setLinkDialog] = useState<{ href: string; newTab: boolean } | null>(null);
   const [source, setSource] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(0);
+
+  /* The handlers below are installed on the editor once, so they must not
+     close over a stale `editor`; this ref is how they reach the live one. */
+  const editorRef = useRef<Editor | null>(null);
+
+  /**
+   * Uploads dropped or pasted images and puts them in the document.
+   *
+   * Images never go into the post as `data:` URLs: those bloat the row, are
+   * stripped by the sanitiser on save, and would be lost silently. Everything
+   * lands in the media library and the post gets a /uploads/ URL, exactly as
+   * if it had been chosen through the picker.
+   */
+  async function insertImages(files: File[], at?: number) {
+    setUploading((count) => count + files.length);
+    try {
+      const report = await uploadImages(files);
+      report.errors.forEach((message) => notify(message, "error"));
+
+      const current = editorRef.current;
+      if (!current || report.uploaded.length === 0) return;
+
+      const chain = current.chain().focus();
+      /* A drop lands where it was dropped; a paste at the cursor. The
+         position is clamped because the document may have changed while the
+         upload was in flight. */
+      if (at !== undefined) chain.setTextSelection(Math.min(at, current.state.doc.content.size));
+      chain
+        .insertContent(
+          report.uploaded.map((item) => ({
+            type: "image",
+            attrs: { src: item.url, alt: item.altText ?? "", width: item.width, height: item.height },
+          })),
+        )
+        .run();
+    } finally {
+      setUploading((count) => Math.max(0, count - files.length));
+    }
+  }
+
+  /**
+   * Pasted HTML whose images are embedded as `data:` URLs — the usual shape
+   * when copying from Word, Google Docs or an email. Each one is uploaded and
+   * the markup rewritten to point at it, so the surrounding text keeps its
+   * formatting and the images keep their place in it.
+   */
+  async function insertHtmlWithEmbeddedImages(html: string) {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const embedded = [...doc.querySelectorAll("img")].filter((img) =>
+      (img.getAttribute("src") ?? "").startsWith("data:image/"),
+    );
+
+    setUploading((count) => count + embedded.length);
+    try {
+      const files: File[] = [];
+      const targets: HTMLImageElement[] = [];
+      for (const [index, img] of embedded.entries()) {
+        const file = await dataUriToFile(img.getAttribute("src")!, `pasted-image-${index + 1}`);
+        if (file) {
+          files.push(file);
+          targets.push(img);
+        } else {
+          img.remove();
+        }
+      }
+
+      const report = files.length > 0 ? await uploadImages(files) : { uploaded: [], errors: [] };
+      report.errors.forEach((message) => notify(message, "error"));
+
+      /* Any image that failed to upload is dropped rather than left pointing
+         at a data: URL the sanitiser would strip on save. */
+      targets.forEach((img, index) => {
+        const item = report.uploaded[index];
+        if (!item) {
+          img.remove();
+          return;
+        }
+        img.setAttribute("src", item.url);
+        img.removeAttribute("srcset");
+        img.setAttribute("width", String(item.width));
+        img.setAttribute("height", String(item.height));
+      });
+
+      editorRef.current?.chain().focus().insertContent(doc.body.innerHTML).run();
+    } finally {
+      setUploading((count) => Math.max(0, count - embedded.length));
+    }
+  }
 
   const editor = useEditor({
     /* Server rendering an editor is meaningless; rendering it only on the
@@ -86,9 +182,42 @@ export default function RichTextEditor({
         role: "textbox",
         "aria-multiline": "true",
       },
+      /* Returning false leaves ProseMirror's own handling alone, which is what
+         every paste that is not an image wants. */
+      handlePaste: (view, event) => {
+        const files = imageFilesFrom(event.clipboardData);
+        if (files.length > 0) {
+          event.preventDefault();
+          void insertImages(files);
+          return true;
+        }
+        const html = event.clipboardData?.getData("text/html") ?? "";
+        if (/<img[^>]+src=["']data:image\//i.test(html)) {
+          event.preventDefault();
+          void insertHtmlWithEmbeddedImages(html);
+          return true;
+        }
+        return false;
+      },
+      handleDrop: (view, event, _slice, moved) => {
+        /* `moved` is content being dragged within the document — that is
+           ProseMirror's to handle, not an upload. */
+        if (moved) return false;
+        const files = imageFilesFrom(event.dataTransfer);
+        if (files.length === 0) return false;
+        event.preventDefault();
+        void insertImages(files, view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos);
+        return true;
+      },
     },
     onUpdate: ({ editor: current }) => onChange(current.getHTML()),
   });
+
+  /* `editorProps` is captured once, when the editor is still null, so the
+     handlers reach the live instance through this ref instead. */
+  useEffect(() => {
+    editorRef.current = editor;
+  }, [editor]);
 
   function openLinkDialog() {
     if (!editor) return;
@@ -142,6 +271,13 @@ export default function RichTextEditor({
         />
       ) : (
         <div className="h-[45px] border-b border-zinc-100 bg-zinc-50/80" />
+      )}
+
+      {uploading > 0 && (
+        <p className="flex items-center gap-2 border-b border-zinc-100 bg-brand/5 px-4 py-1.5 text-xs font-semibold text-brand">
+          <LoaderCircle aria-hidden className="size-3.5 animate-spin" />
+          Uploading {uploading} image{uploading === 1 ? "" : "s"}…
+        </p>
       )}
 
       {source !== null ? (
