@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { Sql } from "postgres";
-import { db, tryDb, tryDbOrThrowWhenServing } from "@/lib/db";
+import { db, tryDbOrThrowWhenServing } from "@/lib/db";
 import { htmlToText, sanitizeContent } from "./sanitize";
 import type { ArticleCard, ArticleData, TwitterCard } from "./types";
 
@@ -14,13 +14,19 @@ import type { ArticleCard, ArticleData, TwitterCard } from "./types";
  * goes live on time without a cron job — the next render after its moment
  * includes it, and the pages revalidate every minute.
  *
- * The listing follows the site's database rule (src/lib/db.ts): a failure
- * renders as "no posts" rather than an error, so a sleeping database can
- * never take the build or the site down. A single article and the sitemap
- * throw instead, because ISR keeps serving the last good copy when a
- * regeneration throws — better than caching a false 404, or a sitemap with no
- * posts in it. (The sitemap still falls back during `next build`, which has
- * no earlier copy to keep.)
+ * Every read here is cached by ISR (the blog pages, /about, the sitemap), so
+ * none of them uses `tryDb`'s "a failure is an empty result" fallback: the
+ * empty result would be a successful render, and Next would store it as the
+ * page — "no posts yet", a false 404 past the end of the listing, a sitemap
+ * with nothing in it — until the next regeneration. They throw instead, and
+ * ISR keeps serving the last good copy and retries. See
+ * `tryDbOrThrowWhenServing` in src/lib/db.ts, which still falls back during
+ * `next build`, so a sleeping database cannot fail a deploy.
+ *
+ * The cost is on a page's first render, where there is no earlier copy to
+ * keep: the visitor gets an error response, which Next does not cache. Only
+ * /blog/page/N and /blog/[slug] are rendered that way (no `generateStaticParams`
+ * entries); /blog and /about are prerendered, so they always have a copy.
  */
 
 export const BLOG_PAGE_SIZE = 9;
@@ -70,7 +76,7 @@ const cardColumns = (sql: Sql) => sql`
 
 export async function listLivePosts(page: number) {
   const empty = { items: [] as ArticleCard[], total: 0, page: 1, pageCount: 1 };
-  return tryDb(
+  return tryDbOrThrowWhenServing(
     "blog list",
     async (sql) => {
       /* Rows and total in one trip via a window count. */
@@ -98,7 +104,7 @@ export async function listLivePosts(page: number) {
 
 /* The newest few, for pages outside the blog that show what it has lately. */
 export async function latestPosts(limit = 3): Promise<ArticleCard[]> {
-  return tryDb(
+  return tryDbOrThrowWhenServing(
     "blog latest",
     async (sql) => {
       const rows = await sql<CardRow[]>`
@@ -117,7 +123,7 @@ export async function latestPosts(limit = 3): Promise<ArticleCard[]> {
 }
 
 export async function relatedPosts(postId: string, categoryId: string | null, limit = 3): Promise<ArticleCard[]> {
-  return tryDb(
+  return tryDbOrThrowWhenServing(
     "blog related",
     async (sql) => {
       const rows = await sql<CardRow[]>`
