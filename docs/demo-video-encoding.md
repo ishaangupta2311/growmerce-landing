@@ -234,3 +234,20 @@ declare. The poster is the title card at 1.6s. `preload="none"`, so a partner
 who never presses play downloads only the poster.
 
 The master and its source live in `artifacts/growsearch-video/tutorial/`.
+
+## The Growsearch overview
+
+`public/video/growsearch-overview.*` and `growsearch-overview-portrait.*`,
+played by `src/app/growsearch/components/OverviewVideo.tsx` under the hero on
+`/growsearch`. Two cuts of the same 30s film: 1920x1080 for desktops and
+1080x1920 for phones, switched in CSS below 640px. Same settings as the
+tutorial above (30 fps, AV1 CRF 44 preset 8, H.264 CRF 26, GOP 150), and both
+AV1 files are level 4.0.
+
+| | AV1 | H.264 |
+|---|---|---|
+| Wide | 2.0 MB | 3.6 MB |
+| Tall | 1.9 MB | 3.2 MB |
+
+Both posters are the frame at 5.8s. The masters are
+`artifacts/growsearch-video/growsearch.mp4` and `growsearch-portrait.mp4`.

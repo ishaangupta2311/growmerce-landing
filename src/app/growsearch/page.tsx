@@ -3,6 +3,7 @@ import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import Faq from "@/components/site/Faq";
 import SearchHero from "./components/SearchHero";
+import OverviewVideo from "./components/OverviewVideo";
 import { GROWSEARCH_HOME } from "@/lib/site-urls";
 import WhyGrowsearch from "./components/WhyGrowsearch";
 import LayerStack from "./components/LayerStack";
@@ -24,6 +25,7 @@ export default function GrowsearchPage() {
       <Navbar scope="growsearch" />
       <main className="font-bricolage">
         <SearchHero />
+        <OverviewVideo />
         <WhyGrowsearch />
         <LayerStack />
         <InstallSteps />

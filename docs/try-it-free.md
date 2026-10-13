@@ -134,7 +134,7 @@ Nothing in this pipeline may log the visitor's email.
     storefront when null) with the **Growsearch widget** over it;
   - a side card: "Your demo store is open in another tab" + the password +
     an "Open it again" button (same hidden-form trick) + "See plans"
-    → `PRICING_URL` (/pricing until the listing is live);
+    → `PRICING_URL` (the App Store listing, now that it is live);
   - a short line saying what was matched ("Colours matched from your live
     styles" / "…from your stylesheet" / "We used default colours").
   `robots: { index: false }`. Handles a missing/invalid token by sending the

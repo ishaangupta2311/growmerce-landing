@@ -11,7 +11,7 @@ billing; a merchant must not be able to arrange a plan with us directly.
 - "Get my custom plan" is now "See plans". The Terms no longer say enterprise
   volumes are "handled by arrangement", and /fit says "Talk to us" rather than
   "Talk to sales".
-- Each plan card has a Buy button (Buy Basic, Buy Plus, Buy Pro) that opens
+- Each plan card has a Buy button (Buy Beacon, Buy Compass, Buy Atlas — the plan names on the listing) that opens
   `PLAN_BUY_URL` in a new tab: the listing once live, the App Store searched
   for "growsearch" before that.
 - Every pricing link reads `PRICING_URL` in `src/lib/site-urls.ts`: /pricing

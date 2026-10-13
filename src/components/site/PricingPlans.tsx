@@ -13,10 +13,12 @@ type Plan = {
   featured?: boolean;
 };
 
+/* Names, prices and allowances as they are on the App Store listing, where the
+   Buy buttons land: a card must not be called something the listing isn't. */
 const PLANS: Plan[] = [
-  { name: "Basic", monthly: 49, yearly: 499, savePct: 15, searches: "Up to 5,000 searches per month" },
-  { name: "Plus", monthly: 99, yearly: 1099, savePct: 7, searches: "Up to 20,000 searches per month", featured: true },
-  { name: "Pro", monthly: 199, yearly: 2199, savePct: 8, searches: "Unlimited searches per month" },
+  { name: "Beacon", monthly: 49, yearly: 499, savePct: 15, searches: "Up to 5,000 searches per month" },
+  { name: "Compass", monthly: 99, yearly: 1099, savePct: 7, searches: "Up to 20,000 searches per month", featured: true },
+  { name: "Atlas", monthly: 199, yearly: 2199, savePct: 8, searches: "Unlimited searches per month" },
 ];
 
 /* Shared across every tier in Figma; only the search allowance differs. */
@@ -107,11 +109,12 @@ export default function PricingPlans() {
                   : `or $${plan.yearly.toLocaleString()}/ year and save ${plan.savePct}%`}
               </p>
 
-              {/* Three columns side by side make a comparison; three stacked
-                  in one column make the reader scroll 1300px of the same five
-                  lines to find the one that differs. So on a phone the card
-                  carries only what changes between tiers, and the five shared
-                  lines are printed once, under the three. */}
+              {/* Every card carries the whole list, on a phone too. Printing
+                  the five shared lines once under the three cards saved
+                  scrolling, but a card with one line on it reads as a plan
+                  that offers one thing: nobody goes looking further down for
+                  the rest. The allowance stays set apart at the top, since it
+                  is the line that differs. */}
               <p className="mt-6 hidden text-[clamp(1.0625rem,1.5vw,1.5rem)] font-semibold lg:block">
                 Features
               </p>
@@ -121,7 +124,7 @@ export default function PricingPlans() {
                   {plan.searches}
                 </li>
                 {SHARED.map((f) => (
-                  <li key={f} className="hidden gap-2.5 lg:flex">
+                  <li key={f} className="flex gap-2.5">
                     <Tick />
                     {f}
                   </li>
@@ -143,20 +146,6 @@ export default function PricingPlans() {
             </div>
           </article>
         ))}
-      </div>
-
-      <div className="mt-6 rounded-[20px] bg-cream px-6 py-6 lg:hidden">
-        <p className="font-poppins text-[11px] font-bold tracking-[0.16em] text-brand uppercase">
-          Every plan includes
-        </p>
-        <ul className="mt-3 space-y-2.5 text-[15px] font-medium text-charcoal">
-          {SHARED.map((f) => (
-            <li key={f} className="flex gap-2.5">
-              <Tick />
-              {f}
-            </li>
-          ))}
-        </ul>
       </div>
 
       <p className="mt-6 text-center text-[15px] text-muted">

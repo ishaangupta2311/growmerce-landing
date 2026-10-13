@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import Image from "next/image";
 import Reveal from "@/components/site/Reveal";
 import DemoShot from "@/components/site/DemoShot";
+import CapabilityPhones from "./CapabilityPhones";
 
 type Capability = {
   id: string;
@@ -106,13 +107,24 @@ export default function WhyGrowsearch() {
   }, [activeCapability.durationMs, activeIndex, isVisible, reducedMotion, timerReset]);
 
   /* The strip scrolls on a phone, and the rotation moves the selection on its
-     own — without this the active chip drifts out of sight. `block: "nearest"`
-     keeps it from scrolling the page vertically as well. */
+     own — without this the active chip drifts out of sight.
+
+     The strip is scrolled itself, never `scrollIntoView` on the chip. That
+     scrolls every ancestor that has to move, the page included: the rotation
+     starts while the section is still below the fold, so each turn dragged
+     the page down to the strip, out from under whatever was being read or
+     watched above it. `block: "nearest"` only declines to move a chip that is
+     already on screen. */
   useEffect(() => {
     const list = tablistRef.current;
     const tab = tabRefs.current[activeIndex];
     if (!list || !tab || list.scrollWidth <= list.clientWidth) return;
-    tab.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    const listBox = list.getBoundingClientRect();
+    const tabBox = tab.getBoundingClientRect();
+    list.scrollTo({
+      left: list.scrollLeft + tabBox.left - listBox.left - (listBox.width - tabBox.width) / 2,
+      behavior: "smooth",
+    });
   }, [activeIndex]);
 
   const selectCapability = (index: number) => {
@@ -162,14 +174,16 @@ export default function WhyGrowsearch() {
           <p className="mt-4 text-center text-[clamp(1.25rem,2vw,1.75rem)] font-semibold text-charcoal">
             Search that understands shoppers. Insights that grow revenue.
           </p>
-          <p className="mx-auto mt-3 max-w-[70ch] text-center text-[17px] leading-relaxed text-body-mute">
+          {/* Not on a phone: the line above already says it, and the four
+              capabilities this sentence lists are the four tabs under it. */}
+          <p className="mx-auto mt-3 max-w-[70ch] text-center text-[17px] leading-relaxed text-body-mute max-sm:hidden">
             Growsearch uses AI to understand intent, recover lost searches,
             guide shoppers through conversations, and show merchants exactly
             how search drives sales.
           </p>
         </Reveal>
 
-        <Reveal className="mt-12">
+        <Reveal className="mt-8 sm:mt-12">
           <div>
             {/* Below sm these are a scrolling strip, not a grid. Four cards
                 deep enough to hold their body copy stack to about 640px on a
@@ -240,8 +254,12 @@ export default function WhyGrowsearch() {
               role="tabpanel"
               aria-labelledby={tabId(activeCapability.id)}
               tabIndex={0}
-              className="mx-auto mt-5 max-w-[880px] rounded-[26px] bg-white p-3 sm:mt-10 shadow-[0_30px_80px_-50px_rgba(23,23,23,0.6)] outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:p-4"
+              className="mx-auto mt-7 max-w-[880px] outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:mt-10 sm:rounded-[26px] sm:bg-white sm:p-4 sm:shadow-[0_30px_80px_-50px_rgba(23,23,23,0.6)]"
             >
+              <CapabilityPhones
+                activeId={activeCapability.id}
+                className="sm:hidden"
+              />
               {activeCapability.mediaSrc ? (
                 <DemoShot
                   src={activeCapability.mediaSrc}
@@ -249,7 +267,7 @@ export default function WhyGrowsearch() {
                   width={1386}
                   height={1135}
                   sizes="(min-width: 940px) 880px, 92vw"
-                  className="w-full rounded-[18px]"
+                  className="w-full rounded-[18px] max-sm:hidden"
                 />
               ) : (
                 <div className="flex min-h-[320px] flex-col justify-between rounded-[18px] bg-charcoal p-6 text-white sm:min-h-[420px] sm:p-8">
@@ -269,7 +287,7 @@ export default function WhyGrowsearch() {
               )}
             </div>
 
-            <p className="mx-auto mt-4 max-w-[46ch] text-center text-[15px] leading-snug text-body-mute sm:hidden">
+            <p className="mx-auto mt-6 max-w-[34ch] text-center text-[15px] leading-snug text-body-mute sm:hidden">
               {activeCapability.body}
             </p>
           </div>
