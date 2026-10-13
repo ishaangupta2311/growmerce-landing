@@ -4,6 +4,7 @@ import { cache } from "react";
 import BlogArticle from "@/components/blog/BlogArticle";
 import { fallbackExcerpt, getLivePost, relatedPosts } from "@/lib/blog/public";
 import { SLUG_PATTERN } from "@/lib/blog/slug";
+import { SITE_ORIGIN } from "@/lib/site-urls";
 
 export const revalidate = 60;
 
@@ -11,8 +12,6 @@ export const revalidate = 60;
 export function generateStaticParams() {
   return [];
 }
-
-const SITE = "https://growmerce.ai";
 
 /* generateMetadata and the page share one lookup per request. */
 const load = cache(async (slug: string) => (SLUG_PATTERN.test(slug) ? getLivePost(slug) : null));
@@ -73,12 +72,12 @@ export default async function BlogPostPage({ params }: PageProps<"/blog/[slug]">
     "@type": "BlogPosting",
     headline: article.title,
     description: article.seoDescription || article.excerpt || undefined,
-    image: image ? new URL(image, SITE).toString() : undefined,
+    image: image ? new URL(image, SITE_ORIGIN).toString() : undefined,
     datePublished: article.publishedAt ?? undefined,
     dateModified: article.updatedAt,
     author: article.author ? { "@type": "Person", name: article.author.name } : undefined,
-    publisher: { "@type": "Organization", name: "Growmerce", url: SITE },
-    mainEntityOfPage: { "@type": "WebPage", "@id": article.canonicalUrl || `${SITE}/blog/${article.slug}` },
+    publisher: { "@type": "Organization", name: "Growmerce", url: SITE_ORIGIN },
+    mainEntityOfPage: { "@type": "WebPage", "@id": article.canonicalUrl || `${SITE_ORIGIN}/blog/${article.slug}` },
     keywords: article.seoKeywords || undefined,
     articleSection: article.category?.name,
   };

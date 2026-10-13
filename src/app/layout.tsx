@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Caveat, Manrope } from "next/font/google";
+import { SITE_ORIGIN } from "@/lib/site-urls";
 import "./globals.css";
 
 // Manrope remains available to the archived /v concepts, which intentionally
@@ -26,7 +27,7 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://growmerce.ai"),
+  metadataBase: new URL(SITE_ORIGIN),
   title: {
     default: "Growmerce: Shopping, made smarter for every customer",
     template: "%s · Growmerce",
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
     title: "Growmerce: Shopping, made smarter for every customer",
     description:
       "Growmerce turns browsing into buying with AI-powered personalization built for modern commerce.",
-    url: "https://growmerce.ai",
+    url: SITE_ORIGIN,
     siteName: "Growmerce",
     type: "website",
   },

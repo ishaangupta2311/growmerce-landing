@@ -16,6 +16,7 @@ import { requirePartner } from "@/lib/affiliate/session";
 import type { Partner, PartnerKind, PayoutMethod } from "@/lib/affiliate/types";
 import { sendEmail } from "@/lib/email/resend";
 import { renderWelcomeEmail } from "@/lib/email/welcome-email";
+import { SITE_ORIGIN } from "@/lib/site-urls";
 import { safeNext } from "@/lib/supabase/safe-next";
 import { supabaseServer, currentUser } from "@/lib/supabase/server";
 
@@ -84,7 +85,7 @@ async function origin(): Promise<string> {
   const store = await headers();
   const host = store.get("x-forwarded-host") ?? store.get("host");
   const proto = store.get("x-forwarded-proto") ?? "https";
-  return host ? `${proto}://${host}` : "https://growmerce.ai";
+  return host ? `${proto}://${host}` : SITE_ORIGIN;
 }
 
 /* ---------------------------------------------------------------------------

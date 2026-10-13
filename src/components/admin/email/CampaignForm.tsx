@@ -6,6 +6,7 @@ import { submitCampaign, type CampaignState } from "@/app/admin/_actions/email";
 import ActionButton from "@/components/affiliate/admin/ActionButton";
 import { Field, Select, TextArea } from "@/components/affiliate/Field";
 import FormBanner from "@/components/affiliate/FormBanner";
+import { SITE_ORIGIN } from "@/lib/site-urls";
 
 /**
  * Write a campaign, send yourself a test, then send it.
@@ -60,7 +61,7 @@ export default function CampaignForm({
           label="Button link"
           type="url"
           defaultValue={values?.ctaUrl}
-          placeholder="https://growmerce.ai/blog/…"
+          placeholder={`${SITE_ORIGIN}/blog/…`}
         />
       </div>
 

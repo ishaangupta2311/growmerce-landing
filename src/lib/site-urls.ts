@@ -1,4 +1,13 @@
-export const GROWMERCE_HOME = "https://growmerce.ai/";
+/**
+ * The main site's origin, and the only place it is written. The site is served
+ * on `www`; the apex 308-redirects to it (hosting config, not this repo). Every
+ * absolute address we publish about the site (sitemap, canonical base, Open
+ * Graph, JSON-LD, emails) is built from this, so none of them contradicts where
+ * the pages actually live. The host list in next.config.ts is the one
+ * deliberate exception: it has to match the apex as well.
+ */
+export const SITE_ORIGIN = "https://www.growmerce.ai";
+export const GROWMERCE_HOME = `${SITE_ORIGIN}/`;
 export const GROWSEARCH_HOME = "https://search.growmerce.ai/";
 export const GROWSEARCH_FEATURES = "https://search.growmerce.ai/features";
 

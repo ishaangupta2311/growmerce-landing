@@ -1,5 +1,7 @@
 import "server-only";
 
+import { SITE_ORIGIN } from "@/lib/site-urls";
+
 /**
  * How every email this site sends is drawn.
  *
@@ -17,7 +19,7 @@ import "server-only";
  * `public/brand/logo-black.svg` rendered at three times the size it is shown
  * at, and has to be rendered again when that file changes.
  */
-const LOGO_URL = "https://www.growmerce.ai/brand/logo-black.png";
+const LOGO_URL = `${SITE_ORIGIN}/brand/logo-black.png`;
 
 /* The site's palette, from `src/app/globals.css`. */
 const BRAND = "#ff5a1f";
@@ -83,7 +85,7 @@ export function renderLayout(
     ...(copy.bullets?.length ? [copy.bullets.map((line) => `- ${line}`).join("\n")] : []),
     `${copy.cta}: ${link}`,
     copy.footnote,
-    "The Growmerce team\nhttps://growmerce.ai",
+    `The Growmerce team\n${SITE_ORIGIN}`,
   ].join("\n\n");
 
   const paragraph = (line: string) =>
@@ -111,7 +113,7 @@ export function renderLayout(
 <tr><td align="center" style="padding:40px 16px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px">
 <tr><td style="padding:0 8px 24px">
-<a href="https://growmerce.ai" style="text-decoration:none"><img src="${LOGO_URL}" width="167" height="32" alt="Growmerce" style="display:block;border:0;height:32px;width:167px"></a>
+<a href="${SITE_ORIGIN}" style="text-decoration:none"><img src="${LOGO_URL}" width="167" height="32" alt="Growmerce" style="display:block;border:0;height:32px;width:167px"></a>
 </td></tr>
 <tr><td style="background:#ffffff;border:1px solid ${LINE};border-radius:16px;padding:40px 36px;font-family:${FONT}">
 <h1 style="margin:0 0 20px;font-size:24px;line-height:32px;font-weight:700;letter-spacing:-0.01em;color:${CHARCOAL}">${escapeHtml(copy.heading)}</h1>
@@ -128,7 +130,7 @@ ${copy.paragraphs.map(paragraph).join("\n")}${bullets}
 <p style="margin:0;font-size:13px;line-height:20px;color:${MUTED}">${escapeHtml(copy.footnote)}</p>
 </td></tr>
 <tr><td style="padding:24px 8px 0;font-family:${FONT};font-size:12px;line-height:18px;color:${MUTED}">
-The Growmerce team &middot; <a href="https://growmerce.ai" style="color:${MUTED}">growmerce.ai</a>
+The Growmerce team &middot; <a href="${SITE_ORIGIN}" style="color:${MUTED}">growmerce.ai</a>
 </td></tr>
 </table>
 </td></tr>
