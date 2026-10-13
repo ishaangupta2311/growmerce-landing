@@ -14,7 +14,7 @@ export default function HomeFinalCta() {
             <span className="whitespace-nowrap">dead-end</span> searches?
           </h2>
           <p className="mt-5 max-w-[56ch] text-[clamp(1.0625rem,1.3vw,1.25rem)] leading-[1.55] text-white/85">
-            Install Growsearch, point it at your live catalog, and watch what your shoppers actually ask for, free for 15 days, no credit card required.
+            Install Growsearch, point it at your live catalog, and watch what your shoppers actually ask for, free for 14 days, no credit card required.
           </p>
           <div className="mt-8 flex flex-wrap gap-4 [&>a]:max-[430px]:w-full [&>button]:max-[430px]:w-full">
             <DemoStoreButton className="cta-primary-inverse" source="home-final-cta">

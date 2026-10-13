@@ -3,7 +3,7 @@ import Reveal from "@/components/site/Reveal";
 
 /* What other tools promise, struck through, against what we do instead. The
    Figma also pairs "Free trial" with "Every engagement is paid"; Growsearch
-   has a free 15-day trial, so that pair is left out rather than published
+   has a free 14-day trial, so that pair is left out rather than published
    against the site's own "Try it free". */
 const THEIRS = ["AI for your entire store", "Fully autonomous", "Works out of the box", "Replaces your team"];
 
