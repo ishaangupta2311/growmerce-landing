@@ -19,6 +19,7 @@
  * concurrency, which is the worst way to find out.
  */
 
+import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import postgres, { type Options, type ReservedSql, type Sql } from "postgres";
 
 /* postgres.js honours `max_pipeline` at runtime but leaves it out of its
@@ -120,6 +121,53 @@ export async function tryDb<T>(operation: string, work: (sql: Sql) => Promise<T>
   } catch (err) {
     const why = err instanceof Error ? err.message : String(err);
     console.warn(`[db] ${operation} failed, continuing without it — ${why.slice(0, 200)}`);
+    return fallback;
+  }
+}
+
+/**
+ * `tryDb` for a read whose result Next caches and keeps serving, where the
+ * fallback would be *cached as the answer*.
+ *
+ * The rule above exists so a sleeping database cannot take the site down, and
+ * `tryDb` honours it by turning a failure into an empty result. For a page
+ * that is cached by ISR that bargain goes wrong: the empty result is a
+ * successful render, so Next stores it and serves it until the next
+ * regeneration. A throw is the opposite — Next keeps the last good copy and
+ * retries on the next request (see "Handling uncaught exceptions" in the ISR
+ * guide). So here a failure throws, and the site is still not broken: it keeps
+ * serving what it had.
+ *
+ * The one place a throw would cost us is `next build`, which prerenders these
+ * routes and fails outright on an error; there is no earlier copy to keep, and
+ * a database that is asleep at deploy time must still produce a deploy. Next
+ * sets `NEXT_PHASE` to `PHASE_PRODUCTION_BUILD` in the build process before it
+ * starts the workers that prerender, and does not set it when serving, so only
+ * the build gets the fallback. That copy is replaced by the first
+ * regeneration that finds the database awake.
+ *
+ * A missing `DATABASE_URL` is still a fallback, not a throw: that is the
+ * supported no-database mode, not a failure.
+ */
+export async function tryDbOrThrowWhenServing<T>(
+  operation: string,
+  work: (sql: Sql) => Promise<T>,
+  fallback: T,
+): Promise<T> {
+  const sql = db();
+  if (!sql) return fallback;
+
+  try {
+    return await work(sql);
+  } catch (err) {
+    const why = err instanceof Error ? err.message : String(err);
+    const line = `[db] ${operation} failed — ${why.slice(0, 200)}`;
+    if (process.env.NEXT_PHASE !== PHASE_PRODUCTION_BUILD) {
+      /* A fresh Error, not the driver's: Next logs what is thrown, and the
+         same care about addresses applies as in `tryDb`. */
+      throw new Error(line);
+    }
+    console.warn(`${line}; building without it`);
     return fallback;
   }
 }

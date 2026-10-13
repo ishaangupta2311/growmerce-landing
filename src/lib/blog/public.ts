@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { Sql } from "postgres";
-import { db, tryDb } from "@/lib/db";
+import { db, tryDb, tryDbOrThrowWhenServing } from "@/lib/db";
 import { htmlToText, sanitizeContent } from "./sanitize";
 import type { ArticleCard, ArticleData, TwitterCard } from "./types";
 
@@ -14,11 +14,13 @@ import type { ArticleCard, ArticleData, TwitterCard } from "./types";
  * goes live on time without a cron job — the next render after its moment
  * includes it, and the pages revalidate every minute.
  *
- * The listing and the sitemap follow the site's database rule (src/lib/db.ts):
- * a failure renders as "no posts" rather than an error, so a sleeping
- * database can never take the build or the site down. A single article
- * throws instead, because ISR keeps serving the last good copy when a
- * regeneration throws — better than caching a false 404.
+ * The listing follows the site's database rule (src/lib/db.ts): a failure
+ * renders as "no posts" rather than an error, so a sleeping database can
+ * never take the build or the site down. A single article and the sitemap
+ * throw instead, because ISR keeps serving the last good copy when a
+ * regeneration throws — better than caching a false 404, or a sitemap with no
+ * posts in it. (The sitemap still falls back during `next build`, which has
+ * no earlier copy to keep.)
  */
 
 export const BLOG_PAGE_SIZE = 9;
@@ -133,8 +135,11 @@ export async function relatedPosts(postId: string, categoryId: string | null, li
   );
 }
 
+/* Throws when the database does, except during the build: an empty list would
+   be cached as the sitemap and hide every post from crawlers until the next
+   publish. See `tryDbOrThrowWhenServing`. */
 export async function sitemapPosts(): Promise<{ slug: string; lastModified: Date }[]> {
-  return tryDb(
+  return tryDbOrThrowWhenServing(
     "blog sitemap",
     async (sql) => {
       const rows = await sql<{ slug: string; updated_at: Date; published_at: Date }[]>`
