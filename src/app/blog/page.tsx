@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import BlogIndex from "@/components/blog/BlogIndex";
 import { listLivePosts } from "@/lib/blog/public";
+import { BLOG_CARD } from "@/lib/blog/share";
+import { SHARED_OPEN_GRAPH } from "@/lib/page-metadata";
 
 /* Rebuilt in the background at most once a minute, and immediately when an
    admin publishes (see src/lib/blog/revalidate.ts). The minute is what lets a
@@ -12,13 +14,7 @@ export const metadata: Metadata = {
   description:
     "Practical writing on ecommerce search, conversion and running a store, from the team building Growmerce.",
   alternates: { canonical: "/blog" },
-  openGraph: {
-    title: "The Growmerce blog",
-    description: "Practical writing on ecommerce search, conversion and running a store.",
-    url: "/blog",
-    siteName: "Growmerce",
-    type: "website",
-  },
+  openGraph: { ...SHARED_OPEN_GRAPH, ...BLOG_CARD, url: "/blog" },
 };
 
 export default async function BlogPage() {

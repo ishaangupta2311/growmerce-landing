@@ -1,14 +1,15 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import LegalDoc, { type LegalSection } from "@/components/site/LegalDoc";
 import { PRICING_URL } from "@/lib/site-urls";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Terms & Conditions",
   description:
     "The terms you agree to when you install and use Growsearch, including plans, billing, the free trial, acceptable use and cancellation.",
-  alternates: { canonical: "/terms" },
-};
+  path: "/terms",
+});
 
 const CONTACT = "admin@growmerce.ai";
 

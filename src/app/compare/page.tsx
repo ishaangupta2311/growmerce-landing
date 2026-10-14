@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/site/Navbar";
@@ -12,12 +13,12 @@ import SideBySide from "./components/SideBySide";
 import CapabilityTable from "./components/CapabilityTable";
 import ScrambleHeadline from "./components/ScrambleHeadline";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Growmerce vs the alternatives",
   description:
     "Traditional search, recommendation apps and general AI plugins each solve a piece of it. Compare the capabilities that actually shape the ecommerce experience, and see the same search run through both.",
-  alternates: { canonical: "/compare" },
-};
+  path: "/compare",
+});
 
 const JOURNEY = [
   { icon: SearchIcon, title: "Search", rest: "with intent" },

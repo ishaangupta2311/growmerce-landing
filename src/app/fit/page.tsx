@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/site/Navbar";
@@ -24,12 +25,12 @@ import {
   SmallBagIcon,
 } from "./components/icons";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Is Growmerce a fit for me?",
   description:
     "Growmerce is built for stores where search is a real lever: a growing catalogue, shoppers who use the search bar, no appetite for a six-week install. Here's where it fits, and where it doesn't.",
-  alternates: { canonical: "/fit" },
-};
+  path: "/fit",
+});
 
 const NOT_A_FIT = [
   {

@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { Suspense } from "react";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import PlatformStrip from "@/components/site/PlatformStrip";
 import TryForm from "./components/TryForm";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Try it free",
   description:
     "Give us your store's domain and we'll draw Growsearch on your own storefront, your colours, your products, in about twenty seconds. No install, no card.",
-  alternates: { canonical: "/try" },
-};
+  path: "/try",
+});
 
 /* These describe what the job actually does, and they have to keep doing so.
    Step one used to promise "your demo store opens in a new tab", left over from

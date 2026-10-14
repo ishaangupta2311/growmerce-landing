@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import Link from "next/link";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
@@ -11,12 +12,12 @@ import Arrow from "@/components/site/Arrow";
 import { GROWSEARCH_HOME, PRICING_URL } from "@/lib/site-urls";
 import StorefrontReveal from "./components/StorefrontReveal";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Solutions",
   description:
     "Native storefront search matches strings, not intent. Growsearch turns failed searches into sales: same catalog, same traffic, different outcome.",
-  alternates: { canonical: "/solutions" },
-};
+  path: "/solutions",
+});
 
 /* Figma leaves the "leak" panel empty; these are the four leaks it frames. */
 const LEAKS = [

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import PlatformStrip from "@/components/site/PlatformStrip";
@@ -10,12 +11,12 @@ import AllPlans from "./components/AllPlans";
 import InstallOnShopify from "@/components/site/InstallOnShopify";
 import { GROWSEARCH_FEATURES, SHOPIFY_LISTING_LIVE } from "@/lib/site-urls";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Pricing",
   description:
     "Growsearch plans from $49/month, every one with a 14-day free trial. No revenue share, no seat minimums.",
-  alternates: { canonical: "/pricing" },
-};
+  path: "/pricing",
+});
 
 export default function PricingPage() {
   return (

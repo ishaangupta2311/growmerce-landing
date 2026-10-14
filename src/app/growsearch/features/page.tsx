@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import Faq from "@/components/site/Faq";
@@ -11,12 +12,12 @@ import ClosingCta from "./components/ClosingCta";
 import { FEATURE_ROWS } from "./rows-data";
 import { FEATURES_FAQ } from "@/lib/faqs";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Growsearch features: Everything your search bar should be doing",
   description:
     "Twenty things Growsearch does that default Shopify search doesn't. Ten your shoppers feel, ten you see.",
-  alternates: { canonical: GROWSEARCH_FEATURES },
-};
+  path: GROWSEARCH_FEATURES,
+});
 
 const FEEL_ROWS = FEATURE_ROWS.filter((r) => r.group === "feel");
 const SEE_ROWS = FEATURE_ROWS.filter((r) => r.group === "see");

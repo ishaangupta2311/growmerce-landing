@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Caveat, Manrope } from "next/font/google";
+import { SHARED_OPEN_GRAPH, TITLE_TEMPLATE } from "@/lib/page-metadata";
 import { SITE_ORIGIN } from "@/lib/site-urls";
 import "./globals.css";
 
@@ -30,17 +31,18 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_ORIGIN),
   title: {
     default: "Growmerce: Shopping, made smarter for every customer",
-    template: "%s · Growmerce",
+    template: TITLE_TEMPLATE,
   },
   description:
     "Growmerce turns browsing into buying with AI-powered personalization built for modern commerce.",
+  /* Pages that give their own title and description (see page-metadata.ts)
+     replace this whole object; the rest inherit it as it is. */
   openGraph: {
+    ...SHARED_OPEN_GRAPH,
     title: "Growmerce: Shopping, made smarter for every customer",
     description:
       "Growmerce turns browsing into buying with AI-powered personalization built for modern commerce.",
     url: SITE_ORIGIN,
-    siteName: "Growmerce",
-    type: "website",
   },
   /* Proves ownership of the domain to Google Search Console. Next renders it
      as <meta name="google-site-verification">; the tag must stay on every

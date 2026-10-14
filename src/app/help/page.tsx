@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import Link from "next/link";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
@@ -10,12 +11,12 @@ import { HELP_TOPICS } from "@/lib/faqs";
 
 const TOTAL = HELP_TOPICS.reduce((n, t) => n + t.items.length, 0);
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Help centre",
   description:
     "Every question answered across the site, collected in one place: Growsearch, pricing and the trial, whether it suits your store, and how it compares with the alternatives.",
-  alternates: { canonical: "/help" },
-};
+  path: "/help",
+});
 
 /**
  * The help centre.
