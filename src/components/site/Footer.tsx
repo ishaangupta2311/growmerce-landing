@@ -7,7 +7,7 @@ const COLUMNS = [
     heading: "Company",
     links: [
       { label: "About", href: "/about" },
-      { label: "Newsroom", href: "#" },
+      { label: "Newsroom", href: "/blog" },
       { label: "Contact us", href: "/contact" },
     ],
   },
@@ -39,9 +39,24 @@ const COLUMNS = [
 /* Intrinsic sizes, not the display size: these marks are not square, and
    declaring them as such makes the computed height contradict the attribute. */
 const SOCIALS = [
-  { name: "LinkedIn", icon: "/img/icon-linkedin.svg", w: 32, h: 30 },
-  { name: "Instagram", icon: "/img/icon-instagram.svg", w: 34, h: 33 },
-  { name: "X", icon: "/img/icon-x.svg", w: 32, h: 30 },
+  {
+    name: "LinkedIn",
+    href: "https://www.linkedin.com/company/growmerce-ai/",
+    external: true,
+    icon: "/img/icon-linkedin.svg",
+    w: 32,
+    h: 30,
+  },
+  {
+    name: "Instagram",
+    href: "https://www.instagram.com/growmerce.ai/",
+    external: true,
+    icon: "/img/icon-instagram.svg",
+    w: 34,
+    h: 33,
+  },
+  // Still a placeholder until the X address is decided.
+  { name: "X", href: "#", icon: "/img/icon-x.svg", w: 32, h: 30 },
 ];
 
 export default function Footer() {
@@ -84,10 +99,12 @@ export default function Footer() {
               28px the old gap-7 put between the marks themselves. */}
           <div className="-ml-2 flex items-center gap-3.5">
             {SOCIALS.map((s) => (
-              <Link
+              <a
                 key={s.name}
-                href="#"
+                href={s.href}
                 aria-label={s.name}
+                target={s.external ? "_blank" : undefined}
+                rel={s.external ? "noopener noreferrer" : undefined}
                 className="grid size-11 place-items-center"
               >
                 <Image
@@ -97,7 +114,7 @@ export default function Footer() {
                   height={s.h}
                   className="h-7 w-auto transition-opacity hover:opacity-65"
                 />
-              </Link>
+              </a>
             ))}
           </div>
           {/* The notice and the legal links are separate lines on a phone —
