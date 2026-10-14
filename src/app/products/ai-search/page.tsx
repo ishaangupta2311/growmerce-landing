@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import SearchHero from "./components/SearchHero";
 import FeatureStack from "./components/FeatureStack";
 import InstallAccordion from "./components/InstallAccordion";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "AI-powered product search",
   description:
     "AI search that understands what shoppers mean, never ends on “no results”, and puts an Add button on every result. Installs into your Shopify store in minutes.",
-  alternates: { canonical: "/products/ai-search" },
-};
+  path: "/products/ai-search",
+});
 
 export default function AiSearchPage() {
   return (

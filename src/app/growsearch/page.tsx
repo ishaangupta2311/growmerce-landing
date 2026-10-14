@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import Faq from "@/components/site/Faq";
@@ -12,12 +13,12 @@ import TrialBand from "./components/TrialBand";
 import PricingPlans from "@/components/site/PricingPlans";
 import { GROWSEARCH_FAQ } from "@/lib/faqs";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Growsearch: Storefront search that never dead-ends",
   description:
     "Growsearch understands what shoppers mean, recovers zero-result searches, and shows you exactly which searches turn into checkouts.",
-  alternates: { canonical: GROWSEARCH_HOME },
-};
+  path: GROWSEARCH_HOME,
+});
 
 export default function GrowsearchPage() {
   return (

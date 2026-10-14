@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import Link from "next/link";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
@@ -21,12 +22,12 @@ import NotAllAi from "./components/NotAllAi";
    the blog: at most once a minute, and at once when a post is published. */
 export const revalidate = 60;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "What is Growmerce",
   description:
     "Growmerce owns, builds and runs practical AI tools for ecommerce. One tool at a time, installed into the store you already have.",
-  alternates: { canonical: "/about" },
-};
+  path: "/about",
+});
 
 const CONVICTIONS = [
   "One tool at a time: Growsearch first, and the next one gets a name when it has customers",

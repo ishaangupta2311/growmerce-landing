@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import Reveal from "@/components/site/Reveal";
 import ContactForm from "./components/ContactForm";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Contact us",
   description: "Talk to Growmerce about Growsearch, your store, support, or a partnership.",
-  alternates: { canonical: "/contact" },
-};
+  path: "/contact",
+});
 
 export default function ContactPage() {
   return (
