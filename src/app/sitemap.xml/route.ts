@@ -2,18 +2,34 @@ import { sitemapPosts } from "@/lib/blog/public";
 import { MARKETING_PAGES } from "@/lib/site-pages";
 import { SITE_ORIGIN } from "@/lib/site-urls";
 
-/* Rebuilt when a post is published or unpublished (revalidateBlog), and at
-   least every minute — the same cadence as the blog pages — so a scheduled
-   post joins the sitemap on its own. One cheap query per rebuild.
+/* Served on demand and cached by the CDN for a minute, so a post that goes
+   live (or is scheduled to) joins the sitemap on its own, and the query runs
+   about once a minute per CDN region however often crawlers ask.
 
-   A route handler rather than `app/sitemap.ts`: the metadata-file convention
-   hard-codes `Cache-Control: public, max-age=0, must-revalidate` on its
-   response, and a Cache-Control the route sets itself is never replaced by the
-   one Next derives from `revalidate` (`s-maxage=60, stale-while-revalidate=…`,
-   which is what tells Vercel's CDN when to regenerate a page). Left to that
-   header alone, the deployed sitemap was served from cache at any age and only
-   changed when something called `revalidatePath`. This handler sets none. */
-export const revalidate = 60;
+   Not an ISR route (`export const revalidate`). That was tried twice, as the
+   metadata file `app/sitemap.ts` and as this handler, and on Vercel neither
+   ever regenerated on the timer: the response sat at `x-vercel-cache: HIT`
+   with `age` in the thousands while `/blog`, same setting, refreshed every
+   minute. The build output was right (the route is a Prerender with a
+   60-second expiry, exactly like `/blog`), and why the platform ignored it for
+   this path is not known. The first theory, that the metadata convention's
+   hard-coded Cache-Control was in the way, was wrong: the handler fared no
+   better without one. What Vercel documents for a function's response is the
+   Cache-Control below, so that is what this relies on.
+
+   - `s-maxage=60`: the CDN may serve it for a minute.
+   - `stale-while-revalidate`: after that it serves the old copy once while
+     fetching a new one, so a crawler never waits on the database.
+   - `stale-if-error`: if the origin errors, the CDN serves the old copy
+     instead, and does not cache the error.
+
+   When the database is down there is nothing to say, and an empty sitemap would
+   tell a crawler every post is gone. So it answers 503 with `no-store`, which
+   crawlers retry, never caches, and which `stale-if-error` replaces with the
+   last good copy while there is one. See `sitemapPosts`. */
+export const dynamic = "force-dynamic";
+
+const CACHE_CONTROL = "public, s-maxage=60, stale-while-revalidate=86400, stale-if-error=604800";
 
 type Entry = {
   path: string;
@@ -29,7 +45,16 @@ function xml(text: string): string {
 }
 
 export async function GET(): Promise<Response> {
-  const posts = await sitemapPosts();
+  let posts: Awaited<ReturnType<typeof sitemapPosts>>;
+  try {
+    posts = await sitemapPosts();
+  } catch (err) {
+    console.error("[sitemap]", err instanceof Error ? err.message : err);
+    return new Response("The sitemap is temporarily unavailable.", {
+      status: 503,
+      headers: { "Content-Type": "text/plain", "Cache-Control": "no-store", "Retry-After": "60" },
+    });
+  }
 
   const entries: Entry[] = [
     ...MARKETING_PAGES.map(({ path }) => ({
@@ -66,5 +91,7 @@ export async function GET(): Promise<Response> {
     "",
   ].join("\n");
 
-  return new Response(body, { headers: { "Content-Type": "application/xml" } });
+  return new Response(body, {
+    headers: { "Content-Type": "application/xml", "Cache-Control": CACHE_CONTROL },
+  });
 }

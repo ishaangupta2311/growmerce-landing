@@ -141,9 +141,11 @@ export async function relatedPosts(postId: string, categoryId: string | null, li
   );
 }
 
-/* Throws when the database does, except during the build: an empty list would
-   be cached as the sitemap and hide every post from crawlers until the next
-   publish. See `tryDbOrThrowWhenServing`. */
+/* Throws when the database does: an empty list would be cached as the sitemap
+   and hide every post from crawlers. The sitemap route turns the throw into a
+   503 that is not cached. Only `next build` gets the empty fallback, and the
+   route is no longer prerendered, so nothing uses it today. See
+   `tryDbOrThrowWhenServing`. */
 export async function sitemapPosts(): Promise<{ slug: string; lastModified: Date }[]> {
   return tryDbOrThrowWhenServing(
     "blog sitemap",
