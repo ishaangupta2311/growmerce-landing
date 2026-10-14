@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
     "What Growsearch collects from shoppers and merchants, what growmerce.ai collects from visitors, why, who processes it, and how long it is kept.",
+  alternates: { canonical: "/privacy" },
 };
 
 const CONTACT = "admin@growmerce.ai";

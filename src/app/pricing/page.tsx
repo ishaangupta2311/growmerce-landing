@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: "Pricing",
   description:
     "Growsearch plans from $49/month, every one with a 14-day free trial. No revenue share, no seat minimums.",
+  alternates: { canonical: "/pricing" },
 };
 
 export default function PricingPage() {

@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: "AI-powered product search",
   description:
     "AI search that understands what shoppers mean, never ends on “no results”, and puts an Add button on every result. Installs into your Shopify store in minutes.",
+  alternates: { canonical: "/products/ai-search" },
 };
 
 export default function AiSearchPage() {

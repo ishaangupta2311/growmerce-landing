@@ -25,6 +25,7 @@ export const metadata: Metadata = {
   title: "What is Growmerce",
   description:
     "Growmerce owns, builds and runs practical AI tools for ecommerce. One tool at a time, installed into the store you already have.",
+  alternates: { canonical: "/about" },
 };
 
 const CONVICTIONS = [

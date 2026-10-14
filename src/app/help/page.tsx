@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: "Help centre",
   description:
     "Every question answered across the site, collected in one place: Growsearch, pricing and the trial, whether it suits your store, and how it compares with the alternatives.",
+  alternates: { canonical: "/help" },
 };
 
 /**
