@@ -10,6 +10,7 @@ import { LocalTime } from "@/components/admin/overlay";
 import { ButtonLink, Card, EmptyState, PageHeader } from "@/components/admin/ui";
 import { requireAdmin } from "@/lib/admin/session";
 import { appSecret, dashboardUrl, fetchStores } from "@/lib/apps/connection";
+import { storeIdFromSegment } from "@/lib/apps/paths";
 import { getApp, starredStores } from "@/lib/apps/store";
 import type { AppRow } from "@/lib/apps/types";
 
@@ -22,8 +23,8 @@ export const metadata: Metadata = { title: "Store dashboard" };
  */
 export default async function StorePage({ params }: PageProps<"/admin/apps/[appId]/stores/[storeId]">) {
   await requireAdmin();
-  /* Next has already decoded the segment, colon and all. */
-  const { appId, storeId } = await params;
+  const { appId, storeId: segment } = await params;
+  const storeId = storeIdFromSegment(segment);
   const app = await getApp(appId);
   if (!app) notFound();
 
