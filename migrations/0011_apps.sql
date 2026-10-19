@@ -30,8 +30,9 @@ create table if not exists apps.app (
                      or base_url ~ '^http://(localhost|127\.0\.0\.1)(:[0-9]+)?$'),
   secret_env  text not null
               check (secret_env ~ '^[A-Z][A-Z0-9_]{0,40}_ANALYTICS_SECRET$'),
-  -- A site path ("/brand/x.svg") or an https URL. Null draws the initial.
-  icon_url    text check (icon_url ~ '^(/[^/]|https://)'),
+  -- A site path ("/brand/x.svg") or an https URL; checked below. Null draws
+  -- the initial.
+  icon_url    text,
   position    integer not null default 0,
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
@@ -48,8 +49,16 @@ create table if not exists apps.starred_store (
   primary key (app_id, store_id)
 );
 
+-- Named and replaced rather than inline, so a re-run keeps it current. A path
+-- may not start "//" or "/\": browsers read both as another host.
+alter table apps.app drop constraint if exists app_icon_url_check;
+alter table apps.app add constraint app_icon_url_check
+  check (icon_url ~ '^(/[^/\\]|https://)');
+
 -- Growsearch, the first app. Its secret is PORTAL_ANALYTICS_SECRET on the
--- Growsearch service (docs/admin-portal-stores.md in that repo).
+-- Growsearch service (docs/admin-portal-stores.md in that repo). Seeded only
+-- when no row has its id, so re-running this file after removing Growsearch in
+-- the admin brings it back.
 insert into apps.app (id, name, platforms, base_url, secret_env, icon_url, position)
 values (
   'growsearch',

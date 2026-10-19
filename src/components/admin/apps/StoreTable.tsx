@@ -102,7 +102,7 @@ export function StarButton({
 
 function SearchesCell({ store }: { store: StoreRow }) {
   const activity = store.activity;
-  if (!activity) return <span className="text-zinc-400">Not counted</span>;
+  if (!activity) return <span className="text-zinc-400" title="The app has no count for this store.">-</span>;
   return (
     <span className="inline-flex items-center gap-2 tabular-nums">
       {activity.daily && (

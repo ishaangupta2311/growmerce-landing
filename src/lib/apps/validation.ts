@@ -18,7 +18,12 @@ export function normalizeBaseUrl(value: string): string | null {
   } catch {
     return null;
   }
-  const local = url.protocol === "http:" && (url.hostname === "localhost" || url.hostname === "127.0.0.1");
+  /* Plain http only for a local copy of an app, and only off production,
+     where it would point the server at its own machine. */
+  const local =
+    process.env.NODE_ENV !== "production" &&
+    url.protocol === "http:" &&
+    (url.hostname === "localhost" || url.hostname === "127.0.0.1");
   if (url.protocol !== "https:" && !local) return null;
   if (url.username || url.password || url.search || url.hash || url.pathname !== "/") return null;
   return url.origin;
@@ -53,7 +58,7 @@ export const appSchema = z.object({
     .string()
     .trim()
     .max(500)
-    .refine((value) => value === "" || /^(\/[^/]|https:\/\/)/.test(value), "A site path like /brand/icon.svg, or an https address.")
+    .refine((value) => value === "" || /^(\/[^/\\]|https:\/\/)/.test(value), "A site path like /brand/icon.svg, or an https address.")
     .transform((value) => value || null),
 });
 

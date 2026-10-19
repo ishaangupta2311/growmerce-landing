@@ -37,7 +37,8 @@ const storeSchema = z.object({
   id: z.string().min(1).max(300),
   platform: z.string().max(40),
   name: z.string().max(200),
-  domain: z.string().max(300),
+  /* A hostname only: the store page links to https://<domain>. */
+  domain: z.string().max(253).regex(/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/i),
   plan: z.string().max(60).nullable(),
   status: z.enum(["active", "uninstalled"]),
   since: isoDate.nullable(),
@@ -57,7 +58,9 @@ const storeSchema = z.object({
 const storeListSchema = z.object({
   ok: z.literal(true),
   generatedAt: isoDate,
-  stores: z.array(storeSchema).max(10_000),
+  /* Each store is checked on its own below, so one odd entry is dropped
+     rather than costing the whole list. */
+  stores: z.array(z.unknown()).max(10_000),
 });
 
 /** The app's secret, or null when its environment variable is not set here. */
@@ -109,20 +112,44 @@ async function post(app: AppRow, path: string, payload: object): Promise<Answer<
   return { ok: true, data: answer };
 }
 
-/* Keyed on plain values: `cache` matches arguments by identity, and each read
-   of `apps.app` builds a new object. */
-const fetchStoresOnce = cache(
-  async (id: string, name: string, baseUrl: string, secretEnv: string): Promise<Answer<StoreList>> => {
-    const app = { id, name, baseUrl, secretEnv, platforms: [], iconUrl: null };
-    const answer = await post(app, "/api/portal/stores", {});
-    if (!answer.ok) return answer;
+/** How long a store list is reused across requests. Counting every shop's
+    searches is real work for the app, and a store page, the switcher and
+    the cards would otherwise each ask again. Failures are never kept. */
+const LIST_REUSE_MS = 2 * 60 * 1000;
 
-    const parsed = storeListSchema.safeParse(answer.data);
-    if (!parsed.success) {
-      console.warn(`[apps] ${id} sent a store list we could not read — ${parsed.error.message.slice(0, 200)}`);
-      return { ok: false, error: `${name} answered with a store list this admin does not understand.` };
-    }
-    return { ok: true, data: { stores: parsed.data.stores, generatedAt: parsed.data.generatedAt } };
+const recentLists = new Map<string, { at: number; list: StoreList }>();
+
+async function requestStores(id: string, name: string, baseUrl: string, secretEnv: string): Promise<Answer<StoreList>> {
+  const app = { id, name, baseUrl, secretEnv, platforms: [], iconUrl: null };
+  const answer = await post(app, "/api/portal/stores", {});
+  if (!answer.ok) return answer;
+
+  const parsed = storeListSchema.safeParse(answer.data);
+  if (!parsed.success) {
+    console.warn(`[apps] ${id} sent a store list we could not read — ${parsed.error.message.slice(0, 200)}`);
+    return { ok: false, error: `${name} answered with a store list this admin does not understand.` };
+  }
+  const stores = parsed.data.stores.flatMap((entry) => {
+    const store = storeSchema.safeParse(entry);
+    return store.success ? [store.data] : [];
+  });
+  const dropped = parsed.data.stores.length - stores.length;
+  if (dropped) console.warn(`[apps] ${id} sent ${dropped} store${dropped === 1 ? "" : "s"} we could not read; left out`);
+  return { ok: true, data: { stores, generatedAt: parsed.data.generatedAt } };
+}
+
+/* Keyed on plain values: `cache` matches arguments by identity, and each read
+   of `apps.app` builds a new object. The key includes the address and secret
+   name, so editing an app never serves the old app's list. */
+const fetchStoresOnce = cache(
+  async (id: string, name: string, baseUrl: string, secretEnv: string, fresh: boolean): Promise<Answer<StoreList>> => {
+    const key = `${id}\n${baseUrl}\n${secretEnv}`;
+    const kept = recentLists.get(key);
+    if (!fresh && kept && Date.now() - kept.at < LIST_REUSE_MS) return { ok: true, data: kept.list };
+
+    const answer = await requestStores(id, name, baseUrl, secretEnv);
+    if (answer.ok) recentLists.set(key, { at: Date.now(), list: answer.data });
+    return answer;
   },
 );
 
@@ -132,7 +159,7 @@ const fetchStoresOnce = cache(
  * request, however many parts of a page need it.
  */
 export function fetchStores(app: AppRow): Promise<Answer<StoreList>> {
-  return fetchStoresOnce(app.id, app.name, app.baseUrl, app.secretEnv);
+  return fetchStoresOnce(app.id, app.name, app.baseUrl, app.secretEnv, false);
 }
 
 /**
@@ -149,9 +176,9 @@ export function dashboardUrl(app: AppRow, storeId: string, now = Date.now()): st
   return `${app.baseUrl}/portal/${pass}`;
 }
 
-/** The settings page's connection check: the store list, and how long the app took to give it. */
+/** The settings page's connection check: a fresh store list, and how long the app took to give it. */
 export async function checkConnection(app: AppRow): Promise<{ answer: Answer<StoreList>; ms: number }> {
   const started = performance.now();
-  const answer = await fetchStores(app);
+  const answer = await fetchStoresOnce(app.id, app.name, app.baseUrl, app.secretEnv, true);
   return { answer, ms: Math.round(performance.now() - started) };
 }
