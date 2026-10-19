@@ -104,7 +104,16 @@ export default function BlogArticle({
 
           {article.featuredImage && (
             <div className="mx-auto -mt-24 max-w-[1120px] px-6 lg:-mt-36">
-              <div className="relative aspect-[16/9] overflow-hidden rounded-[24px] border border-peach bg-peach shadow-glow">
+              {/* The frame takes the image's own shape so nothing is cropped. A pasted
+                  URL has no stored size; covers are made at 2:1, so that is the guess. */}
+              <div
+                className="relative overflow-hidden rounded-[24px] border border-peach bg-peach shadow-glow"
+                style={{
+                  aspectRatio: article.featuredImageSize
+                    ? `${article.featuredImageSize.width} / ${article.featuredImageSize.height}`
+                    : "2 / 1",
+                }}
+              >
                 <BlogImage src={article.featuredImage} alt="" sizes="(min-width: 1120px) 1072px, 100vw" priority />
               </div>
             </div>
