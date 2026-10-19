@@ -11,6 +11,7 @@ import {
   Handshake,
   Images,
   LayoutDashboard,
+  LayoutGrid,
   LogOut,
   Mail,
   Menu,
@@ -28,12 +29,17 @@ import { ToastProvider } from "./overlay";
 type NavItem = { href: string; label: string; icon: LucideIcon; exact?: boolean };
 
 /**
- * One admin, three areas: the blog, the affiliate program and merchant email
- * share this sidebar rather than each having a shell of its own, which is
- * what the first two had while each also had its own login.
+ * One admin, four areas: your apps, the blog, the affiliate program and
+ * merchant email share this sidebar rather than each having a shell of its
+ * own, which is what the blog and affiliates had while each also had its own
+ * login.
  */
 const NAV: { label?: string; items: NavItem[] }[] = [
   { items: [{ href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true }] },
+  {
+    label: "Apps",
+    items: [{ href: "/admin/apps", label: "Your apps", icon: LayoutGrid }],
+  },
   {
     label: "Blog",
     items: [
