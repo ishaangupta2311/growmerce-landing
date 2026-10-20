@@ -124,6 +124,8 @@ export type ArticleData = {
   /** Already sanitised. */
   contentHtml: string;
   featuredImage: string | null;
+  /** The featured image's pixel size when it is from the media library, so the page can show it uncropped. */
+  featuredImageSize: { width: number; height: number } | null;
   ogImage: string | null;
   twitterCard: TwitterCard;
   publishedAt: string | null;

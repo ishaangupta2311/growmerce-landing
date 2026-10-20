@@ -12,15 +12,19 @@ import type { PostInput } from "./validation";
  * snapshot through the real article template at an admin-only URL.
  */
 
+const UPLOAD_ID = /^\/uploads\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\//;
+
 export async function createPreview(adminId: string, postId: string | null, input: PostInput): Promise<string> {
   const sql = requireSql();
+  const featuredMediaId = input.featuredImage?.match(UPLOAD_ID)?.[1] ?? null;
 
-  /* Byline, category and tag names in one trip. */
+  /* Byline, category, tag names and the featured image's size in one trip. */
   const [names] = await sql<
     {
       author: { name: string; slug: string; bio: string | null; avatar_url: string | null } | null;
       category: { name: string; slug: string } | null;
       tags: { name: string; slug: string }[];
+      featured_image_size: { width: number; height: number } | null;
     }[]
   >`
     select
@@ -33,9 +37,12 @@ export async function createPreview(adminId: string, postId: string | null, inpu
       coalesce((
         select json_agg(json_build_object('name', name, 'slug', slug) order by lower(name))
         from blog.tag where id = any(${sql.array(input.tagIds)}::bigint[])
-      ), '[]') as tags
+      ), '[]') as tags,
+      (select json_build_object('width', width, 'height', height)
+         from blog.media where id = ${featuredMediaId}
+      ) as featured_image_size
   `;
-  const { author, category, tags } = names;
+  const { author, category, tags, featured_image_size } = names;
 
   const now = new Date().toISOString();
   const data: ArticleData = {
@@ -45,6 +52,7 @@ export async function createPreview(adminId: string, postId: string | null, inpu
     excerpt: input.excerpt,
     contentHtml: sanitizeContent(input.content),
     featuredImage: input.featuredImage,
+    featuredImageSize: featured_image_size,
     ogImage: input.ogImage,
     twitterCard: input.twitterCard,
     publishedAt: (input.publishedAt ?? input.scheduledAt)?.toISOString() ?? now,
@@ -78,5 +86,10 @@ export async function getPreview(id: string): Promise<ArticleData | null> {
   `;
   if (!row) return null;
   /* Sanitised when stored; again here so a hand-edited row cannot inject. */
-  return { ...row.data, contentHtml: sanitizeContent(row.data.contentHtml) };
+  return {
+    ...row.data,
+    /* Snapshots taken before the size was recorded lack it. */
+    featuredImageSize: row.data.featuredImageSize ?? null,
+    contentHtml: sanitizeContent(row.data.contentHtml),
+  };
 }

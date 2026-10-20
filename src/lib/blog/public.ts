@@ -173,6 +173,7 @@ type ArticleRow = {
   excerpt: string | null;
   content: string;
   featured_image: string | null;
+  featured_image_size: { width: number; height: number } | null;
   og_image: string | null;
   twitter_card: TwitterCard;
   published_at: Date | null;
@@ -197,6 +198,11 @@ async function loadArticle(sql: Sql, where: ReturnType<Sql>) {
            p.seo_keywords, p.canonical_url, p.category_id,
            a.name as author_name, a.slug as author_slug, a.bio as author_bio, a.avatar_url as author_avatar,
            c.name as category_name, c.slug as category_slug,
+           (select json_build_object('width', m.width, 'height', m.height)
+              from blog.media m
+             where m.id = case when p.featured_image ~ '^/uploads/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/'
+                               then split_part(p.featured_image, '/', 3)::uuid end
+           ) as featured_image_size,
            coalesce((
              select json_agg(json_build_object('name', t.name, 'slug', t.slug) order by lower(t.name))
              from blog.post_tag pt
@@ -218,6 +224,7 @@ async function loadArticle(sql: Sql, where: ReturnType<Sql>) {
     excerpt: row.excerpt,
     contentHtml: sanitizeContent(row.content),
     featuredImage: row.featured_image,
+    featuredImageSize: row.featured_image_size,
     ogImage: row.og_image,
     twitterCard: row.twitter_card,
     publishedAt: row.published_at?.toISOString() ?? null,
