@@ -224,6 +224,11 @@ export async function completeApplication(_state: FormState, form: FormData): Pr
     if (typeof err === "object" && err !== null && (err as { code?: string }).code === "23505") {
       redirect("/affiliates/dashboard");
     }
+    /* The database's guard against one login being a partner and a teammate
+       (migrations/0012_team.sql): an invite accepted at the same moment won. */
+    if (typeof err === "object" && err !== null && (err as { constraint_name?: string }).constraint_name === "partner_not_member") {
+      redirect("/admin");
+    }
     const why = err instanceof Error ? err.message : String(err);
     console.error(`[affiliate] could not create partner — ${why.slice(0, 200)}`);
     return { error: "We could not set your account up just now. Please try again in a moment." };

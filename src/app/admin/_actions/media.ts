@@ -8,10 +8,19 @@ import type { ActionResult, MediaItem } from "@/lib/blog/types";
 
 const mediaId = z.uuid();
 
-/* The post editor's image picker lists and uploads too, so editing posts is
-   enough for those two; the Media tab itself is for managing the library. */
-const PICK_MEDIA = [["blog.media", "view"], ["blog.posts", "edit"]] as const;
-const ADD_MEDIA = [["blog.media", "edit"], ["blog.posts", "edit"]] as const;
+/* The image pickers in the post editor and the author editor list and upload
+   too, so editing posts or authors is enough for those two; the Media tab
+   itself is for managing the library. */
+const PICK_MEDIA = [
+  ["blog.media", "view"],
+  ["blog.posts", "edit"],
+  ["blog.authors", "edit"],
+] as const;
+const ADD_MEDIA = [
+  ["blog.media", "edit"],
+  ["blog.posts", "edit"],
+  ["blog.authors", "edit"],
+] as const;
 const EDIT_MEDIA = ["blog.media", "edit"] as const;
 
 /**

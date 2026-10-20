@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   ArrowRight,
   Banknote,
@@ -19,11 +20,11 @@ import {
 } from "lucide-react";
 import { LocalTime } from "@/components/admin/overlay";
 import { ButtonLink, Card, EmptyState, PageHeader, StatusBadge } from "@/components/admin/ui";
-import { requireAccess } from "@/lib/admin/session";
+import { requireAdmin } from "@/lib/admin/session";
 import { adminOverview } from "@/lib/affiliate/admin-store";
 import { formatMoney } from "@/lib/affiliate/format";
 import { getDashboard } from "@/lib/blog/posts";
-import { allows, allowsApps, type Grant } from "@/lib/team/permissions";
+import { allows, allowsApps, homeFor, type Grant } from "@/lib/team/permissions";
 
 export const metadata: Metadata = { title: "Overview" };
 
@@ -94,8 +95,11 @@ const NONE = Promise.resolve(null);
  * otherwise.
  */
 export default async function OverviewPage() {
-  /* The check comes first, alone: what to load depends on the role. */
-  const admin = await requireAccess("overview");
+  /* The check comes first, alone: what to load depends on the role. "/admin"
+     is where signing in, joining and every redirect lands, so a role without
+     the Overview is sent to the first page it can open rather than a 404. */
+  const admin = await requireAdmin();
+  if (!allows(admin.grant, "overview")) redirect(homeFor(admin.grant));
   const { grant } = admin;
   const showBlog = allows(grant, "blog.posts");
   const showAffiliates = allows(grant, "affiliates.overview");

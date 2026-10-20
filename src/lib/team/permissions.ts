@@ -153,6 +153,30 @@ export function allowsAny(grant: Grant, prefix: string): boolean {
   return Object.keys(grant.permissions).some((key) => key.startsWith(prefix));
 }
 
+/**
+ * The first page this person can open, in sidebar order: where "/admin" sends
+ * somebody whose role leaves out the Overview, rather than to a 404 straight
+ * after signing in. My account is open to everybody, so there always is one.
+ */
+export function homeFor(grant: Grant): string {
+  const pages: [boolean, string][] = [
+    [allows(grant, "overview"), "/admin"],
+    [allowsApps(grant), "/admin/apps"],
+    [allows(grant, "blog.posts"), "/admin/blog"],
+    [allows(grant, "blog.categories"), "/admin/blog/categories"],
+    [allows(grant, "blog.tags"), "/admin/blog/tags"],
+    [allows(grant, "blog.media"), "/admin/blog/media"],
+    [allows(grant, "blog.authors"), "/admin/blog/settings"],
+    [allows(grant, "affiliates.overview"), "/admin/affiliates"],
+    [allows(grant, "affiliates.partners"), "/admin/affiliates/partners"],
+    [allows(grant, "affiliates.payouts"), "/admin/affiliates/payouts"],
+    [allows(grant, "affiliates.events"), "/admin/affiliates/events"],
+    [allows(grant, "email"), "/admin/email"],
+    [allows(grant, "team"), "/admin/team"],
+  ];
+  return pages.find(([open]) => open)?.[1] ?? "/admin/account";
+}
+
 /** Whether any app, or app settings, is visible: the test for the Your apps tab. */
 export function allowsApps(grant: Grant): boolean {
   return allowsAny(grant, "app:") || allows(grant, APP_SETTINGS);

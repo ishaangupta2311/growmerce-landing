@@ -82,6 +82,40 @@ create table if not exists team.activity (
 
 create index if not exists activity_at_idx on team.activity (at desc);
 
+-- A login is a teammate or a partner, never both: the admin approves partners
+-- and sets their rates, so one person holding both could pay themselves. The
+-- app checks before adding either, but two requests racing each other (an
+-- application and an invite accepted at the same moment) could both pass, so
+-- the database has the final word. Both inserts take the same per-login lock
+-- before looking at the other table, so whichever commits second sees the
+-- first and is refused.
+create or replace function team.keep_partners_off_the_team() returns trigger
+language plpgsql as $$
+begin
+  perform pg_advisory_xact_lock(hashtextextended('team-or-partner:' || new.user_id::text, 0));
+  if tg_table_schema = 'team' then
+    if exists (select 1 from affiliate.partner p where p.user_id = new.user_id) then
+      raise exception 'this login is an affiliate partner'
+        using errcode = 'check_violation', constraint = 'member_not_partner';
+    end if;
+  elsif exists (select 1 from team.member m where m.user_id = new.user_id) then
+    raise exception 'this login is on the admin team'
+      using errcode = 'check_violation', constraint = 'partner_not_member';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists member_not_partner on team.member;
+create trigger member_not_partner
+  before insert or update of user_id on team.member
+  for each row execute function team.keep_partners_off_the_team();
+
+drop trigger if exists partner_not_member on affiliate.partner;
+create trigger partner_not_member
+  before insert or update of user_id on affiliate.partner
+  for each row execute function team.keep_partners_off_the_team();
+
 alter table team.role enable row level security;
 alter table team.member enable row level security;
 alter table team.invite enable row level security;

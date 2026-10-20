@@ -75,6 +75,7 @@ async function managedMember(admin: Admin, userId: unknown): Promise<TeamPerson 
   if (!id.success) return { ok: false, error: "Invalid request." };
   const person = await getMember(id.data);
   if (!person) return { ok: false, error: "That person is no longer on the team." };
+  if (isOwnerEmail(person.email)) return { ok: false, error: "That's the Owner, who can't be changed here." };
   if (!canManage(admin, person)) return { ok: false, error: CANT_MANAGE };
   return person;
 }
@@ -223,8 +224,9 @@ export async function cancelInviteAction(inviteId: unknown): Promise<ActionResul
     const id = uuid.safeParse(inviteId);
     if (!id.success) return { ok: false, error: "Invalid request." };
     const invite = await getInvite(id.data);
-    if (!invite || !(await deleteInvite(invite.id)))
-      return { ok: false, error: "That invite was already used or cancelled." };
+    if (!invite) return { ok: false, error: "That invite was already used or cancelled." };
+    if (!canAssign(admin.grant, invite.role)) return { ok: false, error: BEYOND_YOU };
+    if (!(await deleteInvite(invite.id))) return { ok: false, error: "That invite was already used or cancelled." };
     await noteActivity(admin, `Cancelled the invite to ${invite.email}`);
     refresh();
     return { ok: true, data: undefined, message: "Invite cancelled." };

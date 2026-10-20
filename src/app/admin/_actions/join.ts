@@ -25,6 +25,8 @@ function hashOf(token: unknown): string | null {
 }
 
 const GONE = "This invite has expired, or has already been used. Ask for a new one.";
+const PARTNER =
+  "This login is an affiliate partner's, and can't also be on the admin team. Ask for an invite to another address.";
 
 /**
  * For somebody with no login yet: makes one for the invited address with the
@@ -103,15 +105,19 @@ export async function acceptInviteAction(token: unknown): Promise<ActionResult<{
     return { ok: false, error: `Sign in as ${invite.email} to accept this invite.` };
   }
   const login = await loginByEmail(email);
-  if (login?.partner) {
-    return {
-      ok: false,
-      error:
-        "This login is an affiliate partner's, and can't also be on the admin team. Ask for an invite to another address.",
-    };
-  }
+  if (login?.partner) return { ok: false, error: PARTNER };
 
-  const joined = await acceptInvite(tokenHash, { userId: user.id, email });
+  let joined;
+  try {
+    joined = await acceptInvite(tokenHash, { userId: user.id, email });
+  } catch (err) {
+    /* The database's own guard (migrations/0012_team.sql): a partner
+       application that raced this one got there first. */
+    if ((err as { constraint_name?: string } | null)?.constraint_name === "member_not_partner") {
+      return { ok: false, error: PARTNER };
+    }
+    throw err;
+  }
   if (!joined) return { ok: false, error: GONE };
   await noteActivity({ email, name: invite.name }, `Joined the team as ${joined.role.name}`);
   return { ok: true, data: { next: "/admin" } };

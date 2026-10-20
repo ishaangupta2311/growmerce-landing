@@ -127,13 +127,13 @@ export async function listPeople(ownerEmails: readonly string[]): Promise<TeamPe
       where lower(u.email) = any(${[...ownerEmails]}::text[])
     `,
     sql<(PersonRecord & RoleRecord)[]>`
-      select m.user_id, m.email, coalesce(a.name, m.name) as name, m.must_change_password,
+      select m.user_id, lower(u.email) as email, coalesce(a.name, m.name) as name, m.must_change_password,
              exists (select 1 from auth.mfa_factors f where f.user_id = m.user_id and f.status = 'verified') as two_factor,
              u.last_sign_in_at, ${sql.unsafe(ROLE_COLUMNS)}
       from team.member m
       join team.role r on r.id = m.role_id
       join auth.users u on u.id = m.user_id
-      left join blog.admin_user a on a.email = m.email
+      left join blog.admin_user a on a.email = lower(u.email)
       order by m.created_at
     `,
   ]);
@@ -154,17 +154,25 @@ export async function listPeople(ownerEmails: readonly string[]): Promise<TeamPe
         null,
       ),
     ),
-    ...members.map((row) => toPerson(row, false, toRole(row))),
+    /* An Owner who also has a member row (added before going on the list) is
+       the Owner, and listed once, above. */
+    ...members.filter((row) => !ownerEmails.includes(row.email)).map((row) => toPerson(row, false, toRole(row))),
   ];
 }
 
+/**
+ * One member, with `email` as their login's address now: that is what the
+ * Owner check reads, so a member whose address was since put on the Owner
+ * list is recognised as the Owner rather than as a member to manage.
+ */
 export async function getMember(userId: string): Promise<TeamPerson | null> {
   const sql = requireSql();
   const [row] = await sql<(PersonRecord & RoleRecord)[]>`
-    select m.user_id, m.email, m.name, m.must_change_password, false as two_factor, null::timestamptz as last_sign_in_at,
-           ${sql.unsafe(ROLE_COLUMNS)}
+    select m.user_id, lower(u.email) as email, m.name, m.must_change_password, false as two_factor,
+           null::timestamptz as last_sign_in_at, ${sql.unsafe(ROLE_COLUMNS)}
     from team.member m
     join team.role r on r.id = m.role_id
+    join auth.users u on u.id = m.user_id
     where m.user_id = ${userId}
   `;
   return row ? toPerson(row, false, toRole(row)) : null;
