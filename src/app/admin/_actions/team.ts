@@ -8,7 +8,8 @@ import { z } from "zod";
 import { isOwnerEmail, type Admin } from "@/lib/admin/session";
 import { listApps } from "@/lib/apps/store";
 import { adminAction, noteActivity, quoted } from "@/lib/blog/action-guard";
-import { uniqueViolation } from "@/lib/blog/sql";
+import { requireSql, uniqueViolation } from "@/lib/blog/sql";
+import { transaction, type Tx } from "@/lib/db";
 import type { ActionResult } from "@/lib/blog/types";
 import { sendEmail } from "@/lib/email/resend";
 import { renderTeamInviteEmail } from "@/lib/email/team-invite-email";
@@ -26,16 +27,19 @@ import {
   deleteInvite,
   deleteRole,
   endSessions,
-  getInvite,
-  getMember,
-  getRole,
+  hasOpenInvite,
+  lockAddress,
+  lockInvite,
+  lockMember,
+  lockRole,
   loginByEmail,
+  openInvite,
   removeMember,
+  renewInvite,
   saveRole,
   setMemberRole,
   setMustChangePassword,
-  openInvite,
-  renewInvite,
+  type InviteRow,
   type RoleRow,
   type TeamPerson,
 } from "@/lib/team/store";
@@ -71,18 +75,28 @@ async function origin(): Promise<string> {
 const BEYOND_YOU = "That role has access you don't have, so you can't give it out.";
 const CANT_MANAGE = "You can't change this person: their access goes beyond yours.";
 
-async function managedMember(admin: Admin, userId: unknown): Promise<TeamPerson | Failure> {
+type Locked<T> = { ok: true; value: T } | Failure;
+
+/**
+ * Locks the member and their role, checks that `admin` may manage them, and
+ * runs `work` in the same transaction: a promotion, removal or role edit by
+ * somebody else waits until this is done, so it can't land between the check
+ * and the change.
+ */
+async function withManagedMember<T>(
+  admin: Admin,
+  userId: unknown,
+  work: (tx: Tx, person: TeamPerson & { userId: string }) => Promise<ActionResult<T>>,
+): Promise<ActionResult<T>> {
   const id = uuid.safeParse(userId);
   if (!id.success) return { ok: false, error: "Invalid request." };
-  const person = await getMember(id.data);
-  if (!person) return { ok: false, error: "That person is no longer on the team." };
-  if (isOwnerEmail(person.email)) return { ok: false, error: "That's the Owner, who can't be changed here." };
-  if (!canManage(admin, person)) return { ok: false, error: CANT_MANAGE };
-  return person;
-}
-
-function isResult(value: unknown): value is Failure {
-  return typeof value === "object" && value !== null && "ok" in value;
+  return transaction(requireSql(), async (tx) => {
+    const person = await lockMember(tx, id.data);
+    if (!person) return { ok: false, error: "That person is no longer on the team." };
+    if (isOwnerEmail(person.email)) return { ok: false, error: "That's the Owner, who can't be changed here." };
+    if (!canManage(admin, person)) return { ok: false, error: CANT_MANAGE };
+    return work(tx, { ...person, userId: id.data });
+  });
 }
 
 function friendlyAuthError(err: unknown): Failure {
@@ -101,11 +115,49 @@ const addSchema = z.object({
   method: z.enum(["invite", "create"]),
 });
 
+/** A new invite link: the token for the email, and its hash for the database. */
+function newLink(admin: Admin) {
+  const token = randomBytes(32).toString("hex");
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  return {
+    token,
+    fresh: { tokenHash, invitedBy: admin.email, expiresAt: new Date(Date.now() + INVITE_DAYS * 24 * 60 * 60 * 1000) },
+  };
+}
+
+/** Emails an invite's link, once the invite is saved. */
+async function emailInvite(
+  admin: Admin,
+  invite: { id: string; email: string; name: string; roleName: string },
+  token: string,
+): Promise<{ emailed: boolean; link: string }> {
+  const link = `${await origin()}/admin/join/${token}`;
+  const sent = await sendEmail({
+    to: invite.email,
+    ...renderTeamInviteEmail({
+      name: invite.name,
+      invitedBy: admin.name,
+      roleName: invite.roleName,
+      link,
+      expiresInDays: INVITE_DAYS,
+    }),
+    /* Per link, so a resend (a new token) is a new email. */
+    idempotencyKey: `team-invite/${invite.id}/${createHash("sha256").update(token).digest("hex").slice(0, 16)}`,
+  });
+  if (!sent.ok) console.error(`[team] invite email not sent — ${sent.reason}: ${sent.detail}`);
+  return { emailed: sent.ok, link };
+}
+
 /**
  * Adds somebody, one of two ways. An invite emails a link that works once
  * for seven days; they choose their own password (or sign in with the one
  * they have). Creating the login makes it now with a temporary password the
  * inviter passes on, which they must change on first sign-in.
+ *
+ * An address with an open invite is refused either way: that invite is
+ * changed only by resending or cancelling it, which check the role it
+ * offers. Both ways hold the address and the role locked while they check
+ * and write, so neither races the other.
  *
  * A partner's login can't join: the admin can approve partners and set their
  * rates, so the two never share an account.
@@ -120,48 +172,59 @@ export async function addTeammateAction(
       return { ok: false, error: issue.message, fieldErrors: { [String(issue.path[0])]: issue.message } };
     }
     const { name, email, roleId, method } = parsed.data;
-
     if (isOwnerEmail(email))
       return { ok: false, error: "That address is the Owner's, who already has every permission." };
-    const role = await getRole(roleId);
-    if (!role) return { ok: false, error: "That role no longer exists.", fieldErrors: { roleId: "Choose a role." } };
-    if (!canAssign(admin.grant, role)) return { ok: false, error: BEYOND_YOU, fieldErrors: { roleId: BEYOND_YOU } };
 
-    const login = await loginByEmail(email);
-    if (login?.member)
-      return {
-        ok: false,
-        error: "That person is already on the team.",
-        fieldErrors: { email: "Already on the team." },
-      };
-    if (login?.partner) {
-      const error = "That address is an affiliate partner's login. Use a different address for the admin.";
-      return { ok: false, error, fieldErrors: { email: error } };
-    }
+    const link = newLink(admin);
+    const added = await transaction(
+      requireSql(),
+      async (tx): Promise<Locked<{ role: RoleRow; inviteId: string | null; password: string | null }>> => {
+        await lockAddress(tx, email);
+        const role = await lockRole(tx, roleId, "share");
+        if (!role) return { ok: false, error: "That role no longer exists.", fieldErrors: { roleId: "Choose a role." } };
+        if (!canAssign(admin.grant, role)) return { ok: false, error: BEYOND_YOU, fieldErrors: { roleId: BEYOND_YOU } };
 
-    if (method === "create") {
-      if (login) {
-        const error =
-          "That address already has a login. Send an invite instead; they'll sign in with their own password.";
-        return { ok: false, error, fieldErrors: { email: error } };
-      }
-      const password = temporaryPassword();
-      try {
-        const { userId } = await createLogin(email, password, name);
-        await addMember({ userId, email, name, roleId: role.id, mustChangePassword: true, addedBy: admin.email });
-      } catch (err) {
-        return friendlyAuthError(err);
-      }
+        const login = await loginByEmail(email);
+        if (login?.member) return { ok: false, error: "That person is already on the team.", fieldErrors: { email: "Already on the team." } };
+        if (login?.partner) {
+          const error = "That address is an affiliate partner's login. Use a different address for the admin.";
+          return { ok: false, error, fieldErrors: { email: error } };
+        }
+        if (await hasOpenInvite(tx, email)) {
+          const error = "There's already an open invite for this address. Resend or cancel it below.";
+          return { ok: false, error, fieldErrors: { email: error } };
+        }
+
+        if (method === "create") {
+          if (login) {
+            const error = "That address already has a login. Send an invite instead; they'll sign in with their own password.";
+            return { ok: false, error, fieldErrors: { email: error } };
+          }
+          const password = temporaryPassword();
+          try {
+            const { userId } = await createLogin(email, password, name);
+            await addMember({ userId, email, name, roleId: role.id, mustChangePassword: true, addedBy: admin.email }, tx);
+          } catch (err) {
+            return friendlyAuthError(err);
+          }
+          return { ok: true, value: { role, inviteId: null, password } };
+        }
+
+        const inviteId = await openInvite({ ...link.fresh, email, name, roleId: role.id }, tx);
+        if (!inviteId) return { ok: false, error: "That invite changed meanwhile. Reload and try again." };
+        return { ok: true, value: { role, inviteId, password: null } };
+      },
+    );
+    if (!added.ok) return added;
+    const { role, inviteId, password } = added.value;
+
+    if (password) {
       await noteActivity(admin, `Created a login for ${email} as ${role.name}`);
       refresh();
       return { ok: true, data: { password, link: null }, message: "Login created." };
     }
 
-    const sent = await sendInvite(admin, { id: null, email, name, role });
-    if (!sent) {
-      const error = "There's already an open invite for this address. Resend or cancel it below.";
-      return { ok: false, error, fieldErrors: { email: error } };
-    }
+    const sent = await emailInvite(admin, { id: inviteId!, email, name, roleName: role.name }, link.token);
     await noteActivity(admin, `Invited ${email} as ${role.name}`);
     refresh();
     return {
@@ -173,54 +236,37 @@ export async function addTeammateAction(
 }
 
 /**
- * Opens a new invite (`id` null) or puts a new link on an existing one, and
- * emails it. Null when there was nothing to send: a new invite for an address
- * that already has an open one, or an invite that changed or went meanwhile.
+ * Locks the invite and the role it offers, checks that `admin` may give that
+ * role out, and runs `work` in the same transaction.
  */
-async function sendInvite(
+async function withManagedInvite<T>(
   admin: Admin,
-  invite: { id: string | null; email: string; name: string; role: RoleRow },
-): Promise<{ emailed: boolean; link: string } | null> {
-  const token = randomBytes(32).toString("hex");
-  const tokenHash = createHash("sha256").update(token).digest("hex");
-  const fresh = {
-    tokenHash,
-    invitedBy: admin.email,
-    expiresAt: new Date(Date.now() + INVITE_DAYS * 24 * 60 * 60 * 1000),
-  };
-  const id = invite.id
-    ? (await renewInvite(invite.id, invite.role.id, fresh)) && invite.id
-    : await openInvite({ ...fresh, email: invite.email, name: invite.name, roleId: invite.role.id });
-  if (!id) return null;
-
-  const link = `${await origin()}/admin/join/${token}`;
-  const sent = await sendEmail({
-    to: invite.email,
-    ...renderTeamInviteEmail({
-      name: invite.name,
-      invitedBy: admin.name,
-      roleName: invite.role.name,
-      link,
-      expiresInDays: INVITE_DAYS,
-    }),
-    /* Per token, so a resend (a new token) is a new email. */
-    idempotencyKey: `team-invite/${id}/${tokenHash.slice(0, 16)}`,
+  inviteId: unknown,
+  work: (tx: Tx, invite: InviteRow) => Promise<Locked<T>>,
+): Promise<Locked<T>> {
+  const id = uuid.safeParse(inviteId);
+  if (!id.success) return { ok: false, error: "Invalid request." };
+  return transaction(requireSql(), async (tx) => {
+    const invite = await lockInvite(tx, id.data);
+    if (!invite) return { ok: false, error: "That invite was already used or cancelled." };
+    if (!canAssign(admin.grant, invite.role)) return { ok: false, error: BEYOND_YOU };
+    return work(tx, invite);
   });
-  if (!sent.ok) console.error(`[team] invite email not sent — ${sent.reason}: ${sent.detail}`);
-  return { emailed: sent.ok, link };
 }
 
 /** A new link for an open invite. The old link stops working. */
 export async function resendInviteAction(inviteId: unknown): Promise<ActionResult<{ link: string | null }>> {
   return adminAction("resend invite", EDIT_TEAM, async (admin) => {
-    const id = uuid.safeParse(inviteId);
-    if (!id.success) return { ok: false, error: "Invalid request." };
-    const invite = await getInvite(id.data);
-    if (!invite) return { ok: false, error: "That invite was already used or cancelled." };
-    if (!canAssign(admin.grant, invite.role)) return { ok: false, error: BEYOND_YOU };
+    const link = newLink(admin);
+    const renewed = await withManagedInvite(admin, inviteId, async (tx, invite) =>
+      (await renewInvite(invite.id, invite.role.id, link.fresh, tx))
+        ? { ok: true as const, value: invite }
+        : { ok: false as const, error: "That invite was already used or cancelled." },
+    );
+    if (!renewed.ok) return renewed;
+    const invite = renewed.value;
 
-    const sent = await sendInvite(admin, invite);
-    if (!sent) return { ok: false, error: "That invite changed or was used meanwhile. Reload and try again." };
+    const sent = await emailInvite(admin, { ...invite, roleName: invite.role.name }, link.token);
     await noteActivity(admin, `Resent the invite to ${invite.email}`);
     refresh();
     return {
@@ -233,33 +279,32 @@ export async function resendInviteAction(inviteId: unknown): Promise<ActionResul
 
 export async function cancelInviteAction(inviteId: unknown): Promise<ActionResult> {
   return adminAction("cancel invite", EDIT_TEAM, async (admin) => {
-    const id = uuid.safeParse(inviteId);
-    if (!id.success) return { ok: false, error: "Invalid request." };
-    const invite = await getInvite(id.data);
-    if (!invite) return { ok: false, error: "That invite was already used or cancelled." };
-    if (!canAssign(admin.grant, invite.role)) return { ok: false, error: BEYOND_YOU };
-    if (!(await deleteInvite(invite.id))) return { ok: false, error: "That invite was already used or cancelled." };
-    await noteActivity(admin, `Cancelled the invite to ${invite.email}`);
+    const cancelled = await withManagedInvite(admin, inviteId, async (tx, invite) =>
+      (await deleteInvite(invite.id, tx))
+        ? { ok: true as const, value: invite }
+        : { ok: false as const, error: "That invite was already used or cancelled." },
+    );
+    if (!cancelled.ok) return cancelled;
+    await noteActivity(admin, `Cancelled the invite to ${cancelled.value.email}`);
     refresh();
     return { ok: true, data: undefined, message: "Invite cancelled." };
   });
 }
 
 export async function changeRoleAction(userId: unknown, roleId: unknown): Promise<ActionResult> {
-  return adminAction("change role", EDIT_TEAM, async (admin) => {
-    const person = await managedMember(admin, userId);
-    if (isResult(person)) return person;
-    const id = uuid.safeParse(roleId);
-    const role = id.success ? await getRole(id.data) : null;
-    if (!role) return { ok: false, error: "That role no longer exists." };
-    if (!canAssign(admin.grant, role)) return { ok: false, error: BEYOND_YOU };
+  return adminAction("change role", EDIT_TEAM, (admin) =>
+    withManagedMember(admin, userId, async (tx, person) => {
+      const id = uuid.safeParse(roleId);
+      const role = id.success ? await lockRole(tx, id.data, "share") : null;
+      if (!role) return { ok: false, error: "That role no longer exists." };
+      if (!canAssign(admin.grant, role)) return { ok: false, error: BEYOND_YOU };
 
-    if (!(await setMemberRole(person.userId!, role.id)))
-      return { ok: false, error: "That person is no longer on the team." };
-    await noteActivity(admin, `Changed ${person.email}'s role: ${person.role?.name} → ${role.name}`);
-    refresh();
-    return { ok: true, data: undefined, message: `${person.name} is now ${role.name}.` };
-  });
+      await setMemberRole(person.userId, role.id, tx);
+      await noteActivity(admin, `Changed ${person.email}'s role: ${person.role?.name} → ${role.name}`);
+      refresh();
+      return { ok: true, data: undefined, message: `${person.name} is now ${role.name}.` };
+    }),
+  );
 }
 
 /**
@@ -267,53 +312,52 @@ export async function changeRoleAction(userId: unknown, roleId: unknown): Promis
  * end, and they choose their own password the next time they sign in.
  */
 export async function resetPasswordAction(userId: unknown): Promise<ActionResult<{ password: string }>> {
-  return adminAction("reset password", EDIT_TEAM, async (admin) => {
-    const person = await managedMember(admin, userId);
-    if (isResult(person)) return person;
-
-    const password = temporaryPassword();
-    try {
-      await setPassword(person.userId!, password);
-    } catch (err) {
-      return friendlyAuthError(err);
-    }
-    await setMustChangePassword(person.userId!, true);
-    await endSessions(person.userId!);
-    await noteActivity(admin, `Reset ${person.email}'s password`);
-    refresh();
-    return { ok: true, data: { password }, message: "Password reset." };
-  });
+  return adminAction("reset password", EDIT_TEAM, (admin) =>
+    withManagedMember<{ password: string }>(admin, userId, async (tx, person) => {
+      const password = temporaryPassword();
+      try {
+        await setPassword(person.userId, password);
+      } catch (err) {
+        return friendlyAuthError(err);
+      }
+      await setMustChangePassword(person.userId, true, tx);
+      await endSessions(person.userId);
+      await noteActivity(admin, `Reset ${person.email}'s password`);
+      refresh();
+      return { ok: true, data: { password }, message: "Password reset." };
+    }),
+  );
 }
 
 export async function signOutEverywhereAction(userId: unknown): Promise<ActionResult> {
-  return adminAction("sign out everywhere", EDIT_TEAM, async (admin) => {
-    const person = await managedMember(admin, userId);
-    if (isResult(person)) return person;
-    await endSessions(person.userId!);
-    await noteActivity(admin, `Signed ${person.email} out everywhere`);
-    return { ok: true, data: undefined, message: `${person.name} is signed out everywhere.` };
-  });
+  return adminAction("sign out everywhere", EDIT_TEAM, (admin) =>
+    withManagedMember(admin, userId, async (_tx, person) => {
+      await endSessions(person.userId);
+      await noteActivity(admin, `Signed ${person.email} out everywhere`);
+      return { ok: true, data: undefined, message: `${person.name} is signed out everywhere.` };
+    }),
+  );
 }
 
 /** For somebody who lost the phone their codes were on. */
 export async function resetTwoStepAction(userId: unknown): Promise<ActionResult> {
-  return adminAction("reset two-step login", EDIT_TEAM, async (admin) => {
-    const person = await managedMember(admin, userId);
-    if (isResult(person)) return person;
-    try {
-      await removeSecondFactors(person.userId!);
-    } catch (err) {
-      return friendlyAuthError(err);
-    }
-    await endSessions(person.userId!);
-    await noteActivity(admin, `Turned off ${person.email}'s two-step login`);
-    refresh();
-    return {
-      ok: true,
-      data: undefined,
-      message: `${person.name} can sign in with their password alone until they turn it back on.`,
-    };
-  });
+  return adminAction("reset two-step login", EDIT_TEAM, (admin) =>
+    withManagedMember(admin, userId, async (_tx, person) => {
+      try {
+        await removeSecondFactors(person.userId);
+      } catch (err) {
+        return friendlyAuthError(err);
+      }
+      await endSessions(person.userId);
+      await noteActivity(admin, `Turned off ${person.email}'s two-step login`);
+      refresh();
+      return {
+        ok: true,
+        data: undefined,
+        message: `${person.name} can sign in with their password alone until they turn it back on.`,
+      };
+    }),
+  );
 }
 
 /**
@@ -321,14 +365,14 @@ export async function resetTwoStepAction(userId: unknown): Promise<ActionResult>
  * login itself stays, since nothing else here owns it.
  */
 export async function removeTeammateAction(userId: unknown): Promise<ActionResult> {
-  return adminAction("remove teammate", EDIT_TEAM, async (admin) => {
-    const person = await managedMember(admin, userId);
-    if (isResult(person)) return person;
-    if (!(await removeMember(person.userId!))) return { ok: false, error: "That person is no longer on the team." };
-    await noteActivity(admin, `Removed ${person.email} from the team`);
-    refresh();
-    return { ok: true, data: undefined, message: `${person.name} is off the team.` };
-  });
+  return adminAction("remove teammate", EDIT_TEAM, (admin) =>
+    withManagedMember(admin, userId, async (tx, person) => {
+      await removeMember(person.userId, tx);
+      await noteActivity(admin, `Removed ${person.email} from the team`);
+      refresh();
+      return { ok: true, data: undefined, message: `${person.name} is off the team.` };
+    }),
+  );
 }
 
 /* ---------------------------------------------------------------------------
@@ -355,30 +399,36 @@ export async function saveRoleAction(roleId: unknown, values: unknown): Promise<
       return { ok: false, error: issue.message, fieldErrors: { [String(issue.path[0])]: issue.message } };
     }
 
-    const existing = id ? await getRole(id.data) : null;
-    if (id && !existing) return { ok: false, error: "That role no longer exists." };
-    if (existing?.builtin)
-      return { ok: false, error: "The ready-made roles can't be changed. Make a new role instead." };
-    /* Editing a role changes everybody who holds it, so the editor must
-       already cover both what it was and what it becomes. */
-    if (existing && !canAssign(admin.grant, existing))
-      return { ok: false, error: "This role has access you don't have, so you can't edit it." };
-
     const tabs = sections(await listApps()).flatMap((section) => section.tabs);
     const permissions = cleanPermissions(parsed.data.permissions, tabs);
     if (!covers(admin.grant, { all: null, permissions }))
       return { ok: false, error: "You can only give a role access you have yourself." };
 
     try {
-      const saved = await saveRole(existing?.id ?? null, {
-        name: parsed.data.name,
-        description: parsed.data.description,
-        permissions,
+      /* Locked while checked and saved: an edit elsewhere can't widen the
+         role between this check and this write. */
+      const saved = await transaction(requireSql(), async (tx): Promise<Locked<{ id: string; edited: boolean }>> => {
+        const existing = id ? await lockRole(tx, id.data, "update") : null;
+        if (id && !existing) return { ok: false, error: "That role no longer exists." };
+        if (existing?.builtin)
+          return { ok: false, error: "The ready-made roles can't be changed. Make a new role instead." };
+        /* Editing a role changes everybody who holds it, so the editor must
+           already cover both what it was and what it becomes. */
+        if (existing && !canAssign(admin.grant, existing))
+          return { ok: false, error: "This role has access you don't have, so you can't edit it." };
+
+        const savedId = await saveRole(
+          existing?.id ?? null,
+          { name: parsed.data.name, description: parsed.data.description, permissions },
+          tx,
+        );
+        if (!savedId) return { ok: false, error: "That role no longer exists." };
+        return { ok: true, value: { id: savedId, edited: existing !== null } };
       });
-      if (!saved) return { ok: false, error: "That role no longer exists." };
-      await noteActivity(admin, `${existing ? "Edited" : "Made"} the role ${quoted(parsed.data.name)}`);
+      if (!saved.ok) return saved;
+      await noteActivity(admin, `${saved.value.edited ? "Edited" : "Made"} the role ${quoted(parsed.data.name)}`);
       refresh();
-      return { ok: true, data: { id: saved }, message: existing ? "Role saved." : "Role made." };
+      return { ok: true, data: { id: saved.value.id }, message: saved.value.edited ? "Role saved." : "Role made." };
     } catch (err) {
       if (uniqueViolation(err) !== null) {
         return { ok: false, error: "There's already a role with that name.", fieldErrors: { name: "Already taken." } };
@@ -392,20 +442,24 @@ export async function deleteRoleAction(roleId: unknown): Promise<ActionResult> {
   return adminAction("delete role", EDIT_TEAM, async (admin) => {
     const id = uuid.safeParse(roleId);
     if (!id.success) return { ok: false, error: "Invalid request." };
-    const role = await getRole(id.data);
-    if (!role || role.builtin) return { ok: false, error: "That role can't be deleted." };
-    if (!canAssign(admin.grant, role))
-      return { ok: false, error: "This role has access you don't have, so you can't delete it." };
+    const deleted = await transaction(requireSql(), async (tx): Promise<Locked<RoleRow>> => {
+      const role = await lockRole(tx, id.data, "update");
+      if (!role || role.builtin) return { ok: false, error: "That role can't be deleted." };
+      if (!canAssign(admin.grant, role))
+        return { ok: false, error: "This role has access you don't have, so you can't delete it." };
 
-    const outcome = await deleteRole(role.id);
-    if (outcome === "in-use") {
-      return {
-        ok: false,
-        error: "People still hold this role, or an open invite offers it. Move them to another role first.",
-      };
-    }
-    if (outcome === "missing") return { ok: false, error: "That role no longer exists." };
-    await noteActivity(admin, `Deleted the role ${quoted(role.name)}`);
+      const outcome = await deleteRole(role.id, tx);
+      if (outcome === "in-use") {
+        return {
+          ok: false,
+          error: "People still hold this role, or an open invite offers it. Move them to another role first.",
+        };
+      }
+      if (outcome === "missing") return { ok: false, error: "That role no longer exists." };
+      return { ok: true, value: role };
+    });
+    if (!deleted.ok) return deleted;
+    await noteActivity(admin, `Deleted the role ${quoted(deleted.value.name)}`);
     refresh();
     return { ok: true, data: undefined, message: "Role deleted." };
   });

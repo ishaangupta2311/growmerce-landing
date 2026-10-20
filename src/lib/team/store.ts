@@ -1,5 +1,7 @@
 import "server-only";
 
+import type { Sql } from "postgres";
+
 import { requireSql } from "@/lib/blog/sql";
 import { transaction } from "@/lib/db";
 import { grantOf, type Grant, type Permissions } from "./permissions";
@@ -11,7 +13,10 @@ import { grantOf, type Grant, type Permissions } from "./permissions";
  * server instead (see ./auth-admin.ts), with one exception noted below.
  *
  * Nothing here checks who is asking. Callers have passed `requireAccess` and
- * the escalation rules in the Team actions.
+ * the escalation rules in the Team actions. Those rules are checked and
+ * applied in one transaction, on rows locked by the `lock…` functions below,
+ * so nobody else's change can land between the check and the write: each
+ * write takes an optional `db`, the transaction's connection.
  */
 
 export type RoleRow = {
@@ -160,24 +165,6 @@ export async function listPeople(ownerEmails: readonly string[]): Promise<TeamPe
   ];
 }
 
-/**
- * One member, with `email` as their login's address now: that is what the
- * Owner check reads, so a member whose address was since put on the Owner
- * list is recognised as the Owner rather than as a member to manage.
- */
-export async function getMember(userId: string): Promise<TeamPerson | null> {
-  const sql = requireSql();
-  const [row] = await sql<(PersonRecord & RoleRecord)[]>`
-    select m.user_id, lower(u.email) as email, m.name, m.must_change_password, false as two_factor,
-           null::timestamptz as last_sign_in_at, ${sql.unsafe(ROLE_COLUMNS)}
-    from team.member m
-    join team.role r on r.id = m.role_id
-    join auth.users u on u.id = m.user_id
-    where m.user_id = ${userId}
-  `;
-  return row ? toPerson(row, false, toRole(row)) : null;
-}
-
 export async function addMember(member: {
   userId: string;
   email: string;
@@ -185,27 +172,27 @@ export async function addMember(member: {
   roleId: string;
   mustChangePassword: boolean;
   addedBy: string;
-}): Promise<void> {
-  const sql = requireSql();
+}, db: Sql = requireSql()): Promise<void> {
+  const sql = db;
   await sql`
     insert into team.member (user_id, email, name, role_id, must_change_password, added_by)
     values (${member.userId}, ${member.email}, ${member.name}, ${member.roleId}, ${member.mustChangePassword}, ${member.addedBy})
   `;
 }
 
-export async function setMemberRole(userId: string, roleId: string): Promise<boolean> {
-  const sql = requireSql();
+export async function setMemberRole(userId: string, roleId: string, db: Sql = requireSql()): Promise<boolean> {
+  const sql = db;
   const rows = await sql`update team.member set role_id = ${roleId} where user_id = ${userId} returning 1`;
   return rows.length > 0;
 }
 
-export async function setMustChangePassword(userId: string, value: boolean): Promise<void> {
-  const sql = requireSql();
+export async function setMustChangePassword(userId: string, value: boolean, db: Sql = requireSql()): Promise<void> {
+  const sql = db;
   await sql`update team.member set must_change_password = ${value} where user_id = ${userId}`;
 }
 
-export async function removeMember(userId: string): Promise<boolean> {
-  const sql = requireSql();
+export async function removeMember(userId: string, db: Sql = requireSql()): Promise<boolean> {
+  const sql = db;
   const rows = await sql`delete from team.member where user_id = ${userId} returning 1`;
   return rows.length > 0;
 }
@@ -267,18 +254,13 @@ export async function listRoles(): Promise<RoleSummary[]> {
   return rows.map((row) => ({ ...toRole(row), members: row.members, invites: row.invites }));
 }
 
-export async function getRole(id: string): Promise<RoleRow | null> {
-  const sql = requireSql();
-  const [row] = await sql<RoleRecord[]>`select ${sql.unsafe(ROLE_COLUMNS)} from team.role r where r.id = ${id}`;
-  return row ? toRole(row) : null;
-}
-
 /** Saves a role somebody made. The ready-made roles cannot be changed. */
 export async function saveRole(
   id: string | null,
   values: { name: string; description: string | null; permissions: Permissions },
+  db: Sql = requireSql(),
 ): Promise<string | null> {
-  const sql = requireSql();
+  const sql = db;
   if (id) {
     const [row] = await sql<{ id: string }[]>`
       update team.role
@@ -298,8 +280,8 @@ export async function saveRole(
 }
 
 /** Deletes a role nobody holds and no invite offers. */
-export async function deleteRole(id: string): Promise<"deleted" | "in-use" | "missing"> {
-  const sql = requireSql();
+export async function deleteRole(id: string, db: Sql = requireSql()): Promise<"deleted" | "in-use" | "missing"> {
+  const sql = db;
   const [row] = await sql<{ deleted: boolean; in_use: boolean }[]>`
     with target as (
       select r.id,
@@ -365,17 +347,6 @@ export async function listInvites(): Promise<InviteRow[]> {
   return rows.map(toInvite);
 }
 
-export async function getInvite(id: string): Promise<InviteRow | null> {
-  const sql = requireSql();
-  const [row] = await sql<InviteRecord[]>`
-    select i.id, i.email, i.name, i.invited_by, i.created_at, i.expires_at, ${sql.unsafe(ROLE_COLUMNS)}
-    from team.invite i
-    join team.role r on r.id = i.role_id
-    where i.id = ${id}
-  `;
-  return row ? toInvite(row) : null;
-}
-
 /** An invite still open under this token, or null. */
 export async function inviteByTokenHash(tokenHash: string): Promise<InviteRow | null> {
   const sql = requireSql();
@@ -395,8 +366,8 @@ type NewLink = { tokenHash: string; invitedBy: string; expiresAt: Date };
  * invite is changed only by resending or cancelling it, which check the
  * role it offers. An expired one is replaced, since its link is dead anyway.
  */
-export async function openInvite(invite: NewLink & { email: string; name: string; roleId: string }): Promise<string | null> {
-  const sql = requireSql();
+export async function openInvite(invite: NewLink & { email: string; name: string; roleId: string }, db: Sql = requireSql()): Promise<string | null> {
+  const sql = db;
   const [row] = await sql<{ id: string }[]>`
     insert into team.invite (email, name, role_id, token_hash, invited_by, expires_at)
     values (${invite.email}, ${invite.name}, ${invite.roleId}, ${invite.tokenHash}, ${invite.invitedBy}, ${invite.expiresAt})
@@ -414,8 +385,8 @@ export async function openInvite(invite: NewLink & { email: string; name: string
  * offers `roleId`, the role the caller checked, so a change in between can't
  * slip past that check.
  */
-export async function renewInvite(id: string, roleId: string, link: NewLink): Promise<boolean> {
-  const sql = requireSql();
+export async function renewInvite(id: string, roleId: string, link: NewLink, db: Sql = requireSql()): Promise<boolean> {
+  const sql = db;
   const rows = await sql`
     update team.invite
     set token_hash = ${link.tokenHash}, invited_by = ${link.invitedBy}, created_at = now(), expires_at = ${link.expiresAt}
@@ -425,8 +396,8 @@ export async function renewInvite(id: string, roleId: string, link: NewLink): Pr
   return rows.length > 0;
 }
 
-export async function deleteInvite(id: string): Promise<boolean> {
-  const sql = requireSql();
+export async function deleteInvite(id: string, db: Sql = requireSql()): Promise<boolean> {
+  const sql = db;
   const rows = await sql`delete from team.invite where id = ${id} returning 1`;
   return rows.length > 0;
 }
@@ -460,6 +431,68 @@ export async function acceptInvite(
     await tx`delete from team.invite where id = ${row.id}`;
     return toInvite(row);
   });
+}
+
+/* ---------------------------------------------------------------------------
+   Locks, for checking and changing in one transaction
+--------------------------------------------------------------------------- */
+
+/**
+ * A member, locked until the transaction ends, with their role locked against
+ * edits: a change of role, a removal or an edit of that role elsewhere waits.
+ * `email` is the login's address now, not the one recorded when they joined:
+ * that is what the Owner check reads, so a member since put on the Owner list
+ * is recognised as the Owner.
+ */
+export async function lockMember(tx: Sql, userId: string): Promise<TeamPerson | null> {
+  const [row] = await tx<(PersonRecord & RoleRecord)[]>`
+    select m.user_id, lower(u.email) as email, m.name, m.must_change_password, false as two_factor,
+           null::timestamptz as last_sign_in_at, ${tx.unsafe(ROLE_COLUMNS)}
+    from team.member m
+    join team.role r on r.id = m.role_id
+    join auth.users u on u.id = m.user_id
+    where m.user_id = ${userId}
+    for update of m for share of r
+  `;
+  return row ? toPerson(row, false, toRole(row)) : null;
+}
+
+/** A role, locked: `share` to give it out, `update` to edit or delete it. */
+export async function lockRole(tx: Sql, id: string, mode: "share" | "update"): Promise<RoleRow | null> {
+  const [row] = await tx<RoleRecord[]>`
+    select ${tx.unsafe(ROLE_COLUMNS)} from team.role r where r.id = ${id}
+    ${mode === "update" ? tx`for update` : tx`for share`}
+  `;
+  return row ? toRole(row) : null;
+}
+
+/** An invite, locked, with the role it offers locked against edits. */
+export async function lockInvite(tx: Sql, id: string): Promise<InviteRow | null> {
+  const [row] = await tx<InviteRecord[]>`
+    select i.id, i.email, i.name, i.invited_by, i.created_at, i.expires_at, ${tx.unsafe(ROLE_COLUMNS)}
+    from team.invite i
+    join team.role r on r.id = i.role_id
+    where i.id = ${id}
+    for update of i for share of r
+  `;
+  return row ? toInvite(row) : null;
+}
+
+/**
+ * Holds an address until the transaction ends, for the two ways of adding
+ * somebody (an invite, or a login made for them), neither of which has a row
+ * to lock yet. Each checks the other under this lock.
+ */
+export async function lockAddress(tx: Sql, email: string): Promise<void> {
+  await tx`select pg_advisory_xact_lock(hashtextextended(${"team-address:" + email}, 0))`;
+}
+
+/** Whether the address has an invite that can still be used. */
+export async function hasOpenInvite(db: Sql, email: string): Promise<boolean> {
+  const [row] = await db<{ open: boolean }[]>`
+    select exists (select 1 from team.invite where email = ${email} and expires_at > now()) as open
+  `;
+  return row.open;
 }
 
 /* ---------------------------------------------------------------------------
