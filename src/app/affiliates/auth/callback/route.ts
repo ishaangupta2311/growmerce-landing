@@ -30,19 +30,19 @@ export async function GET(request: NextRequest) {
   const type = url.searchParams.get("type");
 
   let failed: string | null = null;
-  let email: string | undefined;
+  let user: { id: string; email?: string } | null = null;
 
   if (code) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     failed = error?.message ?? null;
-    email = data.user?.email;
+    user = data.user;
   } else if (tokenHash && type) {
     const { data, error } = await supabase.auth.verifyOtp({
       type: type as "signup" | "recovery" | "invite" | "email_change" | "magiclink",
       token_hash: tokenHash,
     });
     failed = error?.message ?? null;
-    email = data.user?.email;
+    user = data.user;
   } else {
     failed = "no_token";
   }
@@ -56,6 +56,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/affiliates/login?expired=1", url.origin));
   }
 
-  const next = safeNext(url.searchParams.get("next"), landingFor(email));
+  const next = safeNext(url.searchParams.get("next"), await landingFor(user));
   return NextResponse.redirect(new URL(next, url.origin));
 }

@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { adminAction } from "@/lib/blog/action-guard";
+import { adminAction, noteActivity, quoted } from "@/lib/blog/action-guard";
 import {
   deletePost,
   duplicatePost,
@@ -19,13 +19,14 @@ const nullableId = idSchema.nullable();
 const intentSchema = z.enum(POST_INTENTS);
 
 const INVALID = "Some fields need attention.";
+const EDIT_POSTS = ["blog.posts", "edit"] as const;
 
 export async function savePostAction(
   postId: unknown,
   values: unknown,
   intent: unknown,
 ): Promise<ActionResult<{ id: string; slug: string; status: PostStatus }>> {
-  return adminAction("save post", async (admin) => {
+  return adminAction("save post", EDIT_POSTS, async (admin) => {
     const id = nullableId.safeParse(postId);
     const action = intentSchema.safeParse(intent);
     if (!id.success || !action.success) return { ok: false, error: "Invalid request." };
@@ -37,6 +38,14 @@ export async function savePostAction(
     if (!outcome.ok) return outcome;
 
     revalidateBlog();
+    const verb = {
+      draft: id.data ? "Saved the draft" : "Started the draft",
+      update: "Edited",
+      publish: "Published",
+      schedule: "Scheduled",
+      unpublish: "Unpublished",
+    }[action.data];
+    await noteActivity(admin, `${verb} ${quoted(parsed.data.title)}`);
     const message = {
       draft: "Draft saved.",
       update: "Changes saved.",
@@ -50,7 +59,7 @@ export async function savePostAction(
 
 /** Snapshots the editor's current state and returns the preview URL. */
 export async function previewPostAction(postId: unknown, values: unknown): Promise<ActionResult<{ url: string }>> {
-  return adminAction("preview post", async (admin) => {
+  return adminAction("preview post", EDIT_POSTS, async (admin) => {
     const id = nullableId.safeParse(postId);
     if (!id.success) return { ok: false, error: "Invalid request." };
 
@@ -70,32 +79,35 @@ export async function previewPostAction(postId: unknown, values: unknown): Promi
 }
 
 export async function duplicatePostAction(postId: unknown): Promise<ActionResult<{ id: string }>> {
-  return adminAction("duplicate post", async (admin) => {
+  return adminAction("duplicate post", EDIT_POSTS, async (admin) => {
     const id = idSchema.safeParse(postId);
     if (!id.success) return { ok: false, error: "Invalid request." };
     const copy = await duplicatePost(admin.id, id.data);
     if (!copy) return { ok: false, error: "That post no longer exists." };
+    await noteActivity(admin, `Duplicated post #${id.data} as a draft`);
     return { ok: true, data: { id: copy }, message: "Post duplicated as a draft." };
   });
 }
 
 export async function deletePostAction(postId: unknown): Promise<ActionResult> {
-  return adminAction("delete post", async () => {
+  return adminAction("delete post", EDIT_POSTS, async (admin) => {
     const id = idSchema.safeParse(postId);
     if (!id.success) return { ok: false, error: "Invalid request." };
     const deleted = await deletePost(id.data);
     if (!deleted) return { ok: false, error: "That post no longer exists." };
+    await noteActivity(admin, `Deleted the post /${deleted.slug}`);
     revalidateBlog();
     return { ok: true, data: undefined, message: "Post deleted." };
   });
 }
 
 export async function setPublishedAction(postId: unknown, published: unknown): Promise<ActionResult> {
-  return adminAction("publish post", async (admin) => {
+  return adminAction("publish post", EDIT_POSTS, async (admin) => {
     const id = idSchema.safeParse(postId);
     if (!id.success || typeof published !== "boolean") return { ok: false, error: "Invalid request." };
     const row = await setPostPublished(admin.id, id.data, published);
     if (!row) return { ok: false, error: "That post no longer exists." };
+    await noteActivity(admin, `${published ? "Published" : "Unpublished"} the post /${row.slug}`);
     revalidateBlog();
     return { ok: true, data: undefined, message: published ? "Post published." : "Post unpublished." };
   });

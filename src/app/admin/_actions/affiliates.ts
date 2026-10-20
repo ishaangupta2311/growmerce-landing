@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireAdmin } from "@/lib/admin/session";
+import { requireAdmin, type Admin } from "@/lib/admin/session";
+import { NO_ACCESS, noteActivity } from "@/lib/blog/action-guard";
+import { allows } from "@/lib/team/permissions";
 import {
   partnerById,
   recordPayout,
@@ -17,7 +19,7 @@ import type { PartnerStatus, PayoutMethod } from "@/lib/affiliate/types";
 /**
  * Everything an admin can change.
  *
- * **Every function here calls `requireAdmin()` first, with no exceptions.** A
+ * **Every function here calls `admitted()` first, with no exceptions.** A
  * Server Action is a public POST endpoint — it is reachable by anyone who can
  * read the action id out of the page bundle, whether or not they were ever
  * served the form. The admin layout having checked is not a defence, because
@@ -43,6 +45,21 @@ function text(form: FormData, field: string, max = 200): string {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
 
+/**
+ * The signed-in admin, if their role can edit `tab`; otherwise null, and the
+ * caller answers with NO_ACCESS. Not on the team at all is `requireAdmin`'s
+ * redirect or 404, as everywhere else.
+ */
+async function admitted(tab: "affiliates.partners" | "affiliates.payouts"): Promise<Admin | null> {
+  const admin = await requireAdmin();
+  return allows(admin.grant, tab, "edit") ? admin : null;
+}
+
+async function partnerLabel(partnerId: number): Promise<string> {
+  const partner = await partnerById(partnerId);
+  return partner ? partner.company : `partner #${partnerId}`;
+}
+
 const STATUSES: readonly PartnerStatus[] = ["pending", "approved", "rejected", "suspended"];
 const METHODS: readonly PayoutMethod[] = ["bank", "paypal", "wise", "other"];
 
@@ -56,7 +73,8 @@ const METHODS: readonly PayoutMethod[] = ["bank", "paypal", "wise", "other"];
  * month being paid and being quietly lost — see `replaySkippedCharges`.
  */
 export async function updateStatus(_state: FormState, form: FormData): Promise<FormState> {
-  await requireAdmin();
+  const admin = await admitted("affiliates.partners");
+  if (!admin) return { error: NO_ACCESS };
 
   const partnerId = id(form, "partnerId");
   const status = text(form, "status") as PartnerStatus;
@@ -65,6 +83,7 @@ export async function updateStatus(_state: FormState, form: FormData): Promise<F
   if (!STATUSES.includes(status)) return { error: `${status || "That"} is not a partner status.` };
 
   await setPartnerStatus(partnerId, status);
+  await noteActivity(admin, `Marked ${await partnerLabel(partnerId)} ${status}`);
 
   let notice = `Marked ${status}.`;
   if (status === "approved") {
@@ -90,7 +109,8 @@ export async function updateStatus(_state: FormState, form: FormData): Promise<F
  * allowed — 17.5% is a real number somebody agrees to, 17.53% is a typo.
  */
 export async function updateRate(_state: FormState, form: FormData): Promise<FormState> {
-  await requireAdmin();
+  const admin = await admitted("affiliates.partners");
+  if (!admin) return { error: NO_ACCESS };
 
   const partnerId = id(form, "partnerId");
   if (!partnerId) return { error: "Which partner?" };
@@ -107,6 +127,7 @@ export async function updateRate(_state: FormState, form: FormData): Promise<For
   }
 
   await setCommissionRate(partnerId, bps);
+  await noteActivity(admin, `Set ${await partnerLabel(partnerId)}'s rate to ${percent}%`);
 
   revalidateAdmin(partnerId);
   return {
@@ -127,7 +148,8 @@ export async function updateRate(_state: FormState, form: FormData): Promise<For
  * exactly where it was — see below for why a success cannot.
  */
 export async function createPayout(_state: FormState, form: FormData): Promise<FormState> {
-  await requireAdmin();
+  const admin = await admitted("affiliates.payouts");
+  if (!admin) return { error: NO_ACCESS };
 
   const partnerId = id(form, "partnerId");
   const currency = text(form, "currency", 8).toUpperCase();
@@ -169,6 +191,10 @@ export async function createPayout(_state: FormState, form: FormData): Promise<F
     };
   }
 
+  await noteActivity(
+    admin,
+    `Recorded a payout of ${formatMoney(result.amountCents, currency)} to ${await partnerLabel(partnerId)}`,
+  );
   revalidateAdmin(partnerId);
 
   /* The confirmation goes in the URL because a returned notice would never be
@@ -198,7 +224,8 @@ export async function createPayout(_state: FormState, form: FormData): Promise<F
  * one piece of evidence an admin has about how long somebody has been waiting.
  */
 export async function replayHeld(_state: FormState, form: FormData): Promise<FormState> {
-  await requireAdmin();
+  const admin = await admitted("affiliates.partners");
+  if (!admin) return { error: NO_ACCESS };
 
   const partnerId = id(form, "partnerId");
   if (!partnerId) return { error: "Which partner?" };
@@ -212,6 +239,7 @@ export async function replayHeld(_state: FormState, form: FormData): Promise<For
   }
 
   const { replayed, earned } = await replaySkippedCharges(partnerId);
+  await noteActivity(admin, `Replayed ${replayed} held charge${replayed === 1 ? "" : "s"} for ${partner.company}`);
   revalidateAdmin(partnerId);
 
   if (replayed === 0) return { notice: "No held charges to replay." };

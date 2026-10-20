@@ -3,11 +3,14 @@
 import { revalidatePath } from "next/cache";
 
 import { requireAdmin } from "@/lib/admin/session";
+import { NO_ACCESS, noteActivity, quoted } from "@/lib/blog/action-guard";
+import { allows } from "@/lib/team/permissions";
 import { runEmailSweep, sendCampaign, type Audience } from "@/lib/growsearch/email";
 
 /**
  * What the admin does to merchant email. The work happens in the Growsearch
- * app; these check who is asking and translate its answer into a sentence.
+ * app; these check who is asking, and that their role can edit Email, and
+ * translate its answer into a sentence.
  *
  * `values` carries the form back after a test send or a refusal. React resets
  * an uncontrolled form when its action finishes, and an admin who sent
@@ -33,6 +36,7 @@ function text(form: FormData, field: string, max: number): string {
 
 export async function submitCampaign(_state: CampaignState, form: FormData): Promise<CampaignState> {
   const admin = await requireAdmin();
+  if (!allows(admin.grant, "email", "edit")) return { error: NO_ACCESS };
 
   const values: CampaignValues = {
     subject: text(form, "subject", 150),
@@ -65,6 +69,9 @@ export async function submitCampaign(_state: CampaignState, form: FormData): Pro
   /* A new page render mints a new campaign id, so the next campaign is not
      mistaken for a repeat of this one. */
   revalidatePath("/admin/email");
+  if (receipt.created) {
+    await noteActivity(admin, `Sent the campaign ${quoted(values.subject)} to ${receipt.recipients} merchant${receipt.recipients === 1 ? "" : "s"}`);
+  }
   if (!receipt.created) {
     return { notice: "That campaign had already been sent. It was not sent again." };
   }
@@ -75,12 +82,14 @@ export async function submitCampaign(_state: CampaignState, form: FormData): Pro
 
 export async function sweepNow(_state: SweepState, _form: FormData): Promise<SweepState> {
   void _form;
-  await requireAdmin();
+  const admin = await requireAdmin();
+  if (!allows(admin.grant, "email", "edit")) return { error: NO_ACCESS };
 
   const answer = await runEmailSweep();
   if (!answer.ok) return { error: answer.error };
 
   const { configured, sent, failed } = answer.data;
+  if (sent.length > 0) await noteActivity(admin, `Ran the lifecycle email check: ${sent.length} sent`);
   revalidatePath("/admin/email");
   if (!configured) return { error: "Email is not configured on the Growsearch app, so nothing was sent." };
 
