@@ -5,14 +5,15 @@ import { Eye, ExternalLink } from "lucide-react";
 
 import { PlatformChip, StatusChip } from "@/components/admin/apps/bits";
 import { DashboardFrame, ReloadViewButton, StoreSwitcher } from "@/components/admin/apps/DashboardFrame";
-import { StarButton } from "@/components/admin/apps/StoreTable";
+import { StarButton, StarMark } from "@/components/admin/apps/StoreTable";
 import { LocalTime } from "@/components/admin/overlay";
 import { ButtonLink, Card, EmptyState, PageHeader } from "@/components/admin/ui";
-import { requireAdmin } from "@/lib/admin/session";
+import { requireAccess } from "@/lib/admin/session";
 import { appSecret, dashboardUrl, fetchStores } from "@/lib/apps/connection";
 import { storeIdFromSegment } from "@/lib/apps/paths";
 import { getApp, starredStores } from "@/lib/apps/store";
 import type { AppRow } from "@/lib/apps/types";
+import { allows, appKey, APP_SETTINGS, type Grant } from "@/lib/team/permissions";
 
 export const metadata: Metadata = { title: "Store dashboard" };
 
@@ -22,8 +23,8 @@ export const metadata: Metadata = { title: "Store dashboard" };
  * this page mints a new one.
  */
 export default async function StorePage({ params }: PageProps<"/admin/apps/[appId]/stores/[storeId]">) {
-  await requireAdmin();
   const { appId, storeId: segment } = await params;
+  const { grant } = await requireAccess(appKey(appId));
   const storeId = storeIdFromSegment(segment);
   const app = await getApp(appId);
   if (!app) notFound();
@@ -32,17 +33,20 @@ export default async function StorePage({ params }: PageProps<"/admin/apps/[appI
     <>
       <PageHeader back={{ href: `/admin/apps/${app.id}`, label: app.name }} title="Store dashboard" />
       <Suspense fallback={<div aria-busy="true" className="h-[520px] animate-pulse rounded-xl border border-zinc-200 bg-white" />}>
-        <StoreDashboard app={app} storeId={storeId} />
+        <StoreDashboard app={app} storeId={storeId} grant={grant} />
       </Suspense>
     </>
   );
 }
 
-async function StoreDashboard({ app, storeId }: { app: AppRow; storeId: string }) {
+async function StoreDashboard({ app, storeId, grant }: { app: AppRow; storeId: string; grant: Grant }) {
   if (!appSecret(app)) {
     return (
       <Card title="Not connected yet">
-        <EmptyState title={`${app.secretEnv} is not set`} action={<ButtonLink href={`/admin/apps/${app.id}/settings`}>Open app settings</ButtonLink>} />
+        <EmptyState
+          title={`${app.secretEnv} is not set`}
+          action={allows(grant, APP_SETTINGS) && <ButtonLink href={`/admin/apps/${app.id}/settings`}>Open app settings</ButtonLink>}
+        />
       </Card>
     );
   }
@@ -79,7 +83,11 @@ async function StoreDashboard({ app, storeId }: { app: AppRow; storeId: string }
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="truncate text-lg font-extrabold text-zinc-900">{store.name}</h2>
-            <StarButton appId={app.id} store={store} starred={starred.has(store.id)} />
+            {allows(grant, appKey(app.id), "edit") ? (
+              <StarButton appId={app.id} store={store} starred={starred.has(store.id)} />
+            ) : (
+              <StarMark starred={starred.has(store.id)} />
+            )}
             <PlatformChip platform={store.platform} />
             {store.status === "uninstalled" && <StatusChip tone="off">Uninstalled</StatusChip>}
           </div>

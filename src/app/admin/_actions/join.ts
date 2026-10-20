@@ -1,6 +1,7 @@
 "use server";
 
 import { createHash } from "node:crypto";
+import { redirect } from "next/navigation";
 
 import { noteActivity } from "@/lib/blog/action-guard";
 import type { ActionResult } from "@/lib/blog/types";
@@ -41,10 +42,18 @@ export async function joinWithPasswordAction(
   const password = typeof values.password === "string" ? values.password : "";
   const confirm = typeof values.confirm === "string" ? values.confirm : "";
   if (password.length < MIN_PASSWORD || password.length > 200) {
-    return { ok: false, error: `Use at least ${MIN_PASSWORD} characters.`, fieldErrors: { password: `Use at least ${MIN_PASSWORD} characters.` } };
+    return {
+      ok: false,
+      error: `Use at least ${MIN_PASSWORD} characters.`,
+      fieldErrors: { password: `Use at least ${MIN_PASSWORD} characters.` },
+    };
   }
   if (password !== confirm) {
-    return { ok: false, error: "Those two passwords do not match.", fieldErrors: { confirm: "Those two passwords do not match." } };
+    return {
+      ok: false,
+      error: "Those two passwords do not match.",
+      fieldErrors: { confirm: "Those two passwords do not match." },
+    };
   }
   if (await loginByEmail(invite.email)) {
     return { ok: false, error: "This address already has a login. Sign in with it to accept the invite." };
@@ -56,7 +65,10 @@ export async function joinWithPasswordAction(
   } catch (err) {
     if (err instanceof AuthAdminUnavailableError) {
       console.error("[team] cannot create a login for an invite — SUPABASE_SECRET_KEY is unset");
-      return { ok: false, error: "We couldn't set up your login just now. Ask whoever invited you to check the admin's settings." };
+      return {
+        ok: false,
+        error: "We couldn't set up your login just now. Ask whoever invited you to check the admin's settings.",
+      };
     }
     throw err;
   }
@@ -72,6 +84,13 @@ export async function joinWithPasswordAction(
   return { ok: true, data: { next: error ? "/affiliates/login?next=/admin" : "/admin" } };
 }
 
+/** For somebody signed in as another address: out, and back to the invite. */
+export async function signOutForInviteAction(token: unknown): Promise<void> {
+  const supabase = await supabaseServer();
+  await supabase.auth.signOut();
+  redirect(typeof token === "string" && TOKEN.test(token) ? `/admin/join/${token}` : "/affiliates/login");
+}
+
 /** For somebody already signed in as the invited address. */
 export async function acceptInviteAction(token: unknown): Promise<ActionResult<{ next: string }>> {
   const tokenHash = hashOf(token);
@@ -85,7 +104,11 @@ export async function acceptInviteAction(token: unknown): Promise<ActionResult<{
   }
   const login = await loginByEmail(email);
   if (login?.partner) {
-    return { ok: false, error: "This login is an affiliate partner's, and can't also be on the admin team. Ask for an invite to another address." };
+    return {
+      ok: false,
+      error:
+        "This login is an affiliate partner's, and can't also be on the admin team. Ask for an invite to another address.",
+    };
   }
 
   const joined = await acceptInvite(tokenHash, { userId: user.id, email });

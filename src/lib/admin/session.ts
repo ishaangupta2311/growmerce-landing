@@ -50,6 +50,11 @@ function ownerEmails(): Set<string> {
   );
 }
 
+/** The Owners' addresses, for the Team page. */
+export function ownerList(): string[] {
+  return [...ownerEmails()];
+}
+
 /** Whether an address is an Owner. An unset list means there is no Owner. */
 export function isOwnerEmail(email: string | null | undefined): boolean {
   if (!email) return false;

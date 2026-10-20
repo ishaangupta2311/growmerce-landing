@@ -19,7 +19,7 @@ import ImageField from "@/components/admin/ImageField";
 import { ConfirmDialog, LocalTime, useIsClient, useToast } from "@/components/admin/overlay";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import TagPicker from "@/components/admin/TagPicker";
-import { Button, Card, Field, Input, Select, StatusBadge, Textarea } from "@/components/admin/ui";
+import { Button, buttonClass, Card, Field, Input, Select, StatusBadge, Textarea } from "@/components/admin/ui";
 import { slugify } from "@/lib/blog/slug";
 import type { Option, PostFormValues, PostIntent, PostStatus } from "@/lib/blog/types";
 
@@ -27,6 +27,12 @@ type Props = {
   post: (PostFormValues & { id: string; status: PostStatus; createdAt: string; updatedAt: string }) | null;
   defaults: PostFormValues;
   options: { authors: Option[]; categories: Option[]; tags: Option[] };
+  /**
+   * For a role that can see posts but not change them: every field disabled
+   * and no buttons that save, publish or delete. Only ever set for an
+   * existing post; a new one needs edit to open at all.
+   */
+  readOnly?: boolean;
 };
 
 /** ISO → the value a datetime-local input wants, in the viewer's timezone. */
@@ -41,7 +47,7 @@ function fromLocalInput(value: string): string {
   return value ? new Date(value).toISOString() : "";
 }
 
-export default function PostEditor({ post, defaults, options }: Props) {
+export default function PostEditor({ post, defaults, options, readOnly = false }: Props) {
   const router = useRouter();
   const notify = useToast();
   const isClient = useIsClient();
@@ -171,6 +177,7 @@ export default function PostEditor({ post, defaults, options }: Props) {
     saveRef.current = save;
   });
   useEffect(() => {
+    if (readOnly) return;
     const onKey = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
         event.preventDefault();
@@ -179,11 +186,20 @@ export default function PostEditor({ post, defaults, options }: Props) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [status]);
+  }, [status, readOnly]);
 
   const spinner = (intent: typeof pending) => pending === intent && <LoaderCircle className="size-4 animate-spin" />;
 
-  const actions: ReactNode = (
+  /* Read-only, the preview is the saved post's own preview page: building a
+     preview of unsaved values is an edit-only action. */
+  const actions: ReactNode = readOnly ? (
+    postId && (
+      <a href={`/admin/blog/${postId}/preview`} target="_blank" rel="noreferrer" className={buttonClass()}>
+        <Eye className="size-4" />
+        Preview
+      </a>
+    )
+  ) : (
     <>
       <Button onClick={preview} disabled={busy}>
         {spinner("preview") || <Eye className="size-4" />}
@@ -246,7 +262,9 @@ export default function PostEditor({ post, defaults, options }: Props) {
       <div className="z-10 -mx-4 mb-6 border-b border-zinc-200 bg-zinc-50/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 md:sticky md:top-16 lg:-mx-8 lg:px-8">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex min-w-0 items-center gap-3">
-            <h1 className="truncate text-lg font-extrabold tracking-tight text-zinc-900">{postId ? "Edit post" : "New post"}</h1>
+            <h1 className="truncate text-lg font-extrabold tracking-tight text-zinc-900">
+              {readOnly ? "View post" : postId ? "Edit post" : "New post"}
+            </h1>
             <StatusBadge status={status} />
             {dirty && <span className="text-xs font-semibold text-amber-600">Unsaved changes</span>}
           </div>
@@ -254,290 +272,301 @@ export default function PostEditor({ post, defaults, options }: Props) {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="min-w-0 space-y-5">
-          <Card>
-            <div className="space-y-4">
-              <Field label="Title" htmlFor="title" error={errors.title}>
-                <Input
-                  id="title"
-                  value={values.title}
-                  onChange={(event) => set("title", event.target.value)}
-                  placeholder="A clear, specific title"
-                  aria-invalid={Boolean(errors.title) || undefined}
-                  className="h-11 text-lg font-bold"
-                  maxLength={200}
-                />
-              </Field>
+      {readOnly && (
+        <p className="mb-5 rounded-lg bg-sky-50 px-3 py-2 text-xs font-medium text-sky-800">
+          View only. Your role can see posts but not change them.
+        </p>
+      )}
 
-              <Field
-                label="URL slug"
-                htmlFor="slug"
-                error={errors.slug}
-                hint={values.slug ? `growmerce.ai/blog/${values.slug}` : "Leave empty to create one from the title."}
-              >
-                <div className="flex gap-2">
-                  <div className="flex flex-1 items-center rounded-lg border border-zinc-200 bg-zinc-50 shadow-xs focus-within:border-brand focus-within:ring-3 focus-within:ring-brand/15">
-                    <span className="pl-3 text-sm text-zinc-400 select-none">/blog/</span>
-                    <input
-                      id="slug"
-                      value={values.slug}
-                      onChange={(event) => {
-                        setSlugTouched(true);
-                        set("slug", event.target.value.toLowerCase().replace(/\s+/g, "-"));
-                      }}
-                      aria-invalid={Boolean(errors.slug) || undefined}
-                      className="h-9 min-w-0 flex-1 bg-transparent pr-3 text-sm outline-none"
-                      spellCheck={false}
-                      maxLength={120}
-                    />
-                  </div>
-                  <Button
-                    onClick={() => {
-                      setSlugTouched(false);
-                      set("slug", slugify(values.title));
-                    }}
-                    aria-label="Regenerate slug from title"
-                    title="Regenerate from title"
-                  >
-                    <RefreshCw className="size-4" />
-                  </Button>
-                </div>
-              </Field>
-
-              <Field
-                label="Excerpt"
-                htmlFor="excerpt"
-                error={errors.excerpt}
-                counter={{ value: values.excerpt.length, recommended: 160 }}
-                hint="Shown on the blog listing and used as the description when no SEO description is set."
-              >
-                <Textarea
-                  id="excerpt"
-                  rows={3}
-                  value={values.excerpt}
-                  onChange={(event) => set("excerpt", event.target.value)}
-                  aria-invalid={Boolean(errors.excerpt) || undefined}
-                  maxLength={500}
-                />
-              </Field>
-            </div>
-          </Card>
-
-          <div>
-            <p className="mb-1.5 text-[13px] font-semibold text-zinc-700">Content</p>
-            <RichTextEditor
-              initialHtml={values.content}
-              invalid={Boolean(errors.content)}
-              onChange={(html) => {
-                content.current = html;
-                if (!dirty) setDirty(true);
-              }}
-            />
-            {errors.content && <p className="mt-1.5 text-xs font-medium text-red-600">{errors.content}</p>}
-          </div>
-
-          <Card title="SEO" description="How this post appears in search results and when shared.">
-            <div className="space-y-4">
-              <div className="rounded-lg border border-zinc-200 bg-white p-4">
-                <p className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">Search preview</p>
-                <p className="mt-2 truncate text-xs text-zinc-600">growmerce.ai › blog › {values.slug || "…"}</p>
-                <p className="mt-0.5 line-clamp-1 text-lg text-[#1a0dab]">{seoTitle}</p>
-                <p className="mt-0.5 line-clamp-2 text-sm text-zinc-600">{seoDescription}</p>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <Field
-                  label="SEO title"
-                  htmlFor="seoTitle"
-                  error={errors.seoTitle}
-                  counter={{ value: values.seoTitle.length, recommended: 60 }}
-                  hint="Defaults to the post title."
-                >
-                  <Input id="seoTitle" value={values.seoTitle} onChange={(event) => set("seoTitle", event.target.value)} maxLength={120} />
-                </Field>
-                <Field label="Canonical URL" htmlFor="canonicalUrl" error={errors.canonicalUrl} hint="Only if this post was first published elsewhere.">
+      {/* A disabled fieldset disables every input, select and button inside it
+          at once, the image and tag pickers' included. */}
+      <fieldset disabled={readOnly} className="min-w-0">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="min-w-0 space-y-5">
+            <Card>
+              <div className="space-y-4">
+                <Field label="Title" htmlFor="title" error={errors.title}>
                   <Input
-                    id="canonicalUrl"
-                    type="url"
-                    value={values.canonicalUrl}
-                    onChange={(event) => set("canonicalUrl", event.target.value)}
-                    placeholder="https://"
-                    aria-invalid={Boolean(errors.canonicalUrl) || undefined}
+                    id="title"
+                    value={values.title}
+                    onChange={(event) => set("title", event.target.value)}
+                    placeholder="A clear, specific title"
+                    aria-invalid={Boolean(errors.title) || undefined}
+                    className="h-11 text-lg font-bold"
+                    maxLength={200}
+                  />
+                </Field>
+
+                <Field
+                  label="URL slug"
+                  htmlFor="slug"
+                  error={errors.slug}
+                  hint={values.slug ? `growmerce.ai/blog/${values.slug}` : "Leave empty to create one from the title."}
+                >
+                  <div className="flex gap-2">
+                    <div className="flex flex-1 items-center rounded-lg border border-zinc-200 bg-zinc-50 shadow-xs focus-within:border-brand focus-within:ring-3 focus-within:ring-brand/15">
+                      <span className="pl-3 text-sm text-zinc-400 select-none">/blog/</span>
+                      <input
+                        id="slug"
+                        value={values.slug}
+                        onChange={(event) => {
+                          setSlugTouched(true);
+                          set("slug", event.target.value.toLowerCase().replace(/\s+/g, "-"));
+                        }}
+                        aria-invalid={Boolean(errors.slug) || undefined}
+                        className="h-9 min-w-0 flex-1 bg-transparent pr-3 text-sm outline-none"
+                        spellCheck={false}
+                        maxLength={120}
+                      />
+                    </div>
+                    <Button
+                      onClick={() => {
+                        setSlugTouched(false);
+                        set("slug", slugify(values.title));
+                      }}
+                      aria-label="Regenerate slug from title"
+                      title="Regenerate from title"
+                    >
+                      <RefreshCw className="size-4" />
+                    </Button>
+                  </div>
+                </Field>
+
+                <Field
+                  label="Excerpt"
+                  htmlFor="excerpt"
+                  error={errors.excerpt}
+                  counter={{ value: values.excerpt.length, recommended: 160 }}
+                  hint="Shown on the blog listing and used as the description when no SEO description is set."
+                >
+                  <Textarea
+                    id="excerpt"
+                    rows={3}
+                    value={values.excerpt}
+                    onChange={(event) => set("excerpt", event.target.value)}
+                    aria-invalid={Boolean(errors.excerpt) || undefined}
+                    maxLength={500}
                   />
                 </Field>
               </div>
+            </Card>
 
-              <Field
-                label="SEO description"
-                htmlFor="seoDescription"
-                error={errors.seoDescription}
-                counter={{ value: values.seoDescription.length, recommended: 160 }}
-                hint="Defaults to the excerpt."
-              >
-                <Textarea
-                  id="seoDescription"
-                  rows={2}
-                  value={values.seoDescription}
-                  onChange={(event) => set("seoDescription", event.target.value)}
-                  maxLength={320}
-                />
-              </Field>
+            <div>
+              <p className="mb-1.5 text-[13px] font-semibold text-zinc-700">Content</p>
+              <RichTextEditor
+                initialHtml={values.content}
+                invalid={Boolean(errors.content)}
+                editable={!readOnly}
+                onChange={(html) => {
+                  content.current = html;
+                  if (!dirty) setDirty(true);
+                }}
+              />
+              {errors.content && <p className="mt-1.5 text-xs font-medium text-red-600">{errors.content}</p>}
+            </div>
 
-              <Field label="SEO keywords" htmlFor="seoKeywords" error={errors.seoKeywords} hint="Comma-separated.">
-                <Input
-                  id="seoKeywords"
-                  value={values.seoKeywords}
-                  onChange={(event) => set("seoKeywords", event.target.value)}
-                  placeholder="ecommerce search, shopify"
-                  maxLength={500}
-                />
-              </Field>
+            <Card title="SEO" description="How this post appears in search results and when shared.">
+              <div className="space-y-4">
+                <div className="rounded-lg border border-zinc-200 bg-white p-4">
+                  <p className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">Search preview</p>
+                  <p className="mt-2 truncate text-xs text-zinc-600">growmerce.ai › blog › {values.slug || "…"}</p>
+                  <p className="mt-0.5 line-clamp-1 text-lg text-[#1a0dab]">{seoTitle}</p>
+                  <p className="mt-0.5 line-clamp-2 text-sm text-zinc-600">{seoDescription}</p>
+                </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <ImageField
-                  id="ogImage"
-                  label="Open Graph image"
-                  value={values.ogImage}
-                  onChange={(value) => set("ogImage", value)}
-                  error={errors.ogImage}
-                  hint="1200×630 works best. Defaults to the featured image."
-                />
-                <Field label="Twitter card" htmlFor="twitterCard" hint="How the link unfurls on X.">
-                  <Select
-                    id="twitterCard"
-                    value={values.twitterCard}
-                    onChange={(event) => set("twitterCard", event.target.value as PostFormValues["twitterCard"])}
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field
+                    label="SEO title"
+                    htmlFor="seoTitle"
+                    error={errors.seoTitle}
+                    counter={{ value: values.seoTitle.length, recommended: 60 }}
+                    hint="Defaults to the post title."
                   >
-                    <option value="summary_large_image">Large image</option>
-                    <option value="summary">Small summary</option>
+                    <Input id="seoTitle" value={values.seoTitle} onChange={(event) => set("seoTitle", event.target.value)} maxLength={120} />
+                  </Field>
+                  <Field label="Canonical URL" htmlFor="canonicalUrl" error={errors.canonicalUrl} hint="Only if this post was first published elsewhere.">
+                    <Input
+                      id="canonicalUrl"
+                      type="url"
+                      value={values.canonicalUrl}
+                      onChange={(event) => set("canonicalUrl", event.target.value)}
+                      placeholder="https://"
+                      aria-invalid={Boolean(errors.canonicalUrl) || undefined}
+                    />
+                  </Field>
+                </div>
+
+                <Field
+                  label="SEO description"
+                  htmlFor="seoDescription"
+                  error={errors.seoDescription}
+                  counter={{ value: values.seoDescription.length, recommended: 160 }}
+                  hint="Defaults to the excerpt."
+                >
+                  <Textarea
+                    id="seoDescription"
+                    rows={2}
+                    value={values.seoDescription}
+                    onChange={(event) => set("seoDescription", event.target.value)}
+                    maxLength={320}
+                  />
+                </Field>
+
+                <Field label="SEO keywords" htmlFor="seoKeywords" error={errors.seoKeywords} hint="Comma-separated.">
+                  <Input
+                    id="seoKeywords"
+                    value={values.seoKeywords}
+                    onChange={(event) => set("seoKeywords", event.target.value)}
+                    placeholder="ecommerce search, shopify"
+                    maxLength={500}
+                  />
+                </Field>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <ImageField
+                    id="ogImage"
+                    label="Open Graph image"
+                    value={values.ogImage}
+                    onChange={(value) => set("ogImage", value)}
+                    error={errors.ogImage}
+                    hint="1200×630 works best. Defaults to the featured image."
+                  />
+                  <Field label="Twitter card" htmlFor="twitterCard" hint="How the link unfurls on X.">
+                    <Select
+                      id="twitterCard"
+                      value={values.twitterCard}
+                      onChange={(event) => set("twitterCard", event.target.value as PostFormValues["twitterCard"])}
+                    >
+                      <option value="summary_large_image">Large image</option>
+                      <option value="summary">Small summary</option>
+                    </Select>
+                  </Field>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          <aside className="space-y-5">
+            <Card title="Publishing">
+              <div className="space-y-4">
+                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
+                  <dt className="text-zinc-500">Status</dt>
+                  <dd className="text-right">
+                    <StatusBadge status={status} />
+                  </dd>
+                  {post && (
+                    <>
+                      <dt className="text-zinc-500">Created</dt>
+                      <dd className="text-right text-zinc-700">
+                        <LocalTime iso={post.createdAt} mode="date" />
+                      </dd>
+                      <dt className="text-zinc-500">Updated</dt>
+                      <dd className="text-right text-zinc-700">
+                        <LocalTime iso={post.updatedAt} />
+                      </dd>
+                    </>
+                  )}
+                </dl>
+
+                <Field
+                  label="Publish date"
+                  htmlFor="publishedAt"
+                  error={errors.publishedAt}
+                  hint="Leave empty to use the moment you publish. Set a past date to backdate."
+                >
+                  <Input
+                    id="publishedAt"
+                    type="datetime-local"
+                    value={isClient ? toLocalInput(values.publishedAt) : ""}
+                    onChange={(event) => set("publishedAt", fromLocalInput(event.target.value))}
+                    aria-invalid={Boolean(errors.publishedAt) || undefined}
+                  />
+                </Field>
+
+                <Field
+                  label="Scheduled date"
+                  htmlFor="scheduledAt"
+                  error={errors.scheduledAt}
+                  hint="Pick a future time, then press Schedule. The post goes live automatically."
+                >
+                  <Input
+                    id="scheduledAt"
+                    type="datetime-local"
+                    value={isClient ? toLocalInput(values.scheduledAt) : ""}
+                    min={isClient ? toLocalInput(new Date().toISOString()) : undefined}
+                    onChange={(event) => set("scheduledAt", fromLocalInput(event.target.value))}
+                    aria-invalid={Boolean(errors.scheduledAt) || undefined}
+                  />
+                </Field>
+
+                {status === "scheduled" && values.scheduledAt && (
+                  <p className="rounded-lg bg-sky-50 px-3 py-2 text-xs font-medium text-sky-800">
+                    Goes live <LocalTime iso={values.scheduledAt} />.
+                  </p>
+                )}
+
+                {postId && !readOnly && (
+                  <div className="border-t border-zinc-100 pt-3">
+                    <Button variant="dangerGhost" size="sm" onClick={() => setConfirmDelete(true)} disabled={busy} className="-ml-2">
+                      <Trash2 className="size-4" />
+                      Delete post
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            <Card title="Organization">
+              <div className="space-y-4">
+                <Field label="Author" htmlFor="authorId" error={errors.authorId}>
+                  <Select id="authorId" value={values.authorId} onChange={(event) => set("authorId", event.target.value)}>
+                    <option value="">No author</option>
+                    {options.authors.map((author) => (
+                      <option key={author.id} value={author.id}>
+                        {author.name}
+                      </option>
+                    ))}
                   </Select>
                 </Field>
+                <Field label="Category" htmlFor="categoryId" error={errors.categoryId}>
+                  <Select id="categoryId" value={values.categoryId} onChange={(event) => set("categoryId", event.target.value)}>
+                    <option value="">Uncategorized</option>
+                    {options.categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+                <Field label="Tags" htmlFor="tags" error={errors.tagIds} hint="Type to search, Enter to create.">
+                  <TagPicker
+                    id="tags"
+                    options={tags}
+                    value={values.tagIds}
+                    onChange={(ids) => set("tagIds", ids)}
+                    onCreate={createTag}
+                  />
+                </Field>
               </div>
-            </div>
-          </Card>
+            </Card>
+
+            <Card title="Featured image">
+              <ImageField
+                id="featuredImage"
+                label="Featured image"
+                value={values.featuredImage}
+                onChange={(value) => set("featuredImage", value)}
+                error={errors.featuredImage}
+                hint="Shown at the top of the post and on the blog listing."
+              />
+            </Card>
+          </aside>
         </div>
-
-        <aside className="space-y-5">
-          <Card title="Publishing">
-            <div className="space-y-4">
-              <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
-                <dt className="text-zinc-500">Status</dt>
-                <dd className="text-right">
-                  <StatusBadge status={status} />
-                </dd>
-                {post && (
-                  <>
-                    <dt className="text-zinc-500">Created</dt>
-                    <dd className="text-right text-zinc-700">
-                      <LocalTime iso={post.createdAt} mode="date" />
-                    </dd>
-                    <dt className="text-zinc-500">Updated</dt>
-                    <dd className="text-right text-zinc-700">
-                      <LocalTime iso={post.updatedAt} />
-                    </dd>
-                  </>
-                )}
-              </dl>
-
-              <Field
-                label="Publish date"
-                htmlFor="publishedAt"
-                error={errors.publishedAt}
-                hint="Leave empty to use the moment you publish. Set a past date to backdate."
-              >
-                <Input
-                  id="publishedAt"
-                  type="datetime-local"
-                  value={isClient ? toLocalInput(values.publishedAt) : ""}
-                  onChange={(event) => set("publishedAt", fromLocalInput(event.target.value))}
-                  aria-invalid={Boolean(errors.publishedAt) || undefined}
-                />
-              </Field>
-
-              <Field
-                label="Scheduled date"
-                htmlFor="scheduledAt"
-                error={errors.scheduledAt}
-                hint="Pick a future time, then press Schedule. The post goes live automatically."
-              >
-                <Input
-                  id="scheduledAt"
-                  type="datetime-local"
-                  value={isClient ? toLocalInput(values.scheduledAt) : ""}
-                  min={isClient ? toLocalInput(new Date().toISOString()) : undefined}
-                  onChange={(event) => set("scheduledAt", fromLocalInput(event.target.value))}
-                  aria-invalid={Boolean(errors.scheduledAt) || undefined}
-                />
-              </Field>
-
-              {status === "scheduled" && values.scheduledAt && (
-                <p className="rounded-lg bg-sky-50 px-3 py-2 text-xs font-medium text-sky-800">
-                  Goes live <LocalTime iso={values.scheduledAt} />.
-                </p>
-              )}
-
-              {postId && (
-                <div className="border-t border-zinc-100 pt-3">
-                  <Button variant="dangerGhost" size="sm" onClick={() => setConfirmDelete(true)} disabled={busy} className="-ml-2">
-                    <Trash2 className="size-4" />
-                    Delete post
-                  </Button>
-                </div>
-              )}
-            </div>
-          </Card>
-
-          <Card title="Organization">
-            <div className="space-y-4">
-              <Field label="Author" htmlFor="authorId" error={errors.authorId}>
-                <Select id="authorId" value={values.authorId} onChange={(event) => set("authorId", event.target.value)}>
-                  <option value="">No author</option>
-                  {options.authors.map((author) => (
-                    <option key={author.id} value={author.id}>
-                      {author.name}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-              <Field label="Category" htmlFor="categoryId" error={errors.categoryId}>
-                <Select id="categoryId" value={values.categoryId} onChange={(event) => set("categoryId", event.target.value)}>
-                  <option value="">Uncategorized</option>
-                  {options.categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-              <Field label="Tags" htmlFor="tags" error={errors.tagIds} hint="Type to search, Enter to create.">
-                <TagPicker
-                  id="tags"
-                  options={tags}
-                  value={values.tagIds}
-                  onChange={(ids) => set("tagIds", ids)}
-                  onCreate={createTag}
-                />
-              </Field>
-            </div>
-          </Card>
-
-          <Card title="Featured image">
-            <ImageField
-              id="featuredImage"
-              label="Featured image"
-              value={values.featuredImage}
-              onChange={(value) => set("featuredImage", value)}
-              error={errors.featuredImage}
-              hint="Shown at the top of the post and on the blog listing."
-            />
-          </Card>
-        </aside>
-      </div>
+      </fieldset>
 
       {/* Actions again at the foot on small screens, where the sidebar sits
           below a long post. */}
-      <div className="mt-6 flex flex-wrap justify-end gap-2 border-t border-zinc-200 pt-4 lg:hidden">{actions}</div>
+      {!readOnly && <div className="mt-6 flex flex-wrap justify-end gap-2 border-t border-zinc-200 pt-4 lg:hidden">{actions}</div>}
 
       <ConfirmDialog
         open={confirmDelete}

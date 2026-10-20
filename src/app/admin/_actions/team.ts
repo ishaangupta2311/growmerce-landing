@@ -20,7 +20,7 @@ import {
   setPassword,
   temporaryPassword,
 } from "@/lib/team/auth-admin";
-import { cleanPermissions, covers, sections } from "@/lib/team/permissions";
+import { canAssign, canManage, cleanPermissions, covers, sections } from "@/lib/team/permissions";
 import {
   addMember,
   deleteInvite,
@@ -29,7 +29,6 @@ import {
   getInvite,
   getMember,
   getRole,
-  grantOf,
   loginByEmail,
   removeMember,
   saveRole,
@@ -66,16 +65,6 @@ async function origin(): Promise<string> {
   const host = store.get("x-forwarded-host") ?? store.get("host");
   const proto = store.get("x-forwarded-proto") ?? "https";
   return host ? `${proto}://${host}` : SITE_ORIGIN;
-}
-
-function canAssign(admin: Admin, role: RoleRow): boolean {
-  return covers(admin.grant, grantOf(role));
-}
-
-/** Whether `admin` may change or remove `person`. */
-function canManage(admin: Admin, person: TeamPerson): boolean {
-  if (person.owner || !person.role || person.userId === admin.userId) return false;
-  return covers(admin.grant, grantOf(person.role));
 }
 
 const BEYOND_YOU = "That role has access you don't have, so you can't give it out.";
@@ -130,13 +119,19 @@ export async function addTeammateAction(
     }
     const { name, email, roleId, method } = parsed.data;
 
-    if (isOwnerEmail(email)) return { ok: false, error: "That address is the Owner's, who already has every permission." };
+    if (isOwnerEmail(email))
+      return { ok: false, error: "That address is the Owner's, who already has every permission." };
     const role = await getRole(roleId);
     if (!role) return { ok: false, error: "That role no longer exists.", fieldErrors: { roleId: "Choose a role." } };
-    if (!canAssign(admin, role)) return { ok: false, error: BEYOND_YOU, fieldErrors: { roleId: BEYOND_YOU } };
+    if (!canAssign(admin.grant, role)) return { ok: false, error: BEYOND_YOU, fieldErrors: { roleId: BEYOND_YOU } };
 
     const login = await loginByEmail(email);
-    if (login?.member) return { ok: false, error: "That person is already on the team.", fieldErrors: { email: "Already on the team." } };
+    if (login?.member)
+      return {
+        ok: false,
+        error: "That person is already on the team.",
+        fieldErrors: { email: "Already on the team." },
+      };
     if (login?.partner) {
       const error = "That address is an affiliate partner's login. Use a different address for the admin.";
       return { ok: false, error, fieldErrors: { email: error } };
@@ -144,7 +139,8 @@ export async function addTeammateAction(
 
     if (method === "create") {
       if (login) {
-        const error = "That address already has a login. Send an invite instead; they'll sign in with their own password.";
+        const error =
+          "That address already has a login. Send an invite instead; they'll sign in with their own password.";
         return { ok: false, error, fieldErrors: { email: error } };
       }
       const password = temporaryPassword();
@@ -209,7 +205,7 @@ export async function resendInviteAction(inviteId: unknown): Promise<ActionResul
     if (!id.success) return { ok: false, error: "Invalid request." };
     const invite = await getInvite(id.data);
     if (!invite) return { ok: false, error: "That invite was already used or cancelled." };
-    if (!canAssign(admin, invite.role)) return { ok: false, error: BEYOND_YOU };
+    if (!canAssign(admin.grant, invite.role)) return { ok: false, error: BEYOND_YOU };
 
     const sent = await sendInvite(admin, invite);
     await noteActivity(admin, `Resent the invite to ${invite.email}`);
@@ -227,7 +223,8 @@ export async function cancelInviteAction(inviteId: unknown): Promise<ActionResul
     const id = uuid.safeParse(inviteId);
     if (!id.success) return { ok: false, error: "Invalid request." };
     const invite = await getInvite(id.data);
-    if (!invite || !(await deleteInvite(invite.id))) return { ok: false, error: "That invite was already used or cancelled." };
+    if (!invite || !(await deleteInvite(invite.id)))
+      return { ok: false, error: "That invite was already used or cancelled." };
     await noteActivity(admin, `Cancelled the invite to ${invite.email}`);
     refresh();
     return { ok: true, data: undefined, message: "Invite cancelled." };
@@ -241,9 +238,10 @@ export async function changeRoleAction(userId: unknown, roleId: unknown): Promis
     const id = uuid.safeParse(roleId);
     const role = id.success ? await getRole(id.data) : null;
     if (!role) return { ok: false, error: "That role no longer exists." };
-    if (!canAssign(admin, role)) return { ok: false, error: BEYOND_YOU };
+    if (!canAssign(admin.grant, role)) return { ok: false, error: BEYOND_YOU };
 
-    if (!(await setMemberRole(person.userId!, role.id))) return { ok: false, error: "That person is no longer on the team." };
+    if (!(await setMemberRole(person.userId!, role.id)))
+      return { ok: false, error: "That person is no longer on the team." };
     await noteActivity(admin, `Changed ${person.email}'s role: ${person.role?.name} → ${role.name}`);
     refresh();
     return { ok: true, data: undefined, message: `${person.name} is now ${role.name}.` };
@@ -296,7 +294,11 @@ export async function resetTwoStepAction(userId: unknown): Promise<ActionResult>
     await endSessions(person.userId!);
     await noteActivity(admin, `Turned off ${person.email}'s two-step login`);
     refresh();
-    return { ok: true, data: undefined, message: `${person.name} can sign in with their password alone until they turn it back on.` };
+    return {
+      ok: true,
+      data: undefined,
+      message: `${person.name} can sign in with their password alone until they turn it back on.`,
+    };
   });
 }
 
@@ -341,17 +343,24 @@ export async function saveRoleAction(roleId: unknown, values: unknown): Promise<
 
     const existing = id ? await getRole(id.data) : null;
     if (id && !existing) return { ok: false, error: "That role no longer exists." };
-    if (existing?.builtin) return { ok: false, error: "The ready-made roles can't be changed. Make a new role instead." };
+    if (existing?.builtin)
+      return { ok: false, error: "The ready-made roles can't be changed. Make a new role instead." };
     /* Editing a role changes everybody who holds it, so the editor must
        already cover both what it was and what it becomes. */
-    if (existing && !canAssign(admin, existing)) return { ok: false, error: "This role has access you don't have, so you can't edit it." };
+    if (existing && !canAssign(admin.grant, existing))
+      return { ok: false, error: "This role has access you don't have, so you can't edit it." };
 
     const tabs = sections(await listApps()).flatMap((section) => section.tabs);
     const permissions = cleanPermissions(parsed.data.permissions, tabs);
-    if (!covers(admin.grant, { all: null, permissions })) return { ok: false, error: "You can only give a role access you have yourself." };
+    if (!covers(admin.grant, { all: null, permissions }))
+      return { ok: false, error: "You can only give a role access you have yourself." };
 
     try {
-      const saved = await saveRole(existing?.id ?? null, { name: parsed.data.name, description: parsed.data.description, permissions });
+      const saved = await saveRole(existing?.id ?? null, {
+        name: parsed.data.name,
+        description: parsed.data.description,
+        permissions,
+      });
       if (!saved) return { ok: false, error: "That role no longer exists." };
       await noteActivity(admin, `${existing ? "Edited" : "Made"} the role ${quoted(parsed.data.name)}`);
       refresh();
@@ -371,11 +380,15 @@ export async function deleteRoleAction(roleId: unknown): Promise<ActionResult> {
     if (!id.success) return { ok: false, error: "Invalid request." };
     const role = await getRole(id.data);
     if (!role || role.builtin) return { ok: false, error: "That role can't be deleted." };
-    if (!canAssign(admin, role)) return { ok: false, error: "This role has access you don't have, so you can't delete it." };
+    if (!canAssign(admin.grant, role))
+      return { ok: false, error: "This role has access you don't have, so you can't delete it." };
 
     const outcome = await deleteRole(role.id);
     if (outcome === "in-use") {
-      return { ok: false, error: "People still hold this role, or an open invite offers it. Move them to another role first." };
+      return {
+        ok: false,
+        error: "People still hold this role, or an open invite offers it. Move them to another role first.",
+      };
     }
     if (outcome === "missing") return { ok: false, error: "That role no longer exists." };
     await noteActivity(admin, `Deleted the role ${quoted(role.name)}`);

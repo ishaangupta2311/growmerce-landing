@@ -31,7 +31,11 @@ export async function updateProfileAction(values: unknown): Promise<ActionResult
   return adminAction("update profile", null, async (admin) => {
     const parsed = profileSchema.safeParse(values);
     if (!parsed.success) {
-      return { ok: false, error: parsed.error.issues[0].message, fieldErrors: { name: parsed.error.issues[0].message } };
+      return {
+        ok: false,
+        error: parsed.error.issues[0].message,
+        fieldErrors: { name: parsed.error.issues[0].message },
+      };
     }
     const sql = requireSql();
     await sql`update blog.admin_user set name = ${parsed.data.name}, updated_at = now() where id = ${admin.id}`;
@@ -74,16 +78,28 @@ export async function changePasswordAction(values: {
   const password = typeof values.password === "string" ? values.password : "";
   const confirm = typeof values.confirm === "string" ? values.confirm : "";
   if (password.length < MIN_PASSWORD || password.length > 200) {
-    return { ok: false, error: `Use at least ${MIN_PASSWORD} characters.`, fieldErrors: { password: `Use at least ${MIN_PASSWORD} characters.` } };
+    return {
+      ok: false,
+      error: `Use at least ${MIN_PASSWORD} characters.`,
+      fieldErrors: { password: `Use at least ${MIN_PASSWORD} characters.` },
+    };
   }
   if (password !== confirm) {
-    return { ok: false, error: "Those two passwords do not match.", fieldErrors: { confirm: "Those two passwords do not match." } };
+    return {
+      ok: false,
+      error: "Those two passwords do not match.",
+      fieldErrors: { confirm: "Those two passwords do not match." },
+    };
   }
 
   if (!standing.mustChangePassword) {
     const current = typeof values.current === "string" ? values.current : "";
     if (!current || !(await isCurrentPassword(email, current))) {
-      return { ok: false, error: "Your current password is not right.", fieldErrors: { current: "That is not your current password." } };
+      return {
+        ok: false,
+        error: "Your current password is not right.",
+        fieldErrors: { current: "That is not your current password." },
+      };
     }
   }
 
@@ -112,7 +128,9 @@ const FRIENDLY_NAME = "Growmerce admin";
  * attempt from before is cleared first, or Supabase refuses a second factor
  * with the same name.
  */
-export async function startTwoStepAction(): Promise<ActionResult<{ factorId: string; qrCode: string; secret: string }>> {
+export async function startTwoStepAction(): Promise<
+  ActionResult<{ factorId: string; qrCode: string; secret: string }>
+> {
   return adminAction("start two-step login", null, async () => {
     const supabase = await supabaseServer();
     const listed = await supabase.auth.mfa.listFactors();
@@ -131,12 +149,20 @@ export async function startTwoStepAction(): Promise<ActionResult<{ factorId: str
 export async function confirmTwoStepAction(factorId: unknown, code: unknown): Promise<ActionResult> {
   return adminAction("confirm two-step login", null, async (admin) => {
     if (typeof factorId !== "string" || typeof code !== "string" || !CODE.test(code.trim())) {
-      return { ok: false, error: "Enter the 6-digit code from your app.", fieldErrors: { code: "Enter the 6-digit code." } };
+      return {
+        ok: false,
+        error: "Enter the 6-digit code from your app.",
+        fieldErrors: { code: "Enter the 6-digit code." },
+      };
     }
     const supabase = await supabaseServer();
     const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code: code.trim() });
     if (error) {
-      return { ok: false, error: "That code didn't match. Check your phone's clock, then try the next code.", fieldErrors: { code: "That code didn't match." } };
+      return {
+        ok: false,
+        error: "That code didn't match. Check your phone's clock, then try the next code.",
+        fieldErrors: { code: "That code didn't match." },
+      };
     }
     await noteActivity(admin, "Turned on two-step login");
     refresh();

@@ -6,13 +6,14 @@ import { deleteAuthorAction, saveAuthorAction } from "@/app/admin/_actions/taxon
 import ImageField from "@/components/admin/ImageField";
 import { ConfirmDialog, Modal, useToast } from "@/components/admin/overlay";
 import Thumb from "@/components/admin/Thumb";
-import { Button, ButtonLink, Card, EmptyState, Field, Input, Textarea } from "@/components/admin/ui";
+import { Button, Card, EmptyState, Field, Input, Textarea } from "@/components/admin/ui";
 import { slugify } from "@/lib/blog/slug";
 import type { AuthorRow } from "@/lib/blog/types";
 
 type AuthorDraft = { id: string | null; name: string; slug: string; bio: string; avatarUrl: string };
 
-export function AuthorsCard({ authors }: { authors: AuthorRow[] }) {
+/** The bylines. Without `canEdit` the list only: no add, edit or delete. */
+export function AuthorsCard({ authors, canEdit }: { authors: AuthorRow[]; canEdit: boolean }) {
   const notify = useToast();
   const [pending, startTransition] = useTransition();
   const [draft, setDraft] = useState<AuthorDraft | null>(null);
@@ -54,15 +55,17 @@ export function AuthorsCard({ authors }: { authors: AuthorRow[] }) {
       description="Bylines you can pick when writing. Guest authors do not need an account."
       bodyClassName="p-0"
       actions={
-        <Button size="sm" variant="primary" onClick={() => edit(null)}>
-          <Plus className="size-4" />
-          Add author
-        </Button>
+        canEdit && (
+          <Button size="sm" variant="primary" onClick={() => edit(null)}>
+            <Plus className="size-4" />
+            Add author
+          </Button>
+        )
       }
     >
       {authors.length === 0 ? (
         <EmptyState icon={<Users className="size-5" />} title="No authors yet">
-          Add one so posts can carry a byline.
+          {canEdit ? "Add one so posts can carry a byline." : "Bylines will be listed here once somebody adds one."}
         </EmptyState>
       ) : (
         <ul className="divide-y divide-zinc-100">
@@ -82,18 +85,22 @@ export function AuthorsCard({ authors }: { authors: AuthorRow[] }) {
                   {author.adminEmail ? ` · linked to ${author.adminEmail}` : " · guest author"}
                 </p>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => edit(author)} aria-label={`Edit ${author.name}`}>
-                <Pencil className="size-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setDeleting(author)}
-                aria-label={`Delete ${author.name}`}
-                className="hover:bg-red-50 hover:text-red-600"
-              >
-                <Trash2 className="size-4" />
-              </Button>
+              {canEdit && (
+                <>
+                  <Button variant="ghost" size="icon" onClick={() => edit(author)} aria-label={`Edit ${author.name}`}>
+                    <Pencil className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setDeleting(author)}
+                    aria-label={`Delete ${author.name}`}
+                    className="hover:bg-red-50 hover:text-red-600"
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </>
+              )}
             </li>
           ))}
         </ul>

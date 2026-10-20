@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { requireAdmin } from "@/lib/admin/session";
+import { requireAccess } from "@/lib/admin/session";
 import { adminOverview, amountsDue, listPartners } from "@/lib/affiliate/admin-store";
 import { formatDate, formatMoney } from "@/lib/affiliate/format";
 import { formatRate } from "@/lib/affiliate/commission";
@@ -11,6 +11,7 @@ import Panel from "@/components/affiliate/Panel";
 import StatCard from "@/components/affiliate/StatCard";
 import { PartnerPill } from "@/components/affiliate/StatusPill";
 import { Body, Head, Row, RowHeader, Table, Td, Th } from "@/components/affiliate/Table";
+import { allows } from "@/lib/team/permissions";
 
 export const metadata: Metadata = { title: "Affiliates" };
 
@@ -22,7 +23,16 @@ export const metadata: Metadata = { title: "Affiliates" };
  * is a number to glance at.
  */
 export default async function AdminOverviewPage() {
-  await requireAdmin();
+  const { grant } = await requireAccess("affiliates.overview");
+  /* A partner's name opens their page only for a role that can see partners. */
+  const partnerLink = (id: number, company: string) =>
+    allows(grant, "affiliates.partners") ? (
+      <Link href={`/admin/affiliates/partners/${id}`} className="font-bold text-brand underline">
+        {company}
+      </Link>
+    ) : (
+      <span className="font-bold">{company}</span>
+    );
 
   const [overview, pending, due] = await Promise.all([
     adminOverview(),
@@ -106,12 +116,7 @@ export default async function AdminOverviewPage() {
                 {pending.map((partner) => (
                   <Row key={partner.id}>
                     <RowHeader>
-                      <Link
-                        href={`/admin/affiliates/partners/${partner.id}`}
-                        className="font-bold text-brand underline"
-                      >
-                        {partner.company}
-                      </Link>
+                      {partnerLink(partner.id, partner.company)}
                       <span className="mt-0.5 block text-[13.5px] text-body-mute">
                         {partner.name} · {partner.email}
                       </span>
@@ -131,7 +136,7 @@ export default async function AdminOverviewPage() {
           title="Payouts to make"
           scroll={due.length > 0}
           action={
-            due.length > 0 ? (
+            due.length > 0 && allows(grant, "affiliates.payouts", "edit") ? (
               <Link
                 href="/admin/affiliates/payouts"
                 className="font-poppins text-[14.5px] font-bold text-brand underline"
@@ -157,12 +162,7 @@ export default async function AdminOverviewPage() {
                 {due.slice(0, 8).map((row) => (
                   <Row key={`${row.partnerId}-${row.currency}`}>
                     <RowHeader>
-                      <Link
-                        href={`/admin/affiliates/partners/${row.partnerId}`}
-                        className="font-bold text-brand underline"
-                      >
-                        {row.company}
-                      </Link>
+                      {partnerLink(row.partnerId, row.company)}
                     </RowHeader>
                     <Td>
                       <PartnerPill status={row.status} />

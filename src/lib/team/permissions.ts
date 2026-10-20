@@ -50,7 +50,17 @@ export function appKey(appId: string): string {
  */
 export function sections(apps: readonly { id: string; name: string }[]): Section[] {
   return [
-    { label: "Overview", tabs: [{ key: "overview", label: "Overview", hint: "the front page's figures, for the tabs they can see", levels: VIEW_ONLY }] },
+    {
+      label: "Overview",
+      tabs: [
+        {
+          key: "overview",
+          label: "Overview",
+          hint: "the front page's figures, for the tabs they can see",
+          levels: VIEW_ONLY,
+        },
+      ],
+    },
     {
       label: "Your apps",
       tabs: [
@@ -77,17 +87,58 @@ export function sections(apps: readonly { id: string; name: string }[]): Section
       label: "Affiliates",
       tabs: [
         { key: "affiliates.overview", label: "Overview", levels: VIEW_ONLY },
-        { key: "affiliates.partners", label: "Partners", hint: "edit approves partners, sets rates and replays held charges", levels: VIEW_EDIT },
+        {
+          key: "affiliates.partners",
+          label: "Partners",
+          hint: "edit approves partners, sets rates and replays held charges",
+          levels: VIEW_EDIT,
+        },
         { key: "affiliates.payouts", label: "Payouts", hint: "edit records payouts", levels: VIEW_EDIT },
         { key: "affiliates.events", label: "Ingest log", levels: VIEW_ONLY },
       ],
     },
     { label: "Merchants", tabs: [{ key: "email", label: "Email", hint: "edit sends campaigns", levels: VIEW_EDIT }] },
-    { label: "Team", tabs: [{ key: "team", label: "Team", hint: "edit adds people, changes roles and edits roles", levels: VIEW_EDIT }] },
+    {
+      label: "Team",
+      tabs: [
+        { key: "team", label: "Team", hint: "edit adds people, changes roles and edits roles", levels: VIEW_EDIT },
+      ],
+    },
   ];
 }
 
 export const NO_ACCESS: Grant = { all: null, permissions: {} };
+
+/** What a role lets its holders do. The ready-made roles cover every tab, including later ones. */
+export function grantOf(role: { builtin: "admin" | "viewer" | null; permissions: Permissions }): Grant {
+  if (role.builtin === "admin") return { all: "edit", permissions: {} };
+  if (role.builtin === "viewer") return { all: "view", permissions: {} };
+  return { all: null, permissions: role.permissions };
+}
+
+/** Whether somebody holding `granter` may give out, make or edit `role`. */
+export function canAssign(
+  granter: Grant,
+  role: { builtin: "admin" | "viewer" | null; permissions: Permissions },
+): boolean {
+  return covers(granter, grantOf(role));
+}
+
+/**
+ * Whether `actor` may change or remove `person`: never an Owner, never
+ * themselves, and only somebody whose role their own access covers.
+ */
+export function canManage(
+  actor: { userId: string; grant: Grant },
+  person: {
+    userId: string | null;
+    owner: boolean;
+    role: { builtin: "admin" | "viewer" | null; permissions: Permissions } | null;
+  },
+): boolean {
+  if (person.owner || !person.role || !person.userId || person.userId === actor.userId) return false;
+  return canAssign(actor.grant, person.role);
+}
 
 /** Whether the grant reaches `level` on the tab `key`. Edit includes view. */
 export function allows(grant: Grant, key: string, level: Level = "view"): boolean {

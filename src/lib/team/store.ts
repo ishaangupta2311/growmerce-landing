@@ -1,7 +1,8 @@
 import "server-only";
 
 import { requireSql } from "@/lib/blog/sql";
-import type { Grant, Permissions } from "./permissions";
+import { transaction } from "@/lib/db";
+import { grantOf, type Grant, type Permissions } from "./permissions";
 
 /**
  * The team, the database side (migrations/0012_team.sql): members, roles,
@@ -23,13 +24,6 @@ export type RoleRow = {
 
 export type RoleSummary = RoleRow & { members: number; invites: number };
 
-/** What a role lets its holders do. The ready-made roles cover every tab, including later ones. */
-export function grantOf(role: Pick<RoleRow, "builtin" | "permissions">): Grant {
-  if (role.builtin === "admin") return { all: "edit", permissions: {} };
-  if (role.builtin === "viewer") return { all: "view", permissions: {} };
-  return { all: null, permissions: role.permissions };
-}
-
 type RoleRecord = {
   role_id: string;
   role_name: string;
@@ -39,7 +33,8 @@ type RoleRecord = {
 };
 
 /** The role columns every query here selects, as `r`. A constant, so `unsafe` is safe. */
-const ROLE_COLUMNS = "r.id as role_id, r.name as role_name, r.description as role_description, r.builtin, r.permissions";
+const ROLE_COLUMNS =
+  "r.id as role_id, r.name as role_name, r.description as role_description, r.builtin, r.permissions";
 
 function toRole(row: RoleRecord): RoleRow {
   return {
@@ -147,7 +142,14 @@ export async function listPeople(ownerEmails: readonly string[]): Promise<TeamPe
   return [
     ...ownerEmails.map((email) =>
       toPerson(
-        signedUp.get(email) ?? { user_id: null, email, name: null, must_change_password: false, two_factor: false, last_sign_in_at: null },
+        signedUp.get(email) ?? {
+          user_id: null,
+          email,
+          name: null,
+          must_change_password: false,
+          two_factor: false,
+          last_sign_in_at: null,
+        },
         true,
         null,
       ),
@@ -211,7 +213,9 @@ export async function renameMember(userId: string, name: string): Promise<void> 
 --------------------------------------------------------------------------- */
 
 /** The login for an address, if there is one. */
-export async function loginByEmail(email: string): Promise<{ userId: string; partner: boolean; member: boolean } | null> {
+export async function loginByEmail(
+  email: string,
+): Promise<{ userId: string; partner: boolean; member: boolean } | null> {
   const sql = requireSql();
   const [row] = await sql<{ id: string; partner: boolean; member: boolean }[]>`
     select u.id,
@@ -412,9 +416,13 @@ export async function deleteInvite(id: string): Promise<boolean> {
  * make one member. Null when the invite is gone, expired, or for another
  * address.
  */
-export async function acceptInvite(tokenHash: string, login: { userId: string; email: string }): Promise<InviteRow | null> {
+export async function acceptInvite(
+  tokenHash: string,
+  login: { userId: string; email: string },
+): Promise<InviteRow | null> {
   const sql = requireSql();
-  return sql.begin(async (tx) => {
+  /* `transaction`, never `sql.begin()`: see `max_pipeline` in src/lib/db.ts. */
+  return transaction(sql, async (tx) => {
     const [row] = await tx<InviteRecord[]>`
       select i.id, i.email, i.name, i.invited_by, i.created_at, i.expires_at, ${tx.unsafe(ROLE_COLUMNS)}
       from team.invite i

@@ -23,7 +23,12 @@ function suggestedSecretEnv(name: string): string {
   return stem ? `${stem}_ANALYTICS_SECRET` : "";
 }
 
-export default function AppSettingsForm({ app }: { app: AppRow | null }) {
+/**
+ * A new app's form, or an existing app's settings. `readOnly` is for a role
+ * that can see app settings but not change them: the same fields, disabled,
+ * and no Save.
+ */
+export default function AppSettingsForm({ app, readOnly = false }: { app: AppRow | null; readOnly?: boolean }) {
   const router = useRouter();
   const notify = useToast();
   const [name, setName] = useState(app?.name ?? "");
@@ -43,9 +48,9 @@ export default function AppSettingsForm({ app }: { app: AppRow | null }) {
   return (
     <Card title="About the app" description="Shown on its card in Your apps, and how the admin reaches it.">
       <form
-        className="space-y-5"
         onSubmit={(event) => {
           event.preventDefault();
+          if (readOnly) return;
           startTransition(async () => {
             const result = await saveAppAction(app?.id ?? null, {
               name,
@@ -66,97 +71,101 @@ export default function AppSettingsForm({ app }: { app: AppRow | null }) {
           });
         }}
       >
-        <Field label="Name" htmlFor="app-name" error={errors.name ?? errors.id}>
-          <Input id="app-name" value={name} maxLength={60} onChange={(event) => setName(event.target.value)} required />
-        </Field>
+        <fieldset disabled={readOnly} className="min-w-0 space-y-5">
+          <Field label="Name" htmlFor="app-name" error={errors.name ?? errors.id}>
+            <Input id="app-name" value={name} maxLength={60} onChange={(event) => setName(event.target.value)} required />
+          </Field>
 
-        <Field label="Platforms" error={errors.platforms}>
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Platforms">
-            {PLATFORMS.map((platform) => {
-              const on = platforms.includes(platform);
-              return (
-                <button
-                  key={platform}
-                  type="button"
-                  role="checkbox"
-                  aria-checked={on}
-                  onClick={() => togglePlatform(platform)}
-                  className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-800 shadow-xs hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-brand"
-                >
-                  <span
-                    aria-hidden
-                    className={clsx(
-                      "grid size-4 place-items-center rounded",
-                      on ? "bg-brand text-white" : "border-[1.5px] border-zinc-300 bg-white",
-                    )}
+          <Field label="Platforms" error={errors.platforms}>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Platforms">
+              {PLATFORMS.map((platform) => {
+                const on = platforms.includes(platform);
+                return (
+                  <button
+                    key={platform}
+                    type="button"
+                    role="checkbox"
+                    aria-checked={on}
+                    onClick={() => togglePlatform(platform)}
+                    className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-800 shadow-xs hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-brand disabled:pointer-events-none disabled:text-zinc-500"
                   >
-                    {on && <Check className="size-3" strokeWidth={3} />}
-                  </span>
-                  {PLATFORM_LABEL[platform]}
-                </button>
-              );
-            })}
-          </div>
-        </Field>
+                    <span
+                      aria-hidden
+                      className={clsx(
+                        "grid size-4 place-items-center rounded",
+                        on ? "bg-brand text-white" : "border-[1.5px] border-zinc-300 bg-white",
+                      )}
+                    >
+                      {on && <Check className="size-3" strokeWidth={3} />}
+                    </span>
+                    {PLATFORM_LABEL[platform]}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
 
-        <Field
-          label="App address"
-          htmlFor="app-url"
-          error={errors.baseUrl}
-          hint="Where the app runs. The admin asks it for its stores and dashboards here."
-        >
-          <Input
-            id="app-url"
-            value={baseUrl}
-            onChange={(event) => setBaseUrl(event.target.value)}
-            placeholder="https://app.example.com"
-            className="font-mono text-[13px]"
-            required
-          />
-        </Field>
+          <Field
+            label="App address"
+            htmlFor="app-url"
+            error={errors.baseUrl}
+            hint="Where the app runs. The admin asks it for its stores and dashboards here."
+          >
+            <Input
+              id="app-url"
+              value={baseUrl}
+              onChange={(event) => setBaseUrl(event.target.value)}
+              placeholder="https://app.example.com"
+              className="font-mono text-[13px]"
+              required
+            />
+          </Field>
 
-        <Field
-          label="Shared secret"
-          htmlFor="app-secret"
-          error={errors.secretEnv}
-          hint={
-            <>
-              The <em>name</em> of the environment variable holding the secret on this site. The secret itself lives in
-              Vercel&rsquo;s settings, never in the database. The app needs the same value.
-            </>
-          }
-        >
-          <Input
-            id="app-secret"
-            value={shownSecretEnv}
-            onChange={(event) => {
-              setSecretTouched(true);
-              setSecretEnv(event.target.value.toUpperCase());
-            }}
-            placeholder="MY_APP_ANALYTICS_SECRET"
-            className="font-mono text-[13px]"
-            required
-          />
-        </Field>
+          <Field
+            label="Shared secret"
+            htmlFor="app-secret"
+            error={errors.secretEnv}
+            hint={
+              <>
+                The <em>name</em> of the environment variable holding the secret on this site. The secret itself lives in
+                Vercel&rsquo;s settings, never in the database. The app needs the same value.
+              </>
+            }
+          >
+            <Input
+              id="app-secret"
+              value={shownSecretEnv}
+              onChange={(event) => {
+                setSecretTouched(true);
+                setSecretEnv(event.target.value.toUpperCase());
+              }}
+              placeholder="MY_APP_ANALYTICS_SECRET"
+              className="font-mono text-[13px]"
+              required
+            />
+          </Field>
 
-        <Field
-          label="Icon (optional)"
-          htmlFor="app-icon"
-          error={errors.iconUrl}
-          hint="A path on this site like /brand/icon.svg, or an https address. Empty shows the first letter."
-        >
-          <Input
-            id="app-icon"
-            value={iconUrl}
-            onChange={(event) => setIconUrl(event.target.value)}
-            className="font-mono text-[13px]"
-          />
-        </Field>
+          <Field
+            label="Icon (optional)"
+            htmlFor="app-icon"
+            error={errors.iconUrl}
+            hint="A path on this site like /brand/icon.svg, or an https address. Empty shows the first letter."
+          >
+            <Input
+              id="app-icon"
+              value={iconUrl}
+              onChange={(event) => setIconUrl(event.target.value)}
+              className="font-mono text-[13px]"
+            />
+          </Field>
 
-        <Button type="submit" variant="primary" disabled={pending}>
-          {pending && <LoaderCircle className="size-4 animate-spin" />}
-          {app ? "Save" : "Add app"}
-        </Button>
+          {!readOnly && (
+            <Button type="submit" variant="primary" disabled={pending}>
+              {pending && <LoaderCircle className="size-4 animate-spin" />}
+              {app ? "Save" : "Add app"}
+            </Button>
+          )}
+        </fieldset>
       </form>
     </Card>
   );

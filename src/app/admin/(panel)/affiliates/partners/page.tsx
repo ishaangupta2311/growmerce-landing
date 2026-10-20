@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { requireAdmin } from "@/lib/admin/session";
+import { requireAccess } from "@/lib/admin/session";
 import { listPartners, type PartnerFilter } from "@/lib/affiliate/admin-store";
 import { formatRate } from "@/lib/affiliate/commission";
 import { formatDate, formatMoney } from "@/lib/affiliate/format";
@@ -30,7 +30,7 @@ export default async function AdminPartnersPage({
 }: {
   searchParams: Promise<{ status?: string; kind?: string; q?: string }>;
 }) {
-  await requireAdmin();
+  await requireAccess("affiliates.partners");
   const params = await searchParams;
 
   /* Validated against the unions rather than passed through: these reach a

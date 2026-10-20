@@ -4,10 +4,11 @@ import { FileText, Plus } from "lucide-react";
 import { LocalTime } from "@/components/admin/overlay";
 import Thumb from "@/components/admin/Thumb";
 import { ButtonLink, EmptyState, PageHeader, Pagination, StatusBadge } from "@/components/admin/ui";
-import { requireAdmin } from "@/lib/admin/session";
+import { requireAccess } from "@/lib/admin/session";
 import { listAdminPosts, type PostListQuery } from "@/lib/blog/posts";
 import { editorOptions } from "@/lib/blog/taxonomy";
 import { POST_SORTS, POST_STATUSES, type PostSort, type PostStatus } from "@/lib/blog/types";
+import { allows } from "@/lib/team/permissions";
 import PostFilters from "./PostFilters";
 import PostRowActions from "./PostRowActions";
 
@@ -20,6 +21,9 @@ function one(value: string | string[] | undefined): string {
 }
 
 export default async function BlogsPage({ searchParams }: PageProps<"/admin/blog">) {
+  const admin = await requireAccess("blog.posts");
+  /* Rows still open the editor without edit; it opens read-only. */
+  const canEdit = allows(admin.grant, "blog.posts", "edit");
   const params = await searchParams;
 
   /* Anything unexpected in the URL falls back to the default, never into SQL. */
@@ -35,11 +39,7 @@ export default async function BlogsPage({ searchParams }: PageProps<"/admin/blog
     pageSize: PAGE_SIZE,
   };
 
-  const [, { items, total, page, pageCount }, { categories }] = await Promise.all([
-    requireAdmin(),
-    listAdminPosts(query),
-    editorOptions(),
-  ]);
+  const [{ items, total, page, pageCount }, { categories }] = await Promise.all([listAdminPosts(query), editorOptions()]);
   const filtered = Boolean(query.q || query.status !== "all" || query.categoryId);
 
   return (
@@ -48,10 +48,12 @@ export default async function BlogsPage({ searchParams }: PageProps<"/admin/blog
         title="Blogs"
         description={`${total} ${total === 1 ? "post" : "posts"}${filtered ? " match these filters" : ""}`}
         actions={
-          <ButtonLink href="/admin/blog/new" variant="primary">
-            <Plus className="size-4" />
-            New post
-          </ButtonLink>
+          canEdit && (
+            <ButtonLink href="/admin/blog/new" variant="primary">
+              <Plus className="size-4" />
+              New post
+            </ButtonLink>
+          )
         }
       />
 
@@ -63,7 +65,8 @@ export default async function BlogsPage({ searchParams }: PageProps<"/admin/blog
             icon={<FileText className="size-5" />}
             title={filtered ? "No posts match" : "No posts yet"}
             action={
-              !filtered && (
+              !filtered &&
+              canEdit && (
                 <ButtonLink href="/admin/blog/new" variant="primary" size="sm">
                   <Plus className="size-4" />
                   Write the first post
@@ -71,7 +74,11 @@ export default async function BlogsPage({ searchParams }: PageProps<"/admin/blog
               )
             }
           >
-            {filtered ? "Try a different search or clear the filters." : "Posts you write will be listed here."}
+            {filtered
+              ? "Try a different search or clear the filters."
+              : canEdit
+                ? "Posts you write will be listed here."
+                : "Posts will be listed here once somebody writes one."}
           </EmptyState>
         ) : (
           <>
@@ -124,7 +131,7 @@ export default async function BlogsPage({ searchParams }: PageProps<"/admin/blog
                         <LocalTime iso={post.updatedAt} mode="date" />
                       </td>
                       <td className="py-3 pr-3">
-                        <PostRowActions post={post} />
+                        <PostRowActions post={post} canEdit={canEdit} />
                       </td>
                     </tr>
                   ))}
@@ -149,7 +156,7 @@ export default async function BlogsPage({ searchParams }: PageProps<"/admin/blog
                       </span>
                     </div>
                   </div>
-                  <PostRowActions post={post} />
+                  <PostRowActions post={post} canEdit={canEdit} />
                 </li>
               ))}
             </ul>

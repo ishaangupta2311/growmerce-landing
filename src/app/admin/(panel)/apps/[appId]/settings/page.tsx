@@ -5,27 +5,30 @@ import { Suspense } from "react";
 import { StatusChip } from "@/components/admin/apps/bits";
 import AppSettingsForm, { RemoveAppCard, TestAgainButton } from "@/components/admin/apps/AppSettingsForm";
 import { Card, PageHeader } from "@/components/admin/ui";
-import { requireAdmin } from "@/lib/admin/session";
+import { requireAccess } from "@/lib/admin/session";
 import { appSecret, checkConnection } from "@/lib/apps/connection";
 import { getApp } from "@/lib/apps/store";
 import { PLATFORM_LABEL, type AppRow, type Platform } from "@/lib/apps/types";
+import { allows, appKey, APP_SETTINGS } from "@/lib/team/permissions";
 
 export const metadata: Metadata = { title: "App settings" };
 
 export default async function AppSettingsPage({ params }: PageProps<"/admin/apps/[appId]/settings">) {
-  await requireAdmin();
+  const { grant } = await requireAccess(APP_SETTINGS);
   const app = await getApp((await params).appId);
   if (!app) notFound();
+  const canEdit = allows(grant, APP_SETTINGS, "edit");
 
   return (
     <>
       <PageHeader
-        back={{ href: `/admin/apps/${app.id}`, label: app.name }}
+        /* Settings can be open to a role that cannot see the app's stores; their way back is Your apps. */
+        back={allows(grant, appKey(app.id)) ? { href: `/admin/apps/${app.id}`, label: app.name } : { href: "/admin/apps", label: "Your apps" }}
         title="App settings"
         description={`How the admin finds ${app.name} and proves it's you.`}
       />
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <AppSettingsForm app={app} />
+        <AppSettingsForm app={app} readOnly={!canEdit} />
         <div className="space-y-5">
           <Card title="Connection check" description="Runs each time this page opens.">
             <Suspense fallback={<p className="text-sm text-zinc-500">Asking {app.name}… A sleeping app can take up to a minute.</p>}>
@@ -35,7 +38,7 @@ export default async function AppSettingsPage({ params }: PageProps<"/admin/apps
               <TestAgainButton />
             </div>
           </Card>
-          <RemoveAppCard app={app} />
+          {canEdit && <RemoveAppCard app={app} />}
         </div>
       </div>
     </>
