@@ -34,7 +34,8 @@ import {
   saveRole,
   setMemberRole,
   setMustChangePassword,
-  upsertInvite,
+  openInvite,
+  renewInvite,
   type RoleRow,
   type TeamPerson,
 } from "@/lib/team/store";
@@ -156,7 +157,11 @@ export async function addTeammateAction(
       return { ok: true, data: { password, link: null }, message: "Login created." };
     }
 
-    const sent = await sendInvite(admin, { email, name, role });
+    const sent = await sendInvite(admin, { id: null, email, name, role });
+    if (!sent) {
+      const error = "There's already an open invite for this address. Resend or cancel it below.";
+      return { ok: false, error, fieldErrors: { email: error } };
+    }
     await noteActivity(admin, `Invited ${email} as ${role.name}`);
     refresh();
     return {
@@ -167,20 +172,26 @@ export async function addTeammateAction(
   });
 }
 
+/**
+ * Opens a new invite (`id` null) or puts a new link on an existing one, and
+ * emails it. Null when there was nothing to send: a new invite for an address
+ * that already has an open one, or an invite that changed or went meanwhile.
+ */
 async function sendInvite(
   admin: Admin,
-  invite: { email: string; name: string; role: RoleRow },
-): Promise<{ emailed: boolean; link: string }> {
+  invite: { id: string | null; email: string; name: string; role: RoleRow },
+): Promise<{ emailed: boolean; link: string } | null> {
   const token = randomBytes(32).toString("hex");
   const tokenHash = createHash("sha256").update(token).digest("hex");
-  const id = await upsertInvite({
-    email: invite.email,
-    name: invite.name,
-    roleId: invite.role.id,
+  const fresh = {
     tokenHash,
     invitedBy: admin.email,
     expiresAt: new Date(Date.now() + INVITE_DAYS * 24 * 60 * 60 * 1000),
-  });
+  };
+  const id = invite.id
+    ? (await renewInvite(invite.id, invite.role.id, fresh)) && invite.id
+    : await openInvite({ ...fresh, email: invite.email, name: invite.name, roleId: invite.role.id });
+  if (!id) return null;
 
   const link = `${await origin()}/admin/join/${token}`;
   const sent = await sendEmail({
@@ -209,6 +220,7 @@ export async function resendInviteAction(inviteId: unknown): Promise<ActionResul
     if (!canAssign(admin.grant, invite.role)) return { ok: false, error: BEYOND_YOU };
 
     const sent = await sendInvite(admin, invite);
+    if (!sent) return { ok: false, error: "That invite changed or was used meanwhile. Reload and try again." };
     await noteActivity(admin, `Resent the invite to ${invite.email}`);
     refresh();
     return {

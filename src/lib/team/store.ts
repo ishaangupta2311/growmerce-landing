@@ -388,18 +388,14 @@ export async function inviteByTokenHash(tokenHash: string): Promise<InviteRow | 
   return row ? toInvite(row) : null;
 }
 
+type NewLink = { tokenHash: string; invitedBy: string; expiresAt: Date };
+
 /**
- * Opens an invite, or replaces the open one for the same address: a resend is
- * a new link, and the old link stops working.
+ * Opens an invite. Null if the address already has one still open: that
+ * invite is changed only by resending or cancelling it, which check the
+ * role it offers. An expired one is replaced, since its link is dead anyway.
  */
-export async function upsertInvite(invite: {
-  email: string;
-  name: string;
-  roleId: string;
-  tokenHash: string;
-  invitedBy: string;
-  expiresAt: Date;
-}): Promise<string> {
+export async function openInvite(invite: NewLink & { email: string; name: string; roleId: string }): Promise<string | null> {
   const sql = requireSql();
   const [row] = await sql<{ id: string }[]>`
     insert into team.invite (email, name, role_id, token_hash, invited_by, expires_at)
@@ -407,9 +403,26 @@ export async function upsertInvite(invite: {
     on conflict (email) do update
       set name = excluded.name, role_id = excluded.role_id, token_hash = excluded.token_hash,
           invited_by = excluded.invited_by, created_at = now(), expires_at = excluded.expires_at
+      where team.invite.expires_at <= now()
     returning id
   `;
-  return row.id;
+  return row?.id ?? null;
+}
+
+/**
+ * A new link for an invite: the old one stops working. Only while it still
+ * offers `roleId`, the role the caller checked, so a change in between can't
+ * slip past that check.
+ */
+export async function renewInvite(id: string, roleId: string, link: NewLink): Promise<boolean> {
+  const sql = requireSql();
+  const rows = await sql`
+    update team.invite
+    set token_hash = ${link.tokenHash}, invited_by = ${link.invitedBy}, created_at = now(), expires_at = ${link.expiresAt}
+    where id = ${id} and role_id = ${roleId}
+    returning 1
+  `;
+  return rows.length > 0;
 }
 
 export async function deleteInvite(id: string): Promise<boolean> {
