@@ -1,23 +1,21 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/admin/ui";
-import { requireAdmin } from "@/lib/admin/session";
+import { requireAccess } from "@/lib/admin/session";
 import { listAuthors } from "@/lib/blog/taxonomy";
-import { AuthorsCard, ProfileCard, SignInCard } from "./SettingsPanels";
+import { allows } from "@/lib/team/permissions";
+import { AuthorsCard } from "./SettingsPanels";
 
-export const metadata: Metadata = { title: "Settings" };
+export const metadata: Metadata = { title: "Authors" };
 
 export default async function SettingsPage() {
-  const [admin, authors] = await Promise.all([requireAdmin(), listAuthors()]);
+  const admin = await requireAccess("blog.authors");
+  const authors = await listAuthors();
 
   return (
     <>
-      <PageHeader title="Settings" description="Your name in the admin, how you sign in, and the authors who write for the blog." />
-      <div className="grid gap-6 xl:grid-cols-2">
-        <div className="space-y-6">
-          <ProfileCard name={admin.name} email={admin.email} />
-          <SignInCard />
-        </div>
-        <AuthorsCard authors={authors} />
+      <PageHeader title="Authors" description="The bylines on blog posts. Your own name and password are under My account." />
+      <div className="max-w-3xl">
+        <AuthorsCard authors={authors} canEdit={allows(admin.grant, "blog.authors", "edit")} />
       </div>
     </>
   );

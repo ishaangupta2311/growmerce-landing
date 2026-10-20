@@ -12,7 +12,12 @@ import { Button, EmptyState, Field, Input, formatBytes } from "@/components/admi
 import { MEDIA_ACCEPT, type MediaItem } from "@/lib/blog/types";
 import { clsx } from "@/lib/clsx";
 
-export default function MediaLibrary({ items, query }: { items: MediaItem[]; query: string }) {
+/**
+ * The media tab. Without `canEdit` (a role that can see media but not change
+ * it) there is no upload, no alt-text editing and no delete: the library to
+ * browse and copy addresses from.
+ */
+export default function MediaLibrary({ items, query, canEdit }: { items: MediaItem[]; query: string; canEdit: boolean }) {
   const router = useRouter();
   const notify = useToast();
   const [pending, startTransition] = useTransition();
@@ -97,33 +102,35 @@ export default function MediaLibrary({ items, query }: { items: MediaItem[]; que
 
   return (
     <>
-      <label
-        onDragOver={(event) => {
-          event.preventDefault();
-          setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={onDrop}
-        className={clsx(
-          "mb-6 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed bg-white px-6 py-8 text-center transition-colors",
-          dragging ? "border-brand bg-brand/5" : "border-zinc-200 hover:border-brand/50",
-        )}
-      >
-        <input
-          ref={input}
-          type="file"
-          accept={MEDIA_ACCEPT}
-          multiple
-          className="sr-only"
-          onChange={(event) => upload(Array.from(event.target.files ?? []))}
-          disabled={Boolean(progress)}
-        />
-        <span className="grid size-11 place-items-center rounded-full bg-brand/10 text-brand">
-          {progress ? <LoaderCircle className="size-5 animate-spin" /> : <Upload className="size-5" />}
-        </span>
-        <span className="text-sm font-bold text-zinc-900">{progress ?? "Drop images here, or click to upload"}</span>
-        <span className="text-xs text-zinc-500">JPEG, PNG, WebP, GIF or AVIF up to 4 MB. Converted to WebP and resized to 2400px max.</span>
-      </label>
+      {canEdit && (
+        <label
+          onDragOver={(event) => {
+            event.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={onDrop}
+          className={clsx(
+            "mb-6 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed bg-white px-6 py-8 text-center transition-colors",
+            dragging ? "border-brand bg-brand/5" : "border-zinc-200 hover:border-brand/50",
+          )}
+        >
+          <input
+            ref={input}
+            type="file"
+            accept={MEDIA_ACCEPT}
+            multiple
+            className="sr-only"
+            onChange={(event) => upload(Array.from(event.target.files ?? []))}
+            disabled={Boolean(progress)}
+          />
+          <span className="grid size-11 place-items-center rounded-full bg-brand/10 text-brand">
+            {progress ? <LoaderCircle className="size-5 animate-spin" /> : <Upload className="size-5" />}
+          </span>
+          <span className="text-sm font-bold text-zinc-900">{progress ?? "Drop images here, or click to upload"}</span>
+          <span className="text-xs text-zinc-500">JPEG, PNG, WebP, GIF or AVIF up to 4 MB. Converted to WebP and resized to 2400px max.</span>
+        </label>
+      )}
 
       <div className="rounded-xl border border-zinc-200 bg-white shadow-xs">
         <div className="border-b border-zinc-100 p-3 sm:p-4">
@@ -132,7 +139,11 @@ export default function MediaLibrary({ items, query }: { items: MediaItem[]; que
 
         {items.length === 0 ? (
           <EmptyState icon={<ImageIcon className="size-5" />} title={query ? "No images match" : "No images yet"}>
-            {query ? "Try a different search." : "Uploaded images appear here, ready to use in posts."}
+            {query
+              ? "Try a different search."
+              : canEdit
+                ? "Uploaded images appear here, ready to use in posts."
+                : "Images will appear here once somebody uploads one."}
           </EmptyState>
         ) : (
           <ul className="grid grid-cols-2 gap-3 p-3 sm:grid-cols-3 sm:gap-4 sm:p-4 lg:grid-cols-4 xl:grid-cols-6">
@@ -173,17 +184,19 @@ export default function MediaLibrary({ items, query }: { items: MediaItem[]; que
                     >
                       <Eye className="size-3.5" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="ml-auto size-7 hover:bg-red-50 hover:text-red-600"
-                      onClick={() => askDelete(item)}
-                      disabled={pending}
-                      aria-label="Delete"
-                      title="Delete"
-                    >
-                      <Trash2 className="size-3.5" />
-                    </Button>
+                    {canEdit && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="ml-auto size-7 hover:bg-red-50 hover:text-red-600"
+                        onClick={() => askDelete(item)}
+                        disabled={pending}
+                        aria-label="Delete"
+                        title="Delete"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </li>
@@ -200,10 +213,12 @@ export default function MediaLibrary({ items, query }: { items: MediaItem[]; que
         footer={
           viewing && (
             <>
-              <Button variant="dangerGhost" className="mr-auto" onClick={() => askDelete(viewing)} disabled={pending}>
-                <Trash2 className="size-4" />
-                Delete
-              </Button>
+              {canEdit && (
+                <Button variant="dangerGhost" className="mr-auto" onClick={() => askDelete(viewing)} disabled={pending}>
+                  <Trash2 className="size-4" />
+                  Delete
+                </Button>
+              )}
               <Button onClick={() => copyUrl(viewing)}>
                 <Copy className="size-4" />
                 Copy URL
@@ -244,12 +259,16 @@ export default function MediaLibrary({ items, query }: { items: MediaItem[]; que
               <Input id="media-url" readOnly value={viewing.url} onFocus={(event) => event.target.select()} className="font-mono text-xs" />
             </Field>
             <Field label="Alt text" htmlFor="media-alt" hint="Describes the image for screen readers and search engines.">
-              <div className="flex gap-2">
-                <Input id="media-alt" value={alt} maxLength={300} onChange={(event) => setAlt(event.target.value)} />
-                <Button onClick={saveAlt} disabled={pending || alt === (viewing.altText ?? "")}>
-                  Save
-                </Button>
-              </div>
+              {canEdit ? (
+                <div className="flex gap-2">
+                  <Input id="media-alt" value={alt} maxLength={300} onChange={(event) => setAlt(event.target.value)} />
+                  <Button onClick={saveAlt} disabled={pending || alt === (viewing.altText ?? "")}>
+                    Save
+                  </Button>
+                </div>
+              ) : (
+                <Input id="media-alt" value={viewing.altText ?? ""} placeholder="No alt text" disabled />
+              )}
             </Field>
           </div>
         )}

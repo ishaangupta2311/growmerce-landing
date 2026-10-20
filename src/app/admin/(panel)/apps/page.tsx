@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { ArrowRight, Plus } from "lucide-react";
+import { notFound } from "next/navigation";
+import { ArrowRight, Plus, Settings } from "lucide-react";
 
 import { AppIcon, PlatformChip, StatusChip } from "@/components/admin/apps/bits";
 import { ButtonLink, PageHeader } from "@/components/admin/ui";
@@ -11,6 +12,7 @@ import { appSecret, fetchStores } from "@/lib/apps/connection";
 import { listApps, starCounts } from "@/lib/apps/store";
 import { compactNumber, summarize } from "@/lib/apps/summary";
 import type { AppRow } from "@/lib/apps/types";
+import { allows, allowsApps, appKey, APP_SETTINGS } from "@/lib/team/permissions";
 
 export const metadata: Metadata = { title: "Your apps" };
 
@@ -18,10 +20,20 @@ export const metadata: Metadata = { title: "Your apps" };
  * Every app Growmerce has built, one card each. A card's figures come from
  * the app itself, which may be asleep, so each streams in on its own and a
  * slow app never holds up the others.
+ *
+ * Your apps has no permission of its own: it is open to anybody who can see
+ * one of the apps, or app settings. Each app's card shows only to a role that
+ * can see that app; a role with app settings but not the app gets a smaller
+ * card that opens the settings.
  */
 export default async function YourAppsPage() {
-  await requireAdmin();
-  const [apps, stars] = await Promise.all([listApps(), starCounts()]);
+  const { grant } = await requireAdmin();
+  if (!allowsApps(grant)) notFound();
+  const canSettings = allows(grant, APP_SETTINGS);
+  const canAdd = allows(grant, APP_SETTINGS, "edit");
+
+  const [allApps, stars] = await Promise.all([listApps(), starCounts()]);
+  const apps = allApps.filter((app) => canSettings || allows(grant, appKey(app.id)));
 
   return (
     <>
@@ -29,37 +41,84 @@ export default async function YourAppsPage() {
         title="Your apps"
         description="Every app you've built, and how many stores use each one."
         actions={
-          <ButtonLink href="/admin/apps/new" variant="primary">
-            <Plus className="size-4" />
-            Add an app
-          </ButtonLink>
+          canAdd && (
+            <ButtonLink href="/admin/apps/new" variant="primary">
+              <Plus className="size-4" />
+              Add an app
+            </ButtonLink>
+          )
         }
       />
+      {apps.length === 0 && !canAdd && <p className="text-sm text-zinc-500">No apps to show yet.</p>}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {apps.map((app) => (
-          <AppCard key={app.id} app={app} starred={stars.get(app.id) ?? 0} />
-        ))}
-        <Link
-          href="/admin/apps/new"
-          className="grid min-h-52 place-items-center rounded-xl border-[1.5px] border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500 transition-colors hover:border-zinc-400 hover:bg-white"
-        >
-          <span>
-            <span aria-hidden className="mx-auto mb-2.5 grid size-10 place-items-center rounded-[10px] bg-zinc-100 text-zinc-600">
-              <Plus className="size-5" />
+        {apps.map((app) =>
+          allows(grant, appKey(app.id)) ? (
+            <AppCard key={app.id} app={app} starred={stars.get(app.id) ?? 0} settings={canSettings} />
+          ) : (
+            <SettingsOnlyCard key={app.id} app={app} />
+          ),
+        )}
+        {canAdd && (
+          <Link
+            href="/admin/apps/new"
+            className="grid min-h-52 place-items-center rounded-xl border-[1.5px] border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500 transition-colors hover:border-zinc-400 hover:bg-white"
+          >
+            <span>
+              <span aria-hidden className="mx-auto mb-2.5 grid size-10 place-items-center rounded-[10px] bg-zinc-100 text-zinc-600">
+                <Plus className="size-5" />
+              </span>
+              <span className="block text-sm font-bold text-zinc-900">Add an app</span>
+              A Shopify or WooCommerce app that answers the Growmerce connection.
             </span>
-            <span className="block text-sm font-bold text-zinc-900">Add an app</span>
-            A Shopify or WooCommerce app that answers the Growmerce connection.
-          </span>
-        </Link>
+          </Link>
+        )}
       </div>
     </>
   );
 }
 
-function AppCard({ app, starred }: { app: AppRow; starred: number }) {
+/** The settings link sits beside the card's link rather than inside it: a link cannot hold another. */
+function AppCard({ app, starred, settings }: { app: AppRow; starred: number; settings: boolean }) {
+  return (
+    <div className="relative">
+      <Link
+        href={`/admin/apps/${app.id}`}
+        className="group flex h-full flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-xs transition-all hover:border-zinc-300 hover:shadow-sm"
+      >
+        <div className={clsx("flex items-center gap-3", settings && "pr-9")}>
+          <AppIcon app={app} />
+          <div className="min-w-0">
+            <h2 className="truncate text-base font-extrabold text-zinc-900">{app.name}</h2>
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              {app.platforms.map((platform) => (
+                <PlatformChip key={platform} platform={platform} />
+              ))}
+            </div>
+          </div>
+        </div>
+        <Suspense fallback={<CardFigures stores="…" searches="…" starred={String(starred)} footer={<CardFooter />} />}>
+          <AppCardFigures app={app} starred={starred} />
+        </Suspense>
+      </Link>
+      {settings && (
+        <Link
+          href={`/admin/apps/${app.id}/settings`}
+          aria-label={`${app.name} settings`}
+          title="App settings"
+          className="absolute top-4 right-4 grid size-8 place-items-center rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+        >
+          <Settings className="size-4" />
+        </Link>
+      )}
+    </div>
+  );
+}
+
+/** An app whose settings the role can see but whose stores it cannot. */
+function SettingsOnlyCard({ app }: { app: AppRow }) {
   return (
     <Link
-      href={`/admin/apps/${app.id}`}
+      href={`/admin/apps/${app.id}/settings`}
       className="group flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-xs transition-all hover:border-zinc-300 hover:shadow-sm"
     >
       <div className="flex items-center gap-3">
@@ -73,9 +132,10 @@ function AppCard({ app, starred }: { app: AppRow; starred: number }) {
           </div>
         </div>
       </div>
-      <Suspense fallback={<CardFigures stores="…" searches="…" starred={String(starred)} footer={<CardFooter />} />}>
-        <AppCardFigures app={app} starred={starred} />
-      </Suspense>
+      <span className="mt-auto inline-flex items-center gap-1 self-end text-[13px] font-bold text-brand">
+        App settings
+        <ArrowRight aria-hidden className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+      </span>
     </Link>
   );
 }

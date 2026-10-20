@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { requireAdmin } from "@/lib/admin/session";
+import { requireAccess } from "@/lib/admin/session";
 import { amountsDue, recentPayouts } from "@/lib/affiliate/admin-store";
 import { formatDate, formatMoney } from "@/lib/affiliate/format";
 import { PageHeader } from "@/components/admin/ui";
@@ -10,6 +10,7 @@ import Panel from "@/components/affiliate/Panel";
 import { PartnerPill } from "@/components/affiliate/StatusPill";
 import { Body, Head, Row, RowHeader, Table, Td, Th } from "@/components/affiliate/Table";
 import PayoutForm from "@/components/affiliate/admin/PayoutForm";
+import { allows } from "@/lib/team/permissions";
 
 export const metadata: Metadata = { title: "Payouts" };
 
@@ -28,6 +29,9 @@ export const metadata: Metadata = { title: "Payouts" };
  * The banner at the top is where `createPayout` says it worked, because the
  * form that would otherwise have said so is gone by then — see the redirect at
  * the end of that action.
+ *
+ * A role that can see payouts but not record them gets the same two lists,
+ * with each amount owed as a plain row rather than a form.
  */
 export default async function AdminPayoutsPage({
   searchParams,
@@ -38,7 +42,9 @@ export default async function AdminPayoutsPage({
     count?: string | string[];
   }>;
 }) {
-  await requireAdmin();
+  const { grant } = await requireAccess("affiliates.payouts");
+  const canPay = allows(grant, "affiliates.payouts", "edit");
+  const canSeePartners = allows(grant, "affiliates.partners");
 
   const [params, due, payouts] = await Promise.all([
     searchParams,
@@ -70,49 +76,62 @@ export default async function AdminPayoutsPage({
             </Empty>
           ) : (
             <ul className="divide-y divide-line">
-              {due.map((row) => (
-                <li key={`${row.partnerId}-${row.currency}`} className="py-4 first:pt-0 last:pb-0">
-                  <details className="group">
-                    <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3 rounded-[10px] px-1 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                      <div>
-                        <p className="font-poppins text-[16px] font-bold text-charcoal">
-                          {row.company}
-                          {row.status !== "approved" && (
-                            <span className="ml-2 align-middle">
-                              <PartnerPill status={row.status} />
-                            </span>
-                          )}
-                        </p>
-                        <p className="mt-0.5 text-[13.5px] text-body-mute">
-                          {row.commissionCount} commission
-                          {row.commissionCount === 1 ? "" : "s"}
-                          {row.waitingSince && ` · waiting since ${formatDate(row.waitingSince)}`}
-                          {!row.payoutDetails && " · no payout details on file"}
-                        </p>
-                      </div>
-                      <p className="font-poppins text-[19px] font-bold tabular-nums text-brand">
-                        {formatMoney(row.owedCents, row.currency)}
-                        <span className="ml-2 text-[13px] font-bold text-body-mute uppercase">
-                          {row.currency}
-                        </span>
+              {due.map((row) => {
+                const owed = (
+                  <>
+                    <div>
+                      <p className="font-poppins text-[16px] font-bold text-charcoal">
+                        {row.company}
+                        {row.status !== "approved" && (
+                          <span className="ml-2 align-middle">
+                            <PartnerPill status={row.status} />
+                          </span>
+                        )}
                       </p>
-                    </summary>
-
-                    <div className="mt-4 rounded-[14px] border border-line bg-cream/50 p-5">
-                      <PayoutForm due={row} />
-                      <p className="mt-4 border-t border-line pt-4 text-[13.5px] text-body-mute">
-                        <Link
-                          href={`/admin/affiliates/partners/${row.partnerId}`}
-                          className="font-bold text-brand underline"
-                        >
-                          Open {row.name}&rsquo;s account
-                        </Link>{" "}
-                        to see the commissions this settles.
+                      <p className="mt-0.5 text-[13.5px] text-body-mute">
+                        {row.commissionCount} commission
+                        {row.commissionCount === 1 ? "" : "s"}
+                        {row.waitingSince && ` · waiting since ${formatDate(row.waitingSince)}`}
+                        {!row.payoutDetails && " · no payout details on file"}
                       </p>
                     </div>
-                  </details>
-                </li>
-              ))}
+                    <p className="font-poppins text-[19px] font-bold tabular-nums text-brand">
+                      {formatMoney(row.owedCents, row.currency)}
+                      <span className="ml-2 text-[13px] font-bold text-body-mute uppercase">
+                        {row.currency}
+                      </span>
+                    </p>
+                  </>
+                );
+                return (
+                  <li key={`${row.partnerId}-${row.currency}`} className="py-4 first:pt-0 last:pb-0">
+                    {canPay ? (
+                      <details className="group">
+                        <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3 rounded-[10px] px-1 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+                          {owed}
+                        </summary>
+
+                        <div className="mt-4 rounded-[14px] border border-line bg-cream/50 p-5">
+                          <PayoutForm due={row} />
+                          {canSeePartners && (
+                            <p className="mt-4 border-t border-line pt-4 text-[13.5px] text-body-mute">
+                              <Link
+                                href={`/admin/affiliates/partners/${row.partnerId}`}
+                                className="font-bold text-brand underline"
+                              >
+                                Open {row.name}&rsquo;s account
+                              </Link>{" "}
+                              to see the commissions this settles.
+                            </p>
+                          )}
+                        </div>
+                      </details>
+                    ) : (
+                      <div className="flex flex-wrap items-center justify-between gap-3 px-1 py-2">{owed}</div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </Panel>
@@ -137,12 +156,16 @@ export default async function AdminPayoutsPage({
                 {payouts.map((payout) => (
                   <Row key={payout.id}>
                     <RowHeader>
-                      <Link
-                        href={`/admin/affiliates/partners/${payout.partnerId}`}
-                        className="font-bold text-brand underline"
-                      >
-                        {payout.company}
-                      </Link>
+                      {canSeePartners ? (
+                        <Link
+                          href={`/admin/affiliates/partners/${payout.partnerId}`}
+                          className="font-bold text-brand underline"
+                        >
+                          {payout.company}
+                        </Link>
+                      ) : (
+                        <span className="font-bold">{payout.company}</span>
+                      )}
                     </RowHeader>
                     <Td>{formatDate(payout.paidAt)}</Td>
                     <Td>

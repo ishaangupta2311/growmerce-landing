@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { requireAdmin } from "@/lib/admin/session";
+import { requireAccess } from "@/lib/admin/session";
 import { editorOptions } from "@/lib/blog/taxonomy";
 import type { PostFormValues } from "@/lib/blog/types";
 import PostEditor from "../PostEditor";
@@ -7,7 +7,8 @@ import PostEditor from "../PostEditor";
 export const metadata: Metadata = { title: "New post" };
 
 export default async function NewPostPage() {
-  const [admin, options] = await Promise.all([requireAdmin(), editorOptions()]);
+  const admin = await requireAccess("blog.posts", "edit");
+  const options = await editorOptions();
 
   const defaults: PostFormValues = {
     title: "",

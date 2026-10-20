@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { randomUUID } from "node:crypto";
 
-import { requireAdmin } from "@/lib/admin/session";
+import { requireAccess } from "@/lib/admin/session";
 import { formatDate } from "@/lib/affiliate/format";
 import { emailOverview, type ContactStatus, type EmailResults } from "@/lib/growsearch/email";
 import { PageHeader } from "@/components/admin/ui";
@@ -11,6 +11,7 @@ import Empty from "@/components/affiliate/Empty";
 import Panel from "@/components/affiliate/Panel";
 import StatCard from "@/components/affiliate/StatCard";
 import { Body, Head, Row, RowHeader, Table, Td, Th } from "@/components/affiliate/Table";
+import { allows } from "@/lib/team/permissions";
 
 export const metadata: Metadata = { title: "Merchant email" };
 
@@ -18,6 +19,9 @@ export const metadata: Metadata = { title: "Merchant email" };
  * Merchant email: who is on the list, how each email performed, and sending a
  * one-off campaign. Everything on this page is read from, and done by, the
  * Growsearch app — see `src/lib/growsearch/email.ts`.
+ *
+ * Sending (the campaign form and the sweep) needs edit on Email; a role with
+ * view gets the lists and results only.
  */
 
 const LIFECYCLE: Record<string, { name: string; when: string }> = {
@@ -71,7 +75,8 @@ function ResultHeadings() {
 }
 
 export default async function AdminEmailPage() {
-  const admin = await requireAdmin();
+  const admin = await requireAccess("email");
+  const canSend = allows(admin.grant, "email", "edit");
   const answer = await emailOverview();
 
   if (!answer.ok) {
@@ -125,7 +130,7 @@ export default async function AdminEmailPage() {
           <StatCard label="All stores" value={String(overview.totals.contacts)} note="Every store we hold a record for." />
         </div>
 
-        <Panel title="Automatic emails" action={<SweepButton />} scroll>
+        <Panel title="Automatic emails" action={canSend ? <SweepButton /> : undefined} scroll>
           <Table caption="Results for each automatic email">
             <Head>
               <Th>Email</Th>
@@ -153,7 +158,9 @@ export default async function AdminEmailPage() {
 
         <Panel title="Campaigns" scroll={overview.campaigns.length > 0}>
           {overview.campaigns.length === 0 ? (
-            <Empty title="No campaign has been sent">Write one below. Send yourself a test first.</Empty>
+            <Empty title="No campaign has been sent">
+              {canSend ? "Write one below. Send yourself a test first." : "Campaigns appear here once one is sent."}
+            </Empty>
           ) : (
             <Table caption="Results for each campaign">
               <Head>
@@ -182,7 +189,13 @@ export default async function AdminEmailPage() {
         </Panel>
 
         <Panel title="Send a campaign">
-          <CampaignForm campaignId={randomUUID()} audiences={overview.audiences} adminEmail={admin.email} />
+          {canSend ? (
+            <CampaignForm campaignId={randomUUID()} audiences={overview.audiences} adminEmail={admin.email} />
+          ) : (
+            <p className="text-[15px] leading-relaxed text-body-mute">
+              View only. Your role can see sends but not send email.
+            </p>
+          )}
         </Panel>
 
         <Panel

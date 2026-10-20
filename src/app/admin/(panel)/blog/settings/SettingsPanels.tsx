@@ -1,81 +1,19 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { KeyRound, LoaderCircle, Pencil, Plus, Trash2, UserRound, Users } from "lucide-react";
-import { updateProfileAction } from "@/app/admin/_actions/settings";
+import { LoaderCircle, Pencil, Plus, Trash2, UserRound, Users } from "lucide-react";
 import { deleteAuthorAction, saveAuthorAction } from "@/app/admin/_actions/taxonomy";
 import ImageField from "@/components/admin/ImageField";
 import { ConfirmDialog, Modal, useToast } from "@/components/admin/overlay";
 import Thumb from "@/components/admin/Thumb";
-import { Button, ButtonLink, Card, EmptyState, Field, Input, Textarea } from "@/components/admin/ui";
+import { Button, Card, EmptyState, Field, Input, Textarea } from "@/components/admin/ui";
 import { slugify } from "@/lib/blog/slug";
 import type { AuthorRow } from "@/lib/blog/types";
 
-export function ProfileCard({ name, email }: { name: string; email: string }) {
-  const notify = useToast();
-  const [value, setValue] = useState(name);
-  const [error, setError] = useState<string>();
-  const [pending, startTransition] = useTransition();
-
-  return (
-    <Card title="Your account" description="How you appear in the admin panel.">
-      <form
-        className="space-y-4"
-        onSubmit={(event) => {
-          event.preventDefault();
-          startTransition(async () => {
-            const result = await updateProfileAction({ name: value });
-            if (!result.ok) {
-              setError(result.fieldErrors?.name ?? result.error);
-              return;
-            }
-            setError(undefined);
-            notify(result.message ?? "Saved.");
-          });
-        }}
-      >
-        <Field label="Name" htmlFor="profile-name" error={error}>
-          <Input id="profile-name" value={value} maxLength={100} onChange={(event) => setValue(event.target.value)} />
-        </Field>
-        <Field label="Email" htmlFor="profile-email" hint="Your sign-in address, and the one the admin allowlist names.">
-          <Input id="profile-email" value={email} disabled readOnly />
-        </Field>
-        <Button type="submit" variant="primary" disabled={pending || value.trim() === name}>
-          {pending && <LoaderCircle className="size-4 animate-spin" />}
-          Save
-        </Button>
-      </form>
-    </Card>
-  );
-}
-
-/**
- * Where the password went.
- *
- * Admins sign in with the same Supabase account the affiliate program uses,
- * so there is no admin password to change here any more — and a form that
- * looked like it changed one would be changing nothing. What is left is to say
- * where it lives now.
- */
-export function SignInCard() {
-  return (
-    <Card title="Signing in" description="One account for the whole admin: blog and affiliates.">
-      <p className="text-sm leading-relaxed text-zinc-600">
-        You sign in with your Growmerce account, using the same login the affiliate program uses. Access to the
-        admin comes from the server&rsquo;s allowlist, not from anything on this page. To change your password,
-        use &ldquo;Forgot password&rdquo; on the sign-in page.
-      </p>
-      <ButtonLink href="/affiliates/forgot" className="mt-4">
-        <KeyRound className="size-4" />
-        Reset password
-      </ButtonLink>
-    </Card>
-  );
-}
-
 type AuthorDraft = { id: string | null; name: string; slug: string; bio: string; avatarUrl: string };
 
-export function AuthorsCard({ authors }: { authors: AuthorRow[] }) {
+/** The bylines. Without `canEdit` the list only: no add, edit or delete. */
+export function AuthorsCard({ authors, canEdit }: { authors: AuthorRow[]; canEdit: boolean }) {
   const notify = useToast();
   const [pending, startTransition] = useTransition();
   const [draft, setDraft] = useState<AuthorDraft | null>(null);
@@ -117,15 +55,17 @@ export function AuthorsCard({ authors }: { authors: AuthorRow[] }) {
       description="Bylines you can pick when writing. Guest authors do not need an account."
       bodyClassName="p-0"
       actions={
-        <Button size="sm" variant="primary" onClick={() => edit(null)}>
-          <Plus className="size-4" />
-          Add author
-        </Button>
+        canEdit && (
+          <Button size="sm" variant="primary" onClick={() => edit(null)}>
+            <Plus className="size-4" />
+            Add author
+          </Button>
+        )
       }
     >
       {authors.length === 0 ? (
         <EmptyState icon={<Users className="size-5" />} title="No authors yet">
-          Add one so posts can carry a byline.
+          {canEdit ? "Add one so posts can carry a byline." : "Bylines will be listed here once somebody adds one."}
         </EmptyState>
       ) : (
         <ul className="divide-y divide-zinc-100">
@@ -145,18 +85,22 @@ export function AuthorsCard({ authors }: { authors: AuthorRow[] }) {
                   {author.adminEmail ? ` · linked to ${author.adminEmail}` : " · guest author"}
                 </p>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => edit(author)} aria-label={`Edit ${author.name}`}>
-                <Pencil className="size-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setDeleting(author)}
-                aria-label={`Delete ${author.name}`}
-                className="hover:bg-red-50 hover:text-red-600"
-              >
-                <Trash2 className="size-4" />
-              </Button>
+              {canEdit && (
+                <>
+                  <Button variant="ghost" size="icon" onClick={() => edit(author)} aria-label={`Edit ${author.name}`}>
+                    <Pencil className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setDeleting(author)}
+                    aria-label={`Delete ${author.name}`}
+                    className="hover:bg-red-50 hover:text-red-600"
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </>
+              )}
             </li>
           ))}
         </ul>

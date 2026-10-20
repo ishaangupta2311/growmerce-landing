@@ -100,6 +100,20 @@ export function StarButton({
   );
 }
 
+/**
+ * A star for somebody who can see an app but not star its stores: the team's
+ * stars, shown, and nothing to press. An unstarred store shows nothing.
+ */
+export function StarMark({ starred }: { starred: boolean }) {
+  if (!starred) return null;
+  return (
+    <span title="Starred: pinned to the top" className="grid size-7 place-items-center">
+      <Star aria-hidden className="size-4 fill-amber-400 text-amber-500" />
+      <span className="sr-only">Starred</span>
+    </span>
+  );
+}
+
 function SearchesCell({ store }: { store: StoreRow }) {
   const activity = store.activity;
   if (!activity) return <span className="text-zinc-400" title="The app has no count for this store.">-</span>;
@@ -120,10 +134,13 @@ export default function StoreTable({
   appId,
   platforms,
   stores,
+  canStar,
 }: {
   appId: string;
   platforms: Platform[];
   stores: StoreRow[];
+  /** Edit on this app. Without it the stars show but cannot be changed. */
+  canStar: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [platform, setPlatform] = useState<"all" | Platform>("all");
@@ -157,12 +174,16 @@ export default function StoreTable({
   const renderRow = (store: StoreRow) => (
     <tr key={store.id} className={clsx("border-b border-zinc-100 last:border-0", store.starred && "bg-orange-50/40")}>
       <td className="w-10 py-2.5 pr-0 pl-3">
-        <StarButton
-          appId={appId}
-          store={store}
-          starred={store.starred}
-          onChange={(starred) => setStarOverrides((map) => new Map(map).set(store.id, starred))}
-        />
+        {canStar ? (
+          <StarButton
+            appId={appId}
+            store={store}
+            starred={store.starred}
+            onChange={(starred) => setStarOverrides((map) => new Map(map).set(store.id, starred))}
+          />
+        ) : (
+          <StarMark starred={store.starred} />
+        )}
       </td>
       <td className="max-w-0 min-w-36 px-3 py-2.5 sm:w-[38%]">
         <div className="flex min-w-0 items-center gap-2">

@@ -7,14 +7,18 @@ import { AppIcon, PlatformChip, StatusChip } from "@/components/admin/apps/bits"
 import StoreTable from "@/components/admin/apps/StoreTable";
 import { LocalTime } from "@/components/admin/overlay";
 import { ButtonLink, Card, EmptyState, PageHeader } from "@/components/admin/ui";
-import { requireAdmin } from "@/lib/admin/session";
+import { requireAccess } from "@/lib/admin/session";
 import { appSecret, fetchStores } from "@/lib/apps/connection";
 import { getApp, starredStores } from "@/lib/apps/store";
 import { percentChange, QUIET_DAYS, summarize } from "@/lib/apps/summary";
 import type { AppRow } from "@/lib/apps/types";
+import { allows, appKey, APP_SETTINGS, type Grant } from "@/lib/team/permissions";
 
 export async function generateMetadata({ params }: PageProps<"/admin/apps/[appId]">): Promise<Metadata> {
-  const app = await getApp((await params).appId);
+  /* Checked here too, so the tab title never names an app the role cannot see. */
+  const { appId } = await params;
+  await requireAccess(appKey(appId));
+  const app = await getApp(appId);
   return { title: app?.name ?? "App" };
 }
 
@@ -23,9 +27,11 @@ export async function generateMetadata({ params }: PageProps<"/admin/apps/[appId
  * header draws at once; the figures wait for the app, which may be waking up.
  */
 export default async function AppPage({ params }: PageProps<"/admin/apps/[appId]">) {
-  await requireAdmin();
-  const app = await getApp((await params).appId);
+  const { appId } = await params;
+  const { grant } = await requireAccess(appKey(appId));
+  const app = await getApp(appId);
   if (!app) notFound();
+  const canSettings = allows(grant, APP_SETTINGS);
 
   return (
     <>
@@ -45,14 +51,16 @@ export default async function AppPage({ params }: PageProps<"/admin/apps/[appId]
           </span>
         }
         actions={
-          <ButtonLink href={`/admin/apps/${app.id}/settings`}>
-            <Settings className="size-4" />
-            App settings
-          </ButtonLink>
+          canSettings && (
+            <ButtonLink href={`/admin/apps/${app.id}/settings`}>
+              <Settings className="size-4" />
+              App settings
+            </ButtonLink>
+          )
         }
       />
       <Suspense fallback={<StoresLoading name={app.name} />}>
-        <AppStores app={app} />
+        <AppStores app={app} grant={grant} />
       </Suspense>
     </>
   );
@@ -94,13 +102,14 @@ function Stat({ label, value, note, tone = "muted" }: { label: string; value: st
   );
 }
 
-async function AppStores({ app }: { app: AppRow }) {
+async function AppStores({ app, grant }: { app: AppRow; grant: Grant }) {
+  const canSettings = allows(grant, APP_SETTINGS);
   if (!appSecret(app)) {
     return (
       <Card title="Not connected yet">
         <EmptyState
           title={`${app.secretEnv} is not set`}
-          action={<ButtonLink href={`/admin/apps/${app.id}/settings`}>Open app settings</ButtonLink>}
+          action={canSettings && <ButtonLink href={`/admin/apps/${app.id}/settings`}>Open app settings</ButtonLink>}
         >
           Set the same secret on {app.name} and on this site, then reload. Until then the admin cannot ask {app.name}{" "}
           for its stores.
@@ -113,7 +122,10 @@ async function AppStores({ app }: { app: AppRow }) {
   if (!answer.ok) {
     return (
       <Card title={`Couldn't reach ${app.name}`}>
-        <EmptyState title={answer.error} action={<ButtonLink href={`/admin/apps/${app.id}/settings`}>Check the connection</ButtonLink>} />
+        <EmptyState
+          title={answer.error}
+          action={canSettings && <ButtonLink href={`/admin/apps/${app.id}/settings`}>Check the connection</ButtonLink>}
+        />
       </Card>
     );
   }
@@ -160,7 +172,7 @@ async function AppStores({ app }: { app: AppRow }) {
           tone={summary.quiet ? "warn" : "muted"}
         />
       </div>
-      <StoreTable appId={app.id} platforms={app.platforms} stores={rows} />
+      <StoreTable appId={app.id} platforms={app.platforms} stores={rows} canStar={allows(grant, appKey(app.id), "edit")} />
     </>
   );
 }

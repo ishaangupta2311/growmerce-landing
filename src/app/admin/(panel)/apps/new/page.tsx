@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 
 import AppSettingsForm from "@/components/admin/apps/AppSettingsForm";
 import { Card, PageHeader } from "@/components/admin/ui";
-import { requireAdmin } from "@/lib/admin/session";
+import { requireAccess } from "@/lib/admin/session";
+import { APP_SETTINGS } from "@/lib/team/permissions";
 
 export const metadata: Metadata = { title: "Add an app" };
 
 export default async function NewAppPage() {
-  await requireAdmin();
+  await requireAccess(APP_SETTINGS, "edit");
   return (
     <>
       <PageHeader

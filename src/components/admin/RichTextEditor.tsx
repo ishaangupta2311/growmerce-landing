@@ -51,6 +51,7 @@ export default function RichTextEditor({
   initialHtml,
   onChange,
   invalid,
+  editable = true,
   /* Injectable so the paste and drop paths can be exercised without a real
      upload; production always uses the media library. */
   uploadImages = uploadFiles,
@@ -58,6 +59,8 @@ export default function RichTextEditor({
   initialHtml: string;
   onChange: (html: string) => void;
   invalid?: boolean;
+  /** False shows the post as it is, with no toolbar: for a role that can see posts but not change them. */
+  editable?: boolean;
   uploadImages?: (files: File[]) => Promise<UploadReport>;
 }) {
   const notify = useToast();
@@ -158,6 +161,7 @@ export default function RichTextEditor({
     /* Server rendering an editor is meaningless; rendering it only on the
        client avoids a hydration mismatch. */
     immediatelyRender: false,
+    editable,
     extensions: [
       StarterKit.configure({
         heading: { levels: [2, 3, 4] },
@@ -261,7 +265,7 @@ export default function RichTextEditor({
         invalid ? "border-red-400" : "border-zinc-200",
       )}
     >
-      {editor ? (
+      {!editable ? null : editor ? (
         <Toolbar
           editor={editor}
           sourceMode={source !== null}

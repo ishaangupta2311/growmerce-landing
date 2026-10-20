@@ -37,7 +37,15 @@ const SESSION_AREAS = ["/affiliates", "/admin"];
 /** Everything under these needs a session; the rest of `/affiliates` is public. */
 const GUARDED = ["/affiliates/dashboard", "/admin"];
 
+/**
+ * The one page under `/admin` for people who may not have a login yet: an
+ * invite to the team. Its token is its own proof; see
+ * src/app/admin/_actions/join.ts.
+ */
+const OPEN = "/admin/join/";
+
 function isGuarded(pathname: string): boolean {
+  if (pathname.startsWith(OPEN)) return false;
   return GUARDED.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 

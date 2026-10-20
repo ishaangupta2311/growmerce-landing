@@ -16,52 +16,70 @@ import {
   Mail,
   Menu,
   ScrollText,
-  Settings,
+  ShieldCheck,
   Tags,
+  UserRound,
+  UserPen,
   Users,
   X,
   type LucideIcon,
 } from "lucide-react";
 import { signOutAdmin } from "@/app/admin/_actions/auth";
 import { clsx } from "@/lib/clsx";
+import { allows, allowsApps, type Grant } from "@/lib/team/permissions";
 import { ToastProvider } from "./overlay";
 
-type NavItem = { href: string; label: string; icon: LucideIcon; exact?: boolean };
+type NavItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  exact?: boolean;
+  /** Whether this person's role can open the tab. The page checks again; this only hides the link. */
+  shows: (grant: Grant) => boolean;
+};
+
+const tab = (key: string) => (grant: Grant) => allows(grant, key);
 
 /**
- * One admin, four areas: your apps, the blog, the affiliate program and
- * merchant email share this sidebar rather than each having a shell of its
- * own, which is what the blog and affiliates had while each also had its own
- * login.
+ * One admin, five areas: your apps, the blog, the affiliate program, merchant
+ * email and the team share this sidebar rather than each having a shell of
+ * its own. Each person sees only the tabs their role opens.
  */
 const NAV: { label?: string; items: NavItem[] }[] = [
-  { items: [{ href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true }] },
+  { items: [{ href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true, shows: tab("overview") }] },
   {
     label: "Apps",
-    items: [{ href: "/admin/apps", label: "Your apps", icon: LayoutGrid }],
+    items: [{ href: "/admin/apps", label: "Your apps", icon: LayoutGrid, shows: allowsApps }],
   },
   {
     label: "Blog",
     items: [
-      { href: "/admin/blog", label: "Posts", icon: FileText },
-      { href: "/admin/blog/categories", label: "Categories", icon: FolderOpen },
-      { href: "/admin/blog/tags", label: "Tags", icon: Tags },
-      { href: "/admin/blog/media", label: "Media", icon: Images },
-      { href: "/admin/blog/settings", label: "Settings", icon: Settings },
+      { href: "/admin/blog", label: "Posts", icon: FileText, shows: tab("blog.posts") },
+      { href: "/admin/blog/categories", label: "Categories", icon: FolderOpen, shows: tab("blog.categories") },
+      { href: "/admin/blog/tags", label: "Tags", icon: Tags, shows: tab("blog.tags") },
+      { href: "/admin/blog/media", label: "Media", icon: Images, shows: tab("blog.media") },
+      { href: "/admin/blog/settings", label: "Authors", icon: UserPen, shows: tab("blog.authors") },
     ],
   },
   {
     label: "Affiliates",
     items: [
-      { href: "/admin/affiliates", label: "Overview", icon: Handshake, exact: true },
-      { href: "/admin/affiliates/partners", label: "Partners", icon: Users },
-      { href: "/admin/affiliates/payouts", label: "Payouts", icon: Banknote },
-      { href: "/admin/affiliates/events", label: "Ingest log", icon: ScrollText },
+      { href: "/admin/affiliates", label: "Overview", icon: Handshake, exact: true, shows: tab("affiliates.overview") },
+      { href: "/admin/affiliates/partners", label: "Partners", icon: Users, shows: tab("affiliates.partners") },
+      { href: "/admin/affiliates/payouts", label: "Payouts", icon: Banknote, shows: tab("affiliates.payouts") },
+      { href: "/admin/affiliates/events", label: "Ingest log", icon: ScrollText, shows: tab("affiliates.events") },
     ],
   },
   {
     label: "Merchants",
-    items: [{ href: "/admin/email", label: "Email", icon: Mail }],
+    items: [{ href: "/admin/email", label: "Email", icon: Mail, shows: tab("email") }],
+  },
+  {
+    label: "Settings",
+    items: [
+      { href: "/admin/team", label: "Team", icon: ShieldCheck, shows: tab("team") },
+      { href: "/admin/account", label: "My account", icon: UserRound, shows: () => true },
+    ],
   },
 ];
 
@@ -110,7 +128,7 @@ export default function AdminShell({
   admin,
   children,
 }: {
-  admin: { name: string; email: string };
+  admin: { name: string; email: string; roleName: string; grant: Grant };
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -131,6 +149,9 @@ export default function AdminShell({
   }, [open]);
 
   const current = activeHref(pathname);
+  const nav = NAV.map((group) => ({ ...group, items: group.items.filter((item) => item.shows(admin.grant)) })).filter(
+    (group) => group.items.length > 0,
+  );
 
   const sidebar = (
     <div className="flex h-full flex-col">
@@ -143,7 +164,7 @@ export default function AdminShell({
       </div>
 
       <nav aria-label="Admin" className="flex-1 overflow-y-auto px-3 py-4">
-        {NAV.map((group, index) => (
+        {nav.map((group, index) => (
           <div key={group.label ?? index} className={clsx(index > 0 && "mt-5")}>
             {group.label && (
               <p className="px-3 pb-1.5 text-[11px] font-bold tracking-wider text-zinc-500 uppercase">{group.label}</p>
@@ -229,16 +250,20 @@ export default function AdminShell({
             </button>
             <div className="flex-1" />
             <div className="flex min-w-0 items-center gap-3">
-              <div className="hidden min-w-0 text-right sm:block">
-                <p className="truncate text-sm font-bold text-zinc-900">{admin.name || "Admin"}</p>
-                <p className="truncate text-xs text-zinc-500">{admin.email}</p>
-              </div>
-              <span
-                aria-hidden
-                className="grid size-9 shrink-0 place-items-center rounded-full bg-brand/10 text-xs font-extrabold text-brand"
-              >
-                {initials(admin.name, admin.email)}
-              </span>
+              <Link href="/admin/account" className="flex min-w-0 items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-brand">
+                <div className="hidden min-w-0 text-right sm:block">
+                  <p className="truncate text-sm font-bold text-zinc-900">{admin.name || "Admin"}</p>
+                  <p className="truncate text-xs text-zinc-500">
+                    {admin.roleName} · {admin.email}
+                  </p>
+                </div>
+                <span
+                  aria-hidden
+                  className="grid size-9 shrink-0 place-items-center rounded-full bg-brand/10 text-xs font-extrabold text-brand"
+                >
+                  {initials(admin.name, admin.email)}
+                </span>
+              </Link>
               <LogoutButton
                 compact
                 className="h-9 border border-zinc-200 bg-white px-3 text-zinc-700 shadow-xs hover:bg-zinc-50"

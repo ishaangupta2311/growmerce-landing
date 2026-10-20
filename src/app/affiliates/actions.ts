@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 
-import { isAdminEmail, landingFor } from "@/lib/admin/session";
+import { isTeammate, landingFor } from "@/lib/admin/session";
 import {
   codesFor,
   createPartner,
@@ -186,14 +186,14 @@ export async function signUp(_state: FormState, form: FormData): Promise<FormSta
  * partner row here, whether they arrived from the sign-up form five seconds ago
  * or from a confirmation email three days later.
  *
- * Never for an admin. The application page already sends them to /admin, but
- * this is a public POST endpoint that can be called without the page, and an
- * admin address holding a partner account is the thing being prevented.
+ * Never for a teammate. The application page already sends them to /admin, but
+ * this is a public POST endpoint that can be called without the page, and a
+ * teammate holding a partner account is the thing being prevented.
  */
 export async function completeApplication(_state: FormState, form: FormData): Promise<FormState> {
   const user = await currentUser();
   if (!user) redirect("/affiliates/login");
-  if (isAdminEmail(user.email)) redirect("/admin");
+  if (await isTeammate(user)) redirect("/admin");
 
   const name = text(form, "name", 120);
   const company = text(form, "company", 160);
@@ -223,6 +223,11 @@ export async function completeApplication(_state: FormState, form: FormData): Pr
        rather than an error about a constraint. */
     if (typeof err === "object" && err !== null && (err as { code?: string }).code === "23505") {
       redirect("/affiliates/dashboard");
+    }
+    /* The database's guard against one login being a partner and a teammate
+       (migrations/0012_team.sql): an invite accepted at the same moment won. */
+    if (typeof err === "object" && err !== null && (err as { constraint_name?: string }).constraint_name === "partner_not_member") {
+      redirect("/admin");
     }
     const why = err instanceof Error ? err.message : String(err);
     console.error(`[affiliate] could not create partner — ${why.slice(0, 200)}`);
@@ -276,9 +281,9 @@ export async function signIn(_state: FormState, form: FormData): Promise<FormSta
     return { error: "That email and password do not match an account." };
   }
 
-  /* With no `next` — the login page opened directly — an admin lands in the
+  /* With no `next` — the login page opened directly — a teammate lands in the
      admin rather than on a partner dashboard that would ask them to apply. */
-  redirect(safeNext(text(form, "next", 300), landingFor(data.user.email)));
+  redirect(safeNext(text(form, "next", 300), await landingFor(data.user)));
 }
 
 export async function signOut(): Promise<void> {
@@ -343,7 +348,7 @@ export async function resetPassword(_state: FormState, form: FormData): Promise<
   const { error } = await supabase.auth.updateUser({ password });
   if (error) return { error: error.message };
 
-  redirect(landingFor(data.user.email));
+  redirect(await landingFor(data.user));
 }
 
 /* ---------------------------------------------------------------------------

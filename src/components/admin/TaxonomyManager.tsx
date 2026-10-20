@@ -32,8 +32,21 @@ const COPY = {
   },
 } as const;
 
-/** The categories page and the tags page: search, add, edit, delete. */
-export default function TaxonomyManager({ kind, rows, query }: { kind: "category" | "tag"; rows: Row[]; query: string }) {
+/**
+ * The categories page and the tags page: search, add, edit, delete. Without
+ * `canEdit` it is the search and the list, nothing that changes them.
+ */
+export default function TaxonomyManager({
+  kind,
+  rows,
+  query,
+  canEdit,
+}: {
+  kind: "category" | "tag";
+  rows: Row[];
+  query: string;
+  canEdit: boolean;
+}) {
   const notify = useToast();
   const [pending, startTransition] = useTransition();
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -92,10 +105,12 @@ export default function TaxonomyManager({ kind, rows, query }: { kind: "category
             {query ? ` matching “${query}”` : ""}
           </p>
         </div>
-        <Button variant="primary" onClick={() => edit(null)}>
-          <Plus className="size-4" />
-          Add {copy.singular}
-        </Button>
+        {canEdit && (
+          <Button variant="primary" onClick={() => edit(null)}>
+            <Plus className="size-4" />
+            Add {copy.singular}
+          </Button>
+        )}
       </div>
 
       <div className="rounded-xl border border-zinc-200 bg-white shadow-xs">
@@ -108,7 +123,8 @@ export default function TaxonomyManager({ kind, rows, query }: { kind: "category
             icon={<Icon className="size-5" />}
             title={query ? `No ${copy.plural} match` : `No ${copy.plural} yet`}
             action={
-              !query && (
+              !query &&
+              canEdit && (
                 <Button variant="primary" size="sm" onClick={() => edit(null)}>
                   <Plus className="size-4" />
                   Add {copy.singular}
@@ -116,7 +132,11 @@ export default function TaxonomyManager({ kind, rows, query }: { kind: "category
               )
             }
           >
-            {query ? "Try a different search." : `Group posts by ${copy.singular} to help readers find related writing.`}
+            {query
+              ? "Try a different search."
+              : canEdit
+                ? `Group posts by ${copy.singular} to help readers find related writing.`
+                : `${title} will be listed here once somebody adds one.`}
           </EmptyState>
         ) : (
           <div className="overflow-x-auto">
@@ -126,10 +146,14 @@ export default function TaxonomyManager({ kind, rows, query }: { kind: "category
                   <th scope="col" className="py-2.5 pl-4 sm:pl-5">Name</th>
                   <th scope="col" className="px-3 py-2.5">Slug</th>
                   {withDescription && <th scope="col" className="px-3 py-2.5">Description</th>}
-                  <th scope="col" className="px-3 py-2.5 text-right">Blogs</th>
-                  <th scope="col" className="py-2.5 pr-4 text-right sm:pr-5">
-                    <span className="sr-only">Actions</span>
+                  <th scope="col" className={canEdit ? "px-3 py-2.5 text-right" : "py-2.5 pr-4 pl-3 text-right sm:pr-5"}>
+                    Blogs
                   </th>
+                  {canEdit && (
+                    <th scope="col" className="py-2.5 pr-4 text-right sm:pr-5">
+                      <span className="sr-only">Actions</span>
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100">
@@ -142,24 +166,28 @@ export default function TaxonomyManager({ kind, rows, query }: { kind: "category
                         <span className="line-clamp-2">{row.description || <span className="text-zinc-400">-</span>}</span>
                       </td>
                     )}
-                    <td className="px-3 py-3 text-right text-zinc-700 tabular-nums">{row.postCount}</td>
-                    <td className="py-3 pr-3 sm:pr-4">
-                      <div className="flex justify-end gap-0.5">
-                        <Button variant="ghost" size="icon" onClick={() => edit(row)} aria-label={`Edit ${row.name}`} title="Edit">
-                          <Pencil className="size-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setDeleting(row)}
-                          aria-label={`Delete ${row.name}`}
-                          title="Delete"
-                          className="hover:bg-red-50 hover:text-red-600"
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
-                      </div>
+                    <td className={canEdit ? "px-3 py-3 text-right text-zinc-700 tabular-nums" : "py-3 pr-4 pl-3 text-right text-zinc-700 tabular-nums sm:pr-5"}>
+                      {row.postCount}
                     </td>
+                    {canEdit && (
+                      <td className="py-3 pr-3 sm:pr-4">
+                        <div className="flex justify-end gap-0.5">
+                          <Button variant="ghost" size="icon" onClick={() => edit(row)} aria-label={`Edit ${row.name}`} title="Edit">
+                            <Pencil className="size-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeleting(row)}
+                            aria-label={`Delete ${row.name}`}
+                            title="Delete"
+                            className="hover:bg-red-50 hover:text-red-600"
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

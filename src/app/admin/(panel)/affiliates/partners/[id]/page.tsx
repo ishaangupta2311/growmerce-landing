@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { requireAdmin } from "@/lib/admin/session";
+import { requireAccess } from "@/lib/admin/session";
 import { partnerById, skippedChargeCount } from "@/lib/affiliate/admin-store";
 import { describeTerms, formatRate, HOLD_DAYS } from "@/lib/affiliate/commission";
 import { formatCode } from "@/lib/affiliate/codes";
@@ -26,6 +26,7 @@ import {
   ReplayControls,
   StatusControls,
 } from "@/components/affiliate/admin/PartnerControls";
+import { allows } from "@/lib/team/permissions";
 
 export const metadata: Metadata = { title: "Partner" };
 
@@ -34,16 +35,21 @@ export const metadata: Metadata = { title: "Partner" };
  *
  * The reads are the partner's own — `totalsFor`, `referralsFor` and friends out
  * of `store.ts`, given an id that came from the URL instead of from a session.
- * That is safe here and only here: `requireAdmin()` above has already decided
+ * That is safe here and only here: `requireAccess()` below has already decided
  * this person may look at anybody's account, which is the whole distinction
  * between this file and the dashboard that shares its queries.
+ *
+ * The controls that change the account (status, rate, replaying held charges)
+ * show only to a role with edit on Partners. Without it the status and the
+ * rate are still in the header.
  */
 export default async function AdminPartnerPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireAdmin();
+  const { grant } = await requireAccess("affiliates.partners");
+  const canEdit = allows(grant, "affiliates.partners", "edit");
 
   const { id } = await params;
   const partnerId = Number(id);
@@ -150,21 +156,23 @@ export default async function AdminPartnerPage({
         </p>
       )}
 
-      <div className="grid gap-8 lg:grid-cols-2">
-        <Panel title="Account status">
-          <StatusControls partner={partner} />
-        </Panel>
-        <Panel title="Commission rate">
-          <RateControls partner={partner} />
-        </Panel>
-      </div>
+      {canEdit && (
+        <div className="grid gap-8 lg:grid-cols-2">
+          <Panel title="Account status">
+            <StatusControls partner={partner} />
+          </Panel>
+          <Panel title="Commission rate">
+            <RateControls partner={partner} />
+          </Panel>
+        </div>
+      )}
 
       {/* Approved partners only. A pending partner's held charges are replayed
           by the approve action itself, so offering the button before then is
           offering a press that re-ingests every one of them into the same
           refusal — no money earned, the queue re-dated, and a synthetic event
           row per charge. `replayHeld` refuses for the same reason. */}
-      {partner.status === "approved" && held > 0 && (
+      {canEdit && partner.status === "approved" && held > 0 && (
         <Panel title="Held charges">
           <ReplayControls partner={partner} held={held} />
         </Panel>
@@ -323,7 +331,9 @@ export default async function AdminPartnerPage({
       <Panel title="Payouts" scroll={payouts.length > 0}>
         {payouts.length === 0 ? (
           <Empty title="Nothing paid out yet">
-            Record one from the Payouts tab once commission has cleared.
+            {allows(grant, "affiliates.payouts", "edit")
+              ? "Record one from the Payouts tab once commission has cleared."
+              : "Payouts appear here once one is recorded."}
           </Empty>
         ) : (
           <Table caption="Payouts made to this partner">

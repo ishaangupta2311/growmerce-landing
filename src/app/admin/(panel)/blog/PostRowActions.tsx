@@ -18,8 +18,11 @@ const ITEM =
 
 export default function PostRowActions({
   post,
+  canEdit,
 }: {
   post: { id: string; title: string; slug: string; status: PostStatus };
+  /** Without edit on Posts: only the preview and the live post, nothing that changes it. */
+  canEdit: boolean;
 }) {
   const router = useRouter();
   const notify = useToast();
@@ -56,6 +59,35 @@ export default function PostRowActions({
   }
 
   const live = post.status === "published";
+
+  if (!canEdit) {
+    return (
+      <div className="flex items-center justify-end gap-0.5">
+        <a
+          href={`/admin/blog/${post.id}/preview`}
+          target="_blank"
+          rel="noreferrer"
+          className={buttonClass("ghost", "icon")}
+          aria-label={`Preview “${post.title}”`}
+          title="Preview"
+        >
+          <Eye className="size-4" />
+        </a>
+        {live && (
+          <a
+            href={`/blog/${post.slug}`}
+            target="_blank"
+            rel="noreferrer"
+            className={buttonClass("ghost", "icon")}
+            aria-label={`View “${post.title}” on the blog`}
+            title="View live"
+          >
+            <ExternalLink className="size-4" />
+          </a>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-end gap-0.5">

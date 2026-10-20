@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { requireAdmin } from "@/lib/admin/session";
+import { requireAccess } from "@/lib/admin/session";
 import { recentEvents } from "@/lib/affiliate/admin-store";
 import { PageHeader } from "@/components/admin/ui";
 import Empty from "@/components/affiliate/Empty";
@@ -61,7 +61,7 @@ export default async function AdminEventsPage({
 }: {
   searchParams: Promise<{ shop?: string }>;
 }) {
-  await requireAdmin();
+  await requireAccess("affiliates.events");
 
   const { shop } = await searchParams;
   const events = await recentEvents(150, typeof shop === "string" ? shop : undefined);

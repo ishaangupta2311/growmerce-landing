@@ -19,7 +19,7 @@ altered by a deploy, which is correct for a number somebody agreed to.
 ## What to set before it works
 
 Three environment variables beyond `DATABASE_URL`, plus `AFFILIATE_ADMIN_EMAILS`
-for the admin area (see *The admin side*, below) and the mail settings (see
+for the admin's Owner (see [team.md](team.md)) and the mail settings (see
 *The emails*). All are listed in `.env.example`.
 
 ```bash
@@ -242,30 +242,16 @@ unlinked from anywhere a visitor sees. An admin signs in on the partners' page,
 the admin" button the public program page shows to a signed-in admin. The old
 `/affiliates/admin` addresses redirect there.
 
-An admin is never a partner. The partner dashboard and the application form
-both send an allowlisted address to `/admin`, and the application action
-refuses to create a partner for one — otherwise an admin signing in without a
-`next` would be shown the application form and, filling it in to get past it,
-end up with a partner account of their own.
+A teammate is never a partner. The partner dashboard and the application form
+both send a teammate's login to `/admin`, the application action refuses to
+create a partner for one, and the Team page refuses to add a partner's login —
+otherwise somebody on the team could approve their own application and set
+their own rate.
 
-Who is an admin — for the blog as much as for affiliates — comes from an
-environment variable and nothing else:
-
-```bash
-# Comma-separated. Unset means nobody is an admin — it fails closed.
-AFFILIATE_ADMIN_EMAILS=you@growmerce.ai,someone@growmerce.ai
-```
-
-That is not laziness. Admin is the one privilege the application must have no
-way to grant itself: a column on `affiliate.partner` would be one careless
-update away from a partner approving their own application and setting their own
-rate to 100%. An env var is outside everything a request can reach. Adding an
-admin costs a deploy, which for a list this short is the point.
-
-It is checked against a **verified** session — `getUser()`, which validates the
-JWT with Supabase, not `getSession()`, which trusts the cookie. A signed-in
-non-admin gets a 404 rather than a refusal, so the address never confirms it is
-real.
+Who is on the team, and what each person can see and change, is set on the
+admin's Team page; the Owner is `AFFILIATE_ADMIN_EMAILS`. See
+[team.md](team.md). The affiliate tabs each have their own permission: a role
+can, say, view Partners without being able to approve one or record a payout.
 
 Four tabs:
 
