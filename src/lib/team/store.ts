@@ -475,6 +475,12 @@ export async function lockActorRole(tx: Sql, userId: string): Promise<RoleRow | 
   return row ? toRole(row) : null;
 }
 
+/** A member's own row, locked while they change their password. False if they're no longer on the team. */
+export async function lockOwnMembership(tx: Sql, userId: string): Promise<boolean> {
+  const rows = await tx`select 1 from team.member where user_id = ${userId} for update`;
+  return rows.length > 0;
+}
+
 /** A role, locked: `share` to give it out, `update` to edit or delete it. */
 export async function lockRole(tx: Sql, id: string, mode: "share" | "update"): Promise<RoleRow | null> {
   const [row] = await tx<RoleRecord[]>`

@@ -12,7 +12,8 @@ import type { ActionResult } from "@/lib/blog/types";
 import { requireSupabaseEnv } from "@/lib/supabase/env";
 import { safeNext } from "@/lib/supabase/safe-next";
 import { supabaseServer } from "@/lib/supabase/server";
-import { renameMember, setMustChangePassword } from "@/lib/team/store";
+import { transaction } from "@/lib/db";
+import { lockOwnMembership, renameMember, setMustChangePassword } from "@/lib/team/store";
 
 /**
  * What every teammate can do to their own account, whatever their role: their
@@ -104,14 +105,27 @@ export async function changePasswordAction(values: {
   }
 
   const supabase = await supabaseServer();
-  const { error } = await supabase.auth.updateUser({ password });
-  if (error) {
+  const change = async (): Promise<string | null> => {
+    const { error } = await supabase.auth.updateUser({ password });
     /* Supabase refuses a password equal to the old one, or one its policy
        finds weak, and says why in a sentence fit to show. */
-    return { ok: false, error: error.message };
-  }
+    return error?.message ?? null;
+  };
 
-  if (!standing.owner) await setMustChangePassword(user.id, false);
+  /* A member's change holds their membership row, the same lock a reset by
+     somebody else takes (`lockMember` in the Team actions), so the two can't
+     interleave: a reset that lands first ends this session and this change
+     fails, and one that lands after keeps its "choose a new password". */
+  const refused = standing.owner
+    ? await change()
+    : await transaction(requireSql(), async (tx) => {
+        if (!(await lockOwnMembership(tx, user.id))) return "You're no longer on the team.";
+        const message = await change();
+        if (!message) await setMustChangePassword(user.id, false, tx);
+        return message;
+      });
+  if (refused) return { ok: false, error: refused };
+
   await noteActivity({ email, name: standing.name ?? email }, "Changed their password");
   return { ok: true, data: undefined, message: "Password changed." };
 }
