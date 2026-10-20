@@ -210,8 +210,9 @@ export async function renameMember(userId: string, name: string): Promise<void> 
 /** The login for an address, if there is one. */
 export async function loginByEmail(
   email: string,
+  db: Sql = requireSql(),
 ): Promise<{ userId: string; partner: boolean; member: boolean } | null> {
-  const sql = requireSql();
+  const sql = db;
   const [row] = await sql<{ id: string; partner: boolean; member: boolean }[]>`
     select u.id,
            exists (select 1 from affiliate.partner p where p.user_id = u.id) as partner,
@@ -233,8 +234,8 @@ export async function loginByEmail(
  * access token whose session is gone, so the next request of every signed-in
  * tab lands on the login page.
  */
-export async function endSessions(userId: string): Promise<void> {
-  const sql = requireSql();
+export async function endSessions(userId: string, db: Sql = requireSql()): Promise<void> {
+  const sql = db;
   await sql`delete from auth.sessions where user_id = ${userId}`;
 }
 
@@ -457,6 +458,23 @@ export async function lockMember(tx: Sql, userId: string): Promise<TeamPerson | 
   return row ? toPerson(row, false, toRole(row)) : null;
 }
 
+/**
+ * The role a member acts with, locked against edits until the transaction
+ * ends, together with their membership: what they may do is read again here,
+ * after any change to their own access that was in flight has landed. Null if
+ * they are no longer on the team.
+ */
+export async function lockActorRole(tx: Sql, userId: string): Promise<RoleRow | null> {
+  const [row] = await tx<RoleRecord[]>`
+    select ${tx.unsafe(ROLE_COLUMNS)}
+    from team.member m
+    join team.role r on r.id = m.role_id
+    where m.user_id = ${userId}
+    for share of m, r
+  `;
+  return row ? toRole(row) : null;
+}
+
 /** A role, locked: `share` to give it out, `update` to edit or delete it. */
 export async function lockRole(tx: Sql, id: string, mode: "share" | "update"): Promise<RoleRow | null> {
   const [row] = await tx<RoleRecord[]>`
@@ -501,8 +519,12 @@ export async function hasOpenInvite(db: Sql, email: string): Promise<boolean> {
 
 export type ActivityRow = { id: string; at: string; actorEmail: string; actorName: string; action: string };
 
-export async function recordActivity(actor: { email: string; name: string }, action: string): Promise<void> {
-  const sql = requireSql();
+export async function recordActivity(
+  actor: { email: string; name: string },
+  action: string,
+  db: Sql = requireSql(),
+): Promise<void> {
+  const sql = db;
   await sql`
     insert into team.activity (actor_email, actor_name, action)
     values (${actor.email}, ${actor.name.slice(0, 100)}, ${action.slice(0, 500)})

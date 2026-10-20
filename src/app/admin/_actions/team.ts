@@ -7,7 +7,7 @@ import { z } from "zod";
 
 import { isOwnerEmail, type Admin } from "@/lib/admin/session";
 import { listApps } from "@/lib/apps/store";
-import { adminAction, noteActivity, quoted } from "@/lib/blog/action-guard";
+import { adminAction, NO_ACCESS, noteActivity, quoted } from "@/lib/blog/action-guard";
 import { requireSql, uniqueViolation } from "@/lib/blog/sql";
 import { transaction, type Tx } from "@/lib/db";
 import type { ActionResult } from "@/lib/blog/types";
@@ -21,13 +21,23 @@ import {
   setPassword,
   temporaryPassword,
 } from "@/lib/team/auth-admin";
-import { canAssign, canManage, cleanPermissions, covers, sections } from "@/lib/team/permissions";
+import {
+  allows,
+  canAssign,
+  canManage,
+  cleanPermissions,
+  covers,
+  grantOf,
+  sections,
+  type Grant,
+} from "@/lib/team/permissions";
 import {
   addMember,
   deleteInvite,
   deleteRole,
   endSessions,
   hasOpenInvite,
+  lockActorRole,
   lockAddress,
   lockInvite,
   lockMember,
@@ -78,6 +88,20 @@ const CANT_MANAGE = "You can't change this person: their access goes beyond your
 type Locked<T> = { ok: true; value: T } | Failure;
 
 /**
+ * What the person acting may do, read again inside the transaction with their
+ * membership and role locked. `admin.grant` was read when the request began;
+ * if the Owner narrowed their role meanwhile, this waits for that and sees
+ * it. Every Team transaction takes this lock first, before what it changes.
+ */
+async function lockActor(tx: Tx, admin: Admin): Promise<Locked<Grant>> {
+  if (admin.owner) return { ok: true, value: admin.grant };
+  const role = await lockActorRole(tx, admin.userId);
+  const grant = role ? grantOf(role) : null;
+  if (!grant || !allows(grant, "team", "edit")) return { ok: false, error: NO_ACCESS };
+  return { ok: true, value: grant };
+}
+
+/**
  * Locks the member and their role, checks that `admin` may manage them, and
  * runs `work` in the same transaction: a promotion, removal or role edit by
  * somebody else waits until this is done, so it can't land between the check
@@ -86,16 +110,18 @@ type Locked<T> = { ok: true; value: T } | Failure;
 async function withManagedMember<T>(
   admin: Admin,
   userId: unknown,
-  work: (tx: Tx, person: TeamPerson & { userId: string }) => Promise<ActionResult<T>>,
+  work: (tx: Tx, person: TeamPerson & { userId: string }, grant: Grant) => Promise<ActionResult<T>>,
 ): Promise<ActionResult<T>> {
   const id = uuid.safeParse(userId);
   if (!id.success) return { ok: false, error: "Invalid request." };
   return transaction(requireSql(), async (tx) => {
+    const actor = await lockActor(tx, admin);
+    if (!actor.ok) return actor;
     const person = await lockMember(tx, id.data);
     if (!person) return { ok: false, error: "That person is no longer on the team." };
     if (isOwnerEmail(person.email)) return { ok: false, error: "That's the Owner, who can't be changed here." };
-    if (!canManage(admin, person)) return { ok: false, error: CANT_MANAGE };
-    return work(tx, { ...person, userId: id.data });
+    if (!canManage({ userId: admin.userId, grant: actor.value }, person)) return { ok: false, error: CANT_MANAGE };
+    return work(tx, { ...person, userId: id.data }, actor.value);
   });
 }
 
@@ -179,12 +205,14 @@ export async function addTeammateAction(
     const added = await transaction(
       requireSql(),
       async (tx): Promise<Locked<{ role: RoleRow; inviteId: string | null; password: string | null }>> => {
+        const actor = await lockActor(tx, admin);
+        if (!actor.ok) return actor;
         await lockAddress(tx, email);
         const role = await lockRole(tx, roleId, "share");
         if (!role) return { ok: false, error: "That role no longer exists.", fieldErrors: { roleId: "Choose a role." } };
-        if (!canAssign(admin.grant, role)) return { ok: false, error: BEYOND_YOU, fieldErrors: { roleId: BEYOND_YOU } };
+        if (!canAssign(actor.value, role)) return { ok: false, error: BEYOND_YOU, fieldErrors: { roleId: BEYOND_YOU } };
 
-        const login = await loginByEmail(email);
+        const login = await loginByEmail(email, tx);
         if (login?.member) return { ok: false, error: "That person is already on the team.", fieldErrors: { email: "Already on the team." } };
         if (login?.partner) {
           const error = "That address is an affiliate partner's login. Use a different address for the admin.";
@@ -247,9 +275,11 @@ async function withManagedInvite<T>(
   const id = uuid.safeParse(inviteId);
   if (!id.success) return { ok: false, error: "Invalid request." };
   return transaction(requireSql(), async (tx) => {
+    const actor = await lockActor(tx, admin);
+    if (!actor.ok) return actor;
     const invite = await lockInvite(tx, id.data);
     if (!invite) return { ok: false, error: "That invite was already used or cancelled." };
-    if (!canAssign(admin.grant, invite.role)) return { ok: false, error: BEYOND_YOU };
+    if (!canAssign(actor.value, invite.role)) return { ok: false, error: BEYOND_YOU };
     return work(tx, invite);
   });
 }
@@ -293,14 +323,14 @@ export async function cancelInviteAction(inviteId: unknown): Promise<ActionResul
 
 export async function changeRoleAction(userId: unknown, roleId: unknown): Promise<ActionResult> {
   return adminAction("change role", EDIT_TEAM, (admin) =>
-    withManagedMember(admin, userId, async (tx, person) => {
+    withManagedMember(admin, userId, async (tx, person, grant) => {
       const id = uuid.safeParse(roleId);
       const role = id.success ? await lockRole(tx, id.data, "share") : null;
       if (!role) return { ok: false, error: "That role no longer exists." };
-      if (!canAssign(admin.grant, role)) return { ok: false, error: BEYOND_YOU };
+      if (!canAssign(grant, role)) return { ok: false, error: BEYOND_YOU };
 
       await setMemberRole(person.userId, role.id, tx);
-      await noteActivity(admin, `Changed ${person.email}'s role: ${person.role?.name} → ${role.name}`);
+      await noteActivity(admin, `Changed ${person.email}'s role: ${person.role?.name} → ${role.name}`, tx);
       refresh();
       return { ok: true, data: undefined, message: `${person.name} is now ${role.name}.` };
     }),
@@ -321,8 +351,8 @@ export async function resetPasswordAction(userId: unknown): Promise<ActionResult
         return friendlyAuthError(err);
       }
       await setMustChangePassword(person.userId, true, tx);
-      await endSessions(person.userId);
-      await noteActivity(admin, `Reset ${person.email}'s password`);
+      await endSessions(person.userId, tx);
+      await noteActivity(admin, `Reset ${person.email}'s password`, tx);
       refresh();
       return { ok: true, data: { password }, message: "Password reset." };
     }),
@@ -331,9 +361,9 @@ export async function resetPasswordAction(userId: unknown): Promise<ActionResult
 
 export async function signOutEverywhereAction(userId: unknown): Promise<ActionResult> {
   return adminAction("sign out everywhere", EDIT_TEAM, (admin) =>
-    withManagedMember(admin, userId, async (_tx, person) => {
-      await endSessions(person.userId);
-      await noteActivity(admin, `Signed ${person.email} out everywhere`);
+    withManagedMember(admin, userId, async (tx, person) => {
+      await endSessions(person.userId, tx);
+      await noteActivity(admin, `Signed ${person.email} out everywhere`, tx);
       return { ok: true, data: undefined, message: `${person.name} is signed out everywhere.` };
     }),
   );
@@ -342,14 +372,14 @@ export async function signOutEverywhereAction(userId: unknown): Promise<ActionRe
 /** For somebody who lost the phone their codes were on. */
 export async function resetTwoStepAction(userId: unknown): Promise<ActionResult> {
   return adminAction("reset two-step login", EDIT_TEAM, (admin) =>
-    withManagedMember(admin, userId, async (_tx, person) => {
+    withManagedMember(admin, userId, async (tx, person) => {
       try {
         await removeSecondFactors(person.userId);
       } catch (err) {
         return friendlyAuthError(err);
       }
-      await endSessions(person.userId);
-      await noteActivity(admin, `Turned off ${person.email}'s two-step login`);
+      await endSessions(person.userId, tx);
+      await noteActivity(admin, `Turned off ${person.email}'s two-step login`, tx);
       refresh();
       return {
         ok: true,
@@ -368,7 +398,7 @@ export async function removeTeammateAction(userId: unknown): Promise<ActionResul
   return adminAction("remove teammate", EDIT_TEAM, (admin) =>
     withManagedMember(admin, userId, async (tx, person) => {
       await removeMember(person.userId, tx);
-      await noteActivity(admin, `Removed ${person.email} from the team`);
+      await noteActivity(admin, `Removed ${person.email} from the team`, tx);
       refresh();
       return { ok: true, data: undefined, message: `${person.name} is off the team.` };
     }),
@@ -401,20 +431,22 @@ export async function saveRoleAction(roleId: unknown, values: unknown): Promise<
 
     const tabs = sections(await listApps()).flatMap((section) => section.tabs);
     const permissions = cleanPermissions(parsed.data.permissions, tabs);
-    if (!covers(admin.grant, { all: null, permissions }))
-      return { ok: false, error: "You can only give a role access you have yourself." };
 
     try {
       /* Locked while checked and saved: an edit elsewhere can't widen the
          role between this check and this write. */
       const saved = await transaction(requireSql(), async (tx): Promise<Locked<{ id: string; edited: boolean }>> => {
+        const actor = await lockActor(tx, admin);
+        if (!actor.ok) return actor;
+        if (!covers(actor.value, { all: null, permissions }))
+          return { ok: false, error: "You can only give a role access you have yourself." };
         const existing = id ? await lockRole(tx, id.data, "update") : null;
         if (id && !existing) return { ok: false, error: "That role no longer exists." };
         if (existing?.builtin)
           return { ok: false, error: "The ready-made roles can't be changed. Make a new role instead." };
         /* Editing a role changes everybody who holds it, so the editor must
            already cover both what it was and what it becomes. */
-        if (existing && !canAssign(admin.grant, existing))
+        if (existing && !canAssign(actor.value, existing))
           return { ok: false, error: "This role has access you don't have, so you can't edit it." };
 
         const savedId = await saveRole(
@@ -443,9 +475,11 @@ export async function deleteRoleAction(roleId: unknown): Promise<ActionResult> {
     const id = uuid.safeParse(roleId);
     if (!id.success) return { ok: false, error: "Invalid request." };
     const deleted = await transaction(requireSql(), async (tx): Promise<Locked<RoleRow>> => {
+      const actor = await lockActor(tx, admin);
+      if (!actor.ok) return actor;
       const role = await lockRole(tx, id.data, "update");
       if (!role || role.builtin) return { ok: false, error: "That role can't be deleted." };
-      if (!canAssign(admin.grant, role))
+      if (!canAssign(actor.value, role))
         return { ok: false, error: "This role has access you don't have, so you can't delete it." };
 
       const outcome = await deleteRole(role.id, tx);

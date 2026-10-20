@@ -2,6 +2,7 @@ import "server-only";
 
 import { unstable_rethrow } from "next/navigation";
 import { requireAdmin, type Admin } from "@/lib/admin/session";
+import type { Sql } from "postgres";
 import { allows, type Level } from "@/lib/team/permissions";
 import { recordActivity } from "@/lib/team/store";
 import { DatabaseUnavailableError } from "./sql";
@@ -57,9 +58,9 @@ export async function adminAction<T>(
  * the action that did the thing — the change has happened either way — so a
  * write that fails is logged instead.
  */
-export async function noteActivity(admin: Pick<Admin, "email" | "name">, action: string): Promise<void> {
+export async function noteActivity(admin: Pick<Admin, "email" | "name">, action: string, db?: Sql): Promise<void> {
   try {
-    await recordActivity(admin, action);
+    await recordActivity(admin, action, db);
   } catch (err) {
     const why = err instanceof Error ? err.message : String(err);
     console.error(`[admin] activity not recorded — ${why.slice(0, 200)}`);
