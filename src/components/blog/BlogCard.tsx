@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { formatPostDate } from "@/lib/blog/format";
 import type { ArticleCard } from "@/lib/blog/types";
 import BlogImage from "./BlogImage";
 
@@ -32,11 +31,11 @@ export default function BlogCard({ post, priority = false }: { post: ArticleCard
         </h2>
         {post.excerpt && <p className="mt-3 line-clamp-3 text-[15px] leading-relaxed text-body-mute">{post.excerpt}</p>}
 
+        {/* No published date: posts here are meant to read as current, and a
+            date on the card is the first thing that makes one look stale. The
+            date is still in the page's structured data for search engines. */}
         <div className="mt-auto flex items-end justify-between gap-4 pt-6">
-          <p className="text-[13px] leading-snug text-muted">
-            {post.authorName && <span className="block font-semibold text-charcoal">{post.authorName}</span>}
-            <time dateTime={post.publishedAt}>{formatPostDate(post.publishedAt)}</time>
-          </p>
+          <p className="text-[13px] leading-snug font-semibold text-charcoal">{post.authorName}</p>
           <Link
             href={href}
             className="inline-flex shrink-0 items-center gap-1.5 text-[14px] font-bold text-brand"

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
-import { formatPostDate, readingTime } from "@/lib/blog/format";
+import { readingTime } from "@/lib/blog/format";
 import { htmlToText } from "@/lib/blog/sanitize";
 import type { ArticleCard, ArticleData } from "@/lib/blog/types";
 import BlogCard from "./BlogCard";
@@ -94,9 +94,10 @@ export default function BlogArticle({
                     {article.author.name}
                   </span>
                 )}
+                {/* No published date here either — see BlogCard. The reading
+                    time stays: it tells a reader what they are committing to
+                    without dating the piece. */}
                 {article.author && <span aria-hidden>·</span>}
-                {article.publishedAt && <time dateTime={article.publishedAt}>{formatPostDate(article.publishedAt)}</time>}
-                <span aria-hidden>·</span>
                 <span>{minutes}</span>
               </div>
             </div>

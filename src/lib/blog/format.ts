@@ -1,13 +1,12 @@
 /**
- * Formatting for the public blog. Dates render in UTC so a statically
- * generated page says the same day to every reader and on every rebuild.
+ * Formatting for the public blog.
+ *
+ * Published dates are deliberately not shown anywhere on the public side —
+ * see the comment in src/components/blog/BlogCard.tsx — so there is no date
+ * formatter here. The dates themselves are still carried in each post's
+ * metadata and structured data for search engines, and the admin shows them
+ * in the reader's own timezone through `LocalTime`.
  */
-
-const DATE = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
-
-export function formatPostDate(iso: string | null): string {
-  return iso ? DATE.format(new Date(iso)) : "";
-}
 
 /** "4 min read", at 225 words a minute. */
 export function readingTime(text: string): string {
