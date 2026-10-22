@@ -12,7 +12,7 @@ import { SLUG_MAX_LENGTH, SLUG_PATTERN } from "./slug";
 import { TWITTER_CARDS } from "./types";
 
 /** Paths under /blog that a post slug must not shadow. */
-const RESERVED_POST_SLUGS = new Set(["page", "category", "tag", "feed", "rss"]);
+export const RESERVED_POST_SLUGS = new Set(["page", "category", "tag", "feed", "rss"]);
 
 const UPLOAD_PATH = /^\/uploads\/[0-9a-f-]{36}\/[a-z0-9._-]{1,140}$/;
 

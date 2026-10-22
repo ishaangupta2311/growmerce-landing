@@ -69,6 +69,7 @@ function visibleTabs(grant: Grant): { href: string; label: string }[] {
     { href: "/admin/affiliates/payouts", label: "Payouts", show: allows(grant, "affiliates.payouts") },
     { href: "/admin/affiliates/events", label: "Ingest log", show: allows(grant, "affiliates.events") },
     { href: "/admin/email", label: "Email", show: allows(grant, "email") },
+    { href: "/admin/announcements", label: "Announcements", show: allows(grant, "announcements") },
     { href: "/admin/team", label: "Team", show: allows(grant, "team") },
   ];
   return tabs.filter((tab) => tab.show).map(({ href, label }) => ({ href, label }));

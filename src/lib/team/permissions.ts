@@ -97,7 +97,18 @@ export function sections(apps: readonly { id: string; name: string }[]): Section
         { key: "affiliates.events", label: "Ingest log", levels: VIEW_ONLY },
       ],
     },
-    { label: "Merchants", tabs: [{ key: "email", label: "Email", hint: "edit sends campaigns", levels: VIEW_EDIT }] },
+    {
+      label: "Merchants",
+      tabs: [
+        { key: "email", label: "Email", hint: "edit sends campaigns", levels: VIEW_EDIT },
+        {
+          key: "announcements",
+          label: "Announcements",
+          hint: "edit approves release announcements: publishes the post and emails merchants",
+          levels: VIEW_EDIT,
+        },
+      ],
+    },
     {
       label: "Team",
       tabs: [
@@ -172,6 +183,7 @@ export function homeFor(grant: Grant): string {
     [allows(grant, "affiliates.payouts"), "/admin/affiliates/payouts"],
     [allows(grant, "affiliates.events"), "/admin/affiliates/events"],
     [allows(grant, "email"), "/admin/email"],
+    [allows(grant, "announcements"), "/admin/announcements"],
     [allows(grant, "team"), "/admin/team"],
   ];
   return pages.find(([open]) => open)?.[1] ?? "/admin/account";
