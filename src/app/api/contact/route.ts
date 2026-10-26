@@ -1,6 +1,6 @@
 import { clientKey, overBudget } from "@/lib/preview/rate-limit";
-import { normaliseStoreInput } from "@/lib/store-domain";
 import { recordContactSubmission } from "@/lib/contact";
+import { isPhone } from "@/lib/phone";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const TOPICS = new Set([
@@ -28,10 +28,11 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: "invalid_body" }, { status: 400 });
   }
 
-  const { name, email, store, topic, message, website } = (body ?? {}) as {
+  const { name, company, email, phone, topic, message, website } = (body ?? {}) as {
     name?: unknown;
+    company?: unknown;
     email?: unknown;
-    store?: unknown;
+    phone?: unknown;
     topic?: unknown;
     message?: unknown;
     website?: unknown;
@@ -46,33 +47,33 @@ export async function POST(request: Request) {
   if (typeof name !== "string" || !name.trim() || name.length > 120) {
     return Response.json({ ok: false, error: "invalid_name" }, { status: 400 });
   }
+  if (typeof company !== "string" || !company.trim() || company.length > 160) {
+    return Response.json({ ok: false, error: "invalid_company" }, { status: 400 });
+  }
   if (typeof email !== "string" || email.length > 254 || !EMAIL.test(email.trim())) {
     return Response.json({ ok: false, error: "invalid_email" }, { status: 400 });
+  }
+  if (typeof phone !== "string" || !isPhone(phone)) {
+    return Response.json({ ok: false, error: "invalid_phone" }, { status: 400 });
   }
   if (typeof topic !== "string" || !TOPICS.has(topic)) {
     return Response.json({ ok: false, error: "invalid_topic" }, { status: 400 });
   }
-  if (typeof message !== "string" || !message.trim() || message.length > 5000) {
+  if (
+    message !== undefined &&
+    message !== null &&
+    (typeof message !== "string" || message.length > 5000)
+  ) {
     return Response.json({ ok: false, error: "invalid_message" }, { status: 400 });
-  }
-
-  let storeHost: string | null = null;
-  if (store !== undefined && store !== null && store !== "") {
-    if (typeof store !== "string") {
-      return Response.json({ ok: false, error: "invalid_store" }, { status: 400 });
-    }
-    storeHost = normaliseStoreInput(store);
-    if (!storeHost) {
-      return Response.json({ ok: false, error: "invalid_store" }, { status: 400 });
-    }
   }
 
   const outcome = await recordContactSubmission({
     name,
+    company,
     email,
-    store: storeHost,
+    phone,
     topic,
-    message,
+    message: typeof message === "string" ? message : null,
   });
 
   if (outcome !== "inserted") {

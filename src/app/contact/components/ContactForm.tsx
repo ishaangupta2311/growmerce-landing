@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { normaliseStoreInput } from "@/lib/store-domain";
+import { isPhone } from "@/lib/phone";
 import Arrow from "@/components/site/Arrow";
 
 const TOPICS = [
@@ -13,13 +13,16 @@ const TOPICS = [
 ] as const;
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const LABEL_CLASS = "block text-[15px] font-bold text-charcoal";
 const FIELD_CLASS =
-  "mt-2 w-full rounded-[12px] border border-line bg-white px-4 py-3.5 text-[16px] text-charcoal outline-none transition-colors placeholder:text-muted focus:border-brand focus:ring-2 focus:ring-brand/15";
+  "mt-2 w-full rounded-[12px] border border-line bg-white px-4 py-3.5 text-[16px] font-normal text-charcoal outline-none transition-colors placeholder:text-muted focus:border-brand focus:ring-2 focus:ring-brand/15";
+const CARD_CLASS = "rounded-[24px] bg-white shadow-[0_30px_60px_-40px_rgba(23,23,23,0.35)]";
 
 type FormValues = {
   name: string;
+  company: string;
   email: string;
-  store: string;
+  phone: string;
   topic: string;
   message: string;
 };
@@ -28,8 +31,9 @@ type FormErrors = Partial<Record<keyof FormValues, string>>;
 
 const INITIAL_VALUES: FormValues = {
   name: "",
+  company: "",
   email: "",
-  store: "",
+  phone: "",
   topic: "",
   message: "",
 };
@@ -49,12 +53,10 @@ export default function ContactForm() {
   const validate = (): FormErrors => {
     const next: FormErrors = {};
     if (!values.name.trim()) next.name = "Please enter your name.";
-    if (!EMAIL.test(values.email.trim())) next.email = "Enter a valid work email.";
+    if (!values.company.trim()) next.company = "Please enter your company name.";
+    if (!EMAIL.test(values.email.trim())) next.email = "Enter a valid email.";
+    if (!isPhone(values.phone)) next.phone = "Enter a valid phone number.";
     if (!values.topic) next.topic = "Choose what you need help with.";
-    if (!values.message.trim()) next.message = "Tell us how we can help.";
-    if (values.store.trim() && !normaliseStoreInput(values.store)) {
-      next.store = "Enter a valid store URL.";
-    }
     return next;
   };
 
@@ -82,117 +84,93 @@ export default function ContactForm() {
 
   if (status === "success") {
     return (
-      <div className="rounded-[30px] bg-cream px-7 py-14 text-center sm:px-12 lg:px-16 lg:py-20">
+      <div className={`${CARD_CLASS} px-7 py-14 text-center sm:px-10`}>
         <span className="mx-auto grid size-12 place-items-center rounded-full bg-brand text-white">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path d="m4 12.5 5.5 5.5L20 6.5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </span>
-        <h2 className="mt-6 text-[clamp(1.75rem,3vw,2.75rem)] font-extrabold">Message sent</h2>
-        <p className="mx-auto mt-3 max-w-[48ch] text-[17px] leading-relaxed text-body-mute">
-          Thanks for reaching out. We&rsquo;ll make sure your message reaches the right person.
+        <h2 className="mt-6 text-[clamp(1.75rem,3vw,2.5rem)] font-extrabold">Thanks, we&rsquo;ve got it</h2>
+        <p className="mx-auto mt-3 max-w-[40ch] text-[17px] leading-relaxed text-body-mute">
+          Someone from our team will reach out shortly.
         </p>
       </div>
     );
   }
 
+  const field = (key: keyof FormValues) => ({
+    id: `${ids}-${key}`,
+    name: key,
+    value: values[key],
+    onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+      setValue(key, event.target.value),
+    "aria-invalid": errors[key] ? true : undefined,
+    "aria-describedby": errors[key] ? `${ids}-${key}-error` : undefined,
+  });
+
+  const error = (key: keyof FormValues) =>
+    errors[key] && (
+      <span id={`${ids}-${key}-error`} className="mt-1.5 block text-sm font-medium text-brand">
+        {errors[key]}
+      </span>
+    );
+
   return (
-    <form onSubmit={submit} noValidate className="rounded-[30px] bg-cream px-7 py-8 sm:px-10 sm:py-10 lg:px-14 lg:py-14">
-      <div className="grid gap-x-8 gap-y-7 sm:grid-cols-2">
-        <label className="block text-[15px] font-bold text-charcoal" htmlFor={`${ids}-name`}>
-          Name
-          <input
-            id={`${ids}-name`}
-            name="name"
-            autoComplete="name"
-            value={values.name}
-            onChange={(event) => setValue("name", event.target.value)}
-            className={FIELD_CLASS}
-            aria-invalid={errors.name ? true : undefined}
-            aria-describedby={errors.name ? `${ids}-name-error` : undefined}
-          />
-          {errors.name && <span id={`${ids}-name-error`} className="mt-1.5 block text-sm font-medium text-brand">{errors.name}</span>}
+    <form onSubmit={submit} noValidate className={`${CARD_CLASS} px-6 py-7 sm:px-8 sm:py-9`}>
+      <div className="grid gap-x-6 gap-y-6 sm:grid-cols-2">
+        <label className={LABEL_CLASS} htmlFor={`${ids}-name`}>
+          Your name
+          <input {...field("name")} autoComplete="name" className={FIELD_CLASS} />
+          {error("name")}
         </label>
 
-        <label className="block text-[15px] font-bold text-charcoal" htmlFor={`${ids}-email`}>
-          Work Email
-          <input
-            id={`${ids}-email`}
-            name="email"
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            value={values.email}
-            onChange={(event) => setValue("email", event.target.value)}
-            className={FIELD_CLASS}
-            aria-invalid={errors.email ? true : undefined}
-            aria-describedby={errors.email ? `${ids}-email-error` : undefined}
-          />
-          {errors.email && <span id={`${ids}-email-error`} className="mt-1.5 block text-sm font-medium text-brand">{errors.email}</span>}
+        <label className={LABEL_CLASS} htmlFor={`${ids}-company`}>
+          Company name
+          <input {...field("company")} autoComplete="organization" className={FIELD_CLASS} />
+          {error("company")}
         </label>
 
-        <label className="block text-[15px] font-bold text-charcoal" htmlFor={`${ids}-store`}>
-          Store URL
-          <input
-            id={`${ids}-store`}
-            name="store"
-            type="url"
-            inputMode="url"
-            placeholder="yourstore.com"
-            value={values.store}
-            onChange={(event) => setValue("store", event.target.value)}
-            className={FIELD_CLASS}
-            aria-invalid={errors.store ? true : undefined}
-            aria-describedby={errors.store ? `${ids}-store-error` : undefined}
-          />
-          {errors.store && <span id={`${ids}-store-error`} className="mt-1.5 block text-sm font-medium text-brand">{errors.store}</span>}
+        <label className={LABEL_CLASS} htmlFor={`${ids}-email`}>
+          Email
+          <input {...field("email")} type="email" inputMode="email" autoComplete="email" className={FIELD_CLASS} />
+          {error("email")}
         </label>
 
-        <label className="block text-[15px] font-bold text-charcoal" htmlFor={`${ids}-topic`}>
-          How Can We Help?
-          <select
-            id={`${ids}-topic`}
-            name="topic"
-            value={values.topic}
-            onChange={(event) => setValue("topic", event.target.value)}
-            className={FIELD_CLASS}
-            aria-invalid={errors.topic ? true : undefined}
-            aria-describedby={errors.topic ? `${ids}-topic-error` : undefined}
-          >
+        <label className={LABEL_CLASS} htmlFor={`${ids}-phone`}>
+          Phone number
+          <input {...field("phone")} type="tel" inputMode="tel" autoComplete="tel" className={FIELD_CLASS} />
+          {error("phone")}
+        </label>
+
+        <label className={`${LABEL_CLASS} sm:col-span-2`} htmlFor={`${ids}-topic`}>
+          How can we help?
+          <select {...field("topic")} className={FIELD_CLASS}>
             <option value="">Choose a topic</option>
             {TOPICS.map((topic) => <option key={topic} value={topic}>{topic}</option>)}
           </select>
-          {errors.topic && <span id={`${ids}-topic-error`} className="mt-1.5 block text-sm font-medium text-brand">{errors.topic}</span>}
+          {error("topic")}
         </label>
 
-        <label className="block text-[15px] font-bold text-charcoal sm:col-span-2" htmlFor={`${ids}-message`}>
-          Message
+        <label className={`${LABEL_CLASS} sm:col-span-2`} htmlFor={`${ids}-message`}>
+          Any growth challenge? <span className="font-medium text-muted">(optional)</span>
           <textarea
-            id={`${ids}-message`}
-            name="message"
-            rows={6}
-            value={values.message}
-            onChange={(event) => setValue("message", event.target.value)}
+            {...field("message")}
+            rows={4}
+            maxLength={5000}
+            placeholder="e.g. traffic is up but sales aren't"
             className={`${FIELD_CLASS} resize-y`}
-            aria-invalid={errors.message ? true : undefined}
-            aria-describedby={errors.message ? `${ids}-message-error` : undefined}
           />
-          {errors.message && <span id={`${ids}-message-error`} className="mt-1.5 block text-sm font-medium text-brand">{errors.message}</span>}
+          {error("message")}
         </label>
       </div>
 
-      <div className="mt-8 flex flex-col items-start gap-4 border-t border-brand/15 pt-7 sm:flex-row sm:items-center sm:justify-between">
-        <p className="max-w-[48ch] text-[13px] leading-relaxed text-body-mute">
-          By submitting this form, you agree that Growmerce may use the information provided to respond to your request.
-        </p>
-        <button type="submit" disabled={status === "submitting"} className="cta-primary w-full shrink-0 sm:w-fit">
-          {status === "submitting" ? "Sending..." : "Send message"}
-          {status !== "submitting" && <Arrow className="size-4" />}
-        </button>
-      </div>
+      <button type="submit" disabled={status === "submitting"} className="cta-primary mt-7 w-full">
+        {status === "submitting" ? "Sending..." : "Let's talk"}
+        {status !== "submitting" && <Arrow className="cta-arrow size-4" />}
+      </button>
       {status === "error" && (
         <p role="alert" className="mt-4 text-sm font-semibold text-brand">
-          We couldn&rsquo;t send your message right now. Please try again.
+          We couldn&rsquo;t send that right now. Please try again.
         </p>
       )}
     </form>
