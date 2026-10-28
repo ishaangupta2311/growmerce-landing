@@ -10,10 +10,16 @@ window onto it.
 
 - **The list.** Every store Growsearch holds a contact for, its address, and
   whether it is subscribed, unsubscribed or uninstalled.
-- **Automatic emails.** The welcome, the setup nudge and the review request,
-  with how many were sent, delivered, opened, clicked, bounced and reported as
-  spam. "Send what is due now" runs the app's daily sweep on demand; it sends
-  only what is already due.
+- **Automatic emails.** The welcome, the setup nudge, the review request and
+  the weekly report, with how many were sent, delivered, opened, clicked,
+  bounced and reported as spam. The weekly report row adds up every week's
+  report; in a store's history each one is named by its week ("Weekly report
+  (Oct 19)"). "Send what is due now" runs the app's daily sweep on demand; it
+  sends only what is already due.
+- **Results.** Before answering, the app reads the latest delivery results
+  back from Resend. Without its `RESEND_READ_API_KEY` the page says so, and the
+  delivered, opened and clicked columns fill only from Resend's webhook. If the
+  read fails, the page says the figures are the last ones stored.
 - **Campaigns.** A subject, a plain-text message and an optional button, sent
   to subscribed merchants. `{{shop_name}}` becomes the store's name. "Send me a
   test" sends one sample to the address given and stores nothing.

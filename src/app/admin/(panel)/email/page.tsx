@@ -28,7 +28,14 @@ const LIFECYCLE: Record<string, { name: string; when: string }> = {
   welcome: { name: "Welcome", when: "On install, to a store with no searches yet." },
   setup_nudge: { name: "Setup nudge", when: "Two days after install, if still no search has arrived." },
   review_request: { name: "Review request", when: "After 100 searches over at least 14 days. Sent once." },
+  weekly_report: {
+    name: "Weekly report",
+    when: "Every Monday, last week's search numbers, to each store that had searches. All weeks added up.",
+  },
 };
+
+/** Each week's report is its own send, keyed by the Monday the week began. */
+const WEEKLY_REPORT_PREFIX = "weekly_report:";
 
 const STATUS: Record<ContactStatus, { label: string; tone: string }> = {
   subscribed: { label: "Subscribed", tone: "text-brand" },
@@ -45,6 +52,12 @@ function share(count: number, sent: number): string {
 
 function emailName(key: string, campaigns: Map<string, string>): string {
   if (key.startsWith("campaign:")) return campaigns.get(key.slice("campaign:".length)) ?? "Campaign";
+  if (key.startsWith(WEEKLY_REPORT_PREFIX)) {
+    const monday = new Date(`${key.slice(WEEKLY_REPORT_PREFIX.length)}T00:00:00Z`);
+    return Number.isNaN(monday.getTime())
+      ? "Weekly report"
+      : `Weekly report (${monday.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })})`;
+  }
   return LIFECYCLE[key]?.name ?? key;
 }
 
@@ -129,6 +142,18 @@ export default async function AdminEmailPage() {
           />
           <StatCard label="All stores" value={String(overview.totals.contacts)} note="Every store we hold a record for." />
         </div>
+
+        {overview.resultsSync?.configured === false && (
+          <p className="text-[14px] leading-snug text-muted">
+            Delivered, opened, and clicked figures are read from Resend. Set RESEND_READ_API_KEY, a full-access
+            Resend key, on the Growsearch app to fill them in.
+          </p>
+        )}
+        {overview.resultsSync?.error && (
+          <p className="text-[14px] leading-snug text-muted">
+            Could not read the latest results from Resend. The figures below are the last ones stored.
+          </p>
+        )}
 
         <Panel title="Automatic emails" action={canSend ? <SweepButton /> : undefined} scroll>
           <Table caption="Results for each automatic email">
