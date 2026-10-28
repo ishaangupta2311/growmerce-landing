@@ -20,6 +20,13 @@ window onto it.
   back from Resend. Without its `RESEND_READ_API_KEY` the page says so, and the
   delivered, opened and clicked columns fill only from Resend's webhook. If the
   read fails, the page says the figures are the last ones stored.
+- **Seeing what was sent.** Click an email's name (in Automatic emails,
+  Campaigns, or a store's history) to open it. A dialog lists every store it
+  went to, with its results, and shows the email as that store received it,
+  read from the app's `email` operation. Emails sent before 2026-10-28 are read
+  back from Resend the first time; if Resend no longer has one, the dialog
+  says so. The email is shown in a sandboxed frame where links do not open: it
+  carries the merchant's real unsubscribe link.
 - **Campaigns.** A subject, a plain-text message and an optional button, sent
   to subscribed merchants. `{{shop_name}}` becomes the store's name. "Send me a
   test" sends one sample to the address given and stores nothing.
