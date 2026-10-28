@@ -34,17 +34,28 @@ function Results({ send }: { send: Send }) {
   );
 }
 
+/** Attributes that can send the frame, or a new window, to a URL. */
+const NAVIGATING = new Set(["href", "xlink:href", "target", "action", "formaction"]);
+
 /**
- * Points every link at a new tab, which the sandbox refuses. The tag goes
- * inside <head> when there is one: ahead of a doctype it would put the email
- * into quirks mode and change its layout.
+ * The email with nothing in it that can go anywhere: every link loses its
+ * URL, every target and form action goes, and a refresh tag is dropped. The
+ * copy carries the merchant's working unsubscribe link, and an empty sandbox
+ * still lets a link navigate the frame itself. Parsed, not pattern-matched,
+ * so an attribute in an unusual form is still found. Runs only in the
+ * browser: copies are loaded after the dialog opens.
  */
-function withoutLinks(html: string): string {
-  const base = '<base target="_blank">';
-  const head = /<head[^>]*>/i.exec(html);
-  if (!head) return base + html;
-  const end = head.index + head[0].length;
-  return html.slice(0, end) + base + html.slice(end);
+function inert(html: string): string {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  for (const meta of doc.querySelectorAll("meta[http-equiv]")) {
+    if (meta.getAttribute("http-equiv")?.trim().toLowerCase() === "refresh") meta.remove();
+  }
+  for (const element of doc.querySelectorAll("*")) {
+    for (const attribute of [...element.attributes]) {
+      if (NAVIGATING.has(attribute.name.toLowerCase())) element.removeAttribute(attribute.name);
+    }
+  }
+  return `${doc.doctype ? "<!doctype html>" : ""}${doc.documentElement.outerHTML}`;
 }
 
 const keyOf = (send: { shop: string; emailKey: string }) => `${send.shop}\n${send.emailKey}`;
@@ -53,9 +64,9 @@ const keyOf = (send: { shop: string; emailKey: string }) => `${send.shop}\n${sen
  * Opens the emails behind a row: every store this email went to, and the
  * email itself as that store received it.
  *
- * The copy carries the merchant's real unsubscribe link, so it is shown in a
- * sandboxed frame with no permissions: nothing in it runs, and links do not
- * open (every link is pointed at a new tab, which the sandbox refuses).
+ * The copy carries the merchant's real unsubscribe link, so it is shown with
+ * its links stripped (see `inert`) in a sandboxed frame with no permissions:
+ * nothing in it runs, and nothing in it can navigate.
  */
 export default function SentEmails({
   title,
@@ -160,7 +171,7 @@ export default function SentEmails({
                   key={key}
                   title={`${send.email} sent to ${send.store}`}
                   sandbox=""
-                  srcDoc={withoutLinks(copy.data.html)}
+                  srcDoc={inert(copy.data.html)}
                   className="h-[70dvh] w-full rounded-lg border border-zinc-200 bg-white"
                 />
               ) : (
