@@ -3,9 +3,10 @@ import { randomUUID } from "node:crypto";
 
 import { requireAccess } from "@/lib/admin/session";
 import { formatDate } from "@/lib/affiliate/format";
-import { emailOverview, type ContactStatus, type EmailResults } from "@/lib/growsearch/email";
+import { emailOverview, type Contact, type ContactStatus, type EmailResults } from "@/lib/growsearch/email";
 import { PageHeader } from "@/components/admin/ui";
 import CampaignForm from "@/components/admin/email/CampaignForm";
+import SentEmails, { type SendItem } from "@/components/admin/email/SentEmails";
 import SweepButton from "@/components/admin/email/SweepButton";
 import Empty from "@/components/affiliate/Empty";
 import Panel from "@/components/affiliate/Panel";
@@ -61,6 +62,20 @@ function emailName(key: string, campaigns: Map<string, string>): string {
   return LIFECYCLE[key]?.name ?? key;
 }
 
+/** Every send, newest first, labelled with its store and email, to open from a row. */
+function sendItems(contacts: Contact[], campaigns: Map<string, string>): SendItem[] {
+  return contacts
+    .flatMap((contact) =>
+      contact.sends.map((send) => ({
+        ...send,
+        shop: contact.shop,
+        store: contact.shopName ?? contact.shop,
+        email: emailName(send.emailKey, campaigns),
+      })),
+    )
+    .sort((a, b) => b.sentAt.localeCompare(a.sentAt));
+}
+
 function ResultCells({ results }: { results: EmailResults }) {
   return (
     <>
@@ -105,12 +120,17 @@ export default async function AdminEmailPage() {
 
   const overview = answer.data;
   const campaignSubjects = new Map(overview.campaigns.map((campaign) => [campaign.id, campaign.subject]));
+  const sends = sendItems(overview.contacts, campaignSubjects);
+  const sendsOf = (key: string) =>
+    sends.filter((send) =>
+      key === "weekly_report" ? send.emailKey.startsWith(WEEKLY_REPORT_PREFIX) : send.emailKey === key,
+    );
 
   return (
     <>
       <PageHeader
         title="Merchant email"
-        description="Who is on the list, how each email performed, and sending a one-off campaign."
+        description="Who is on the list, how each email performed, and sending a one-off campaign. Click an email to see what was sent."
       />
       <div className="space-y-8">
         {!overview.configured && (
@@ -167,7 +187,9 @@ export default async function AdminEmailPage() {
                 <Row key={email.key}>
                   <RowHeader>
                     <span className="block text-[15px] font-bold text-charcoal">
-                      {LIFECYCLE[email.key]?.name ?? email.key}
+                      <SentEmails title={LIFECYCLE[email.key]?.name ?? email.key} sends={sendsOf(email.key)}>
+                        {LIFECYCLE[email.key]?.name ?? email.key}
+                      </SentEmails>
                     </span>
                     <span className="mt-0.5 block max-w-[40ch] text-[13px] leading-snug text-muted">
                       {LIFECYCLE[email.key]?.when}
@@ -197,7 +219,11 @@ export default async function AdminEmailPage() {
                 {overview.campaigns.map((campaign) => (
                   <Row key={campaign.id}>
                     <RowHeader>
-                      <span className="block max-w-[40ch] text-[15px] font-bold text-charcoal">{campaign.subject}</span>
+                      <span className="block max-w-[40ch] text-[15px] font-bold text-charcoal">
+                        <SentEmails title={campaign.subject} sends={sendsOf(`campaign:${campaign.id}`)}>
+                          {campaign.subject}
+                        </SentEmails>
+                      </span>
                       <span className="mt-0.5 block text-[13px] leading-snug text-muted">
                         {campaign.audience === "all" ? "Everyone, including uninstalled" : "Installed stores"}
                         {campaign.createdBy ? ` · ${campaign.createdBy}` : ""}
@@ -262,7 +288,16 @@ export default async function AdminEmailPage() {
                         <span className="text-muted">None yet</span>
                       ) : (
                         <span className="block max-w-[38ch] text-[14px] leading-snug">
-                          {contact.sends.map((send) => emailName(send.emailKey, campaignSubjects)).join(", ")}
+                          {sends
+                            .filter((send) => send.shop === contact.shop)
+                            .map((send, index) => (
+                              <span key={send.emailKey}>
+                                {index > 0 && ", "}
+                                <SentEmails title={send.email} sends={[send]}>
+                                  {send.email}
+                                </SentEmails>
+                              </span>
+                            ))}
                         </span>
                       )}
                     </Td>

@@ -5,7 +5,14 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/admin/session";
 import { NO_ACCESS, noteActivity, quoted } from "@/lib/blog/action-guard";
 import { allows } from "@/lib/team/permissions";
-import { runEmailSweep, sendCampaign, type Audience } from "@/lib/growsearch/email";
+import {
+  runEmailSweep,
+  sendCampaign,
+  sentEmail,
+  type Answer,
+  type Audience,
+  type SentEmail,
+} from "@/lib/growsearch/email";
 
 /**
  * What the admin does to merchant email. The work happens in the Growsearch
@@ -102,4 +109,14 @@ export async function sweepNow(_state: SweepState, _form: FormData): Promise<Swe
     parts.push(`${failed.length} failed and will be retried by the next run.`);
   }
   return { notice: parts.join(" ") };
+}
+
+/** One sent email, to show in the portal. Viewing needs only view on Email. */
+export async function viewSentEmail(shop: string, emailKey: string): Promise<Answer<SentEmail>> {
+  const admin = await requireAdmin();
+  if (!allows(admin.grant, "email")) return { ok: false, error: NO_ACCESS };
+  if (typeof shop !== "string" || typeof emailKey !== "string") {
+    return { ok: false, error: "Name the store and the email." };
+  }
+  return sentEmail(shop.slice(0, 255), emailKey.slice(0, 200));
 }

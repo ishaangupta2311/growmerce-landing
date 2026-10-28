@@ -54,8 +54,22 @@ export type Contact = {
   subscribedAt: string;
   unsubscribedAt: string | null;
   uninstalledAt: string | null;
-  sends: { emailKey: string; sentAt: string }[];
+  sends: Send[];
 };
+
+/** One email sent to one store, and what became of it. */
+export type Send = {
+  emailKey: string;
+  sentAt: string;
+  deliveredAt: string | null;
+  openedAt: string | null;
+  clickedAt: string | null;
+  bouncedAt: string | null;
+  complainedAt: string | null;
+};
+
+/** What one send said: the subject and HTML that went out. */
+export type SentEmail = Send & { shop: string; subject: string | null; html: string };
 
 export type EmailOverview = {
   /** Whether the app has its Resend credentials. False means nothing sends. */
@@ -155,4 +169,8 @@ export function sendCampaign(input: CampaignInput): Promise<Answer<CampaignRecei
 
 export function runEmailSweep(): Promise<Answer<SweepReceipt>> {
   return call<SweepReceipt>("sweep", {});
+}
+
+export function sentEmail(shop: string, emailKey: string): Promise<Answer<SentEmail>> {
+  return call<SentEmail>("email", { shop, emailKey });
 }
