@@ -66,6 +66,12 @@ export type EmailOverview = {
   lifecycle: LifecycleEmail[];
   campaigns: Campaign[];
   contacts: Contact[];
+  /**
+   * What the app found reading delivery results back from Resend before
+   * answering. `configured: false` means it has no key to read with, so the
+   * delivered, opened, and clicked columns only fill from Resend's webhook.
+   */
+  resultsSync?: { configured: boolean; error?: boolean; checked?: number; recorded?: number };
 };
 
 export type CampaignInput = {
