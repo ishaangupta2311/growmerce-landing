@@ -63,7 +63,7 @@ you chose.
 
 ## Storage
 
-`blog.announcement` (`migrations/0013_announcements.sql`): status (`pending`,
+`blog.announcement` (`migrations/0014_announcements.sql`): status (`pending`,
 `approved`, `skipped`, `discarded`), `since_ref`/`release_ref`, the note
 filenames, the post, the email (subject, body, button label), the campaign id,
 the skip reason, the last approval error, the recipient count, and who did what

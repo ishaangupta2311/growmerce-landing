@@ -13,7 +13,7 @@ import { DEFAULT_CTA_LABEL, type DraftInput, type SkipInput } from "./contract";
 
 /**
  * Release announcements: the rows in `blog.announcement`
- * (migrations/0013_announcements.sql) and the draft posts they own.
+ * (migrations/0014_announcements.sql) and the draft posts they own.
  *
  * Two kinds of caller. The signed API (src/app/api/announcements) writes
  * drafts and skips for the Growsearch app; the admin page reads, edits,
