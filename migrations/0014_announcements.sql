@@ -46,9 +46,10 @@ create table if not exists blog.announcement (
   approval_token    uuid,
   approval_started_at timestamptz,
   -- Set just before the campaign goes to the app, and cleared only if the app
-  -- refused it. While set the email may have gone out, so the row can't be
-  -- replaced, edited or discarded, and the seven-day cap counts it. Approve
-  -- again settles it: the app answers a repeated campaign id without resending.
+  -- refused that request or later confirms it never got it. While set the email
+  -- may have gone out, so the row can't be replaced, edited, discarded or
+  -- approved again, and the seven-day cap counts it. Asking the app whether it
+  -- has the campaign settles it (settleSent, clearSendRequest).
   send_requested_at timestamptz,
   -- Why the app skipped these notes.
   reason            text,

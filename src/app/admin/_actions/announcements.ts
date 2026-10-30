@@ -11,18 +11,21 @@ import {
   ADMIN_PATH,
   approvalTarget,
   claimApproval,
+  clearSendRequest,
   discardAnnouncement,
   markApproved,
   postUrl,
   releaseApproval,
   requestSend,
   saveEmail,
+  settleSent,
+  unsettledSend,
 } from "@/lib/announcements/store";
 import { NO_ACCESS, noteActivity, quoted } from "@/lib/blog/action-guard";
 import { setPostPublished } from "@/lib/blog/posts";
 import { revalidateBlog } from "@/lib/blog/revalidate";
 import { DatabaseUnavailableError } from "@/lib/blog/sql";
-import { previewCampaign, sendCampaign, type CampaignInput } from "@/lib/growsearch/email";
+import { campaignStatus, previewCampaign, sendCampaign, type CampaignInput } from "@/lib/growsearch/email";
 import { allows } from "@/lib/team/permissions";
 
 /**
@@ -120,16 +123,6 @@ export async function submitAnnouncement(
   const version = Number(text(form, "version", 12));
   if (!Number.isInteger(version)) return { error: "Invalid request." };
 
-  /* The email may already have gone out, so what is on the row is what stands:
-     no edits, and Approve settles it. */
-  if (text(form, "confirm", 1) === "1") {
-    try {
-      return await approve(admin, id.data, version);
-    } catch (err) {
-      return { error: failure("announcement confirm", err) };
-    }
-  }
-
   const submitted = contentFrom(form);
   const parsed = announcementSchema.safeParse(submitted);
   const values: AnnouncementValues = {
@@ -200,7 +193,7 @@ async function approve(
   admin: Admin,
   id: string,
   version: number,
-  values?: AnnouncementValues,
+  values: AnnouncementValues,
 ): Promise<AnnouncementFormState> {
   const claim = await claimApproval(id, version);
   if (!claim.ok) {
@@ -230,11 +223,9 @@ async function approve(
     }
 
     /* Asked before anything is published: an email the app would refuse must
-       not leave the post live with nothing sent. A retry has already got past this. */
-    if (!target.sendRequested) {
-      const preview = await previewCampaign(campaignFor(target, admin));
-      if (!preview.ok) return await stop(`Nothing was published or sent: ${preview.error}`);
-    }
+       not leave the post live with nothing sent. */
+    const preview = await previewCampaign(campaignFor(target, admin));
+    if (!preview.ok) return await stop(`Nothing was published or sent: ${preview.error}`);
 
     if (target.post.status !== "published") {
       const published = await setPostPublished(admin.id, target.post.id, true);
@@ -263,7 +254,7 @@ async function approve(
     if (!answer.ok || answer.data.test) {
       const why = answer.ok ? "The Growsearch app treated it as a test." : answer.error;
       return await stop(
-        `We could not confirm the email went out, so it may have: ${why} Press the button again to settle it; merchants will not get it twice.`,
+        `We could not confirm the email went out, so it may have: ${why} Use "Check what happened" on this page; it sends nothing.`,
       );
     }
     sent = { title: latest.post.title, recipients: answer.data.recipients, created: answer.data.created };
@@ -289,6 +280,47 @@ async function approve(
   /* The pending form is gone once this lands, and its message with it, so the
      outcome travels in the address instead. */
   redirect(`${ADMIN_PATH}?done=${sent.created ? "approved" : "already-sent"}`);
+}
+
+/**
+ * Settles an approval that started sending and never heard how it ended, by
+ * asking the app whether it has the campaign. It sends nothing. If the app has
+ * it, the email went (the app's sweep finishes any delivery left over), so the
+ * row is recorded as approved. If it doesn't, nothing went and the row is free
+ * again. If the app can't say, nothing changes. None of this needs the post.
+ */
+export async function settleSendAction(_state: DiscardState, form: FormData): Promise<DiscardState> {
+  const admin = await requireAdmin();
+  if (!allows(admin.grant, "announcements", "edit")) return { error: NO_ACCESS };
+
+  const id = uuid.safeParse(text(form, "id", 64));
+  if (!id.success) return { error: "Invalid request." };
+
+  let done: "already-sent" | "not-sent";
+  try {
+    const unsettled = await unsettledSend(id.data);
+    if (!unsettled) {
+      return { error: "There is nothing to check right now: an approval may still be running. Reload the page in a few minutes." };
+    }
+    const answer = await campaignStatus(unsettled.campaignId);
+    if (!answer.ok) return { error: `Could not ask the Growsearch app, so nothing changed: ${answer.error}` };
+
+    if (answer.data.exists) {
+      await settleSent(id.data, admin.email, answer.data.recipients);
+      await noteActivity(
+        admin,
+        `Settled the release announcement ${quoted(unsettled.postTitle ?? "(post deleted)")}: the app had the email, for ${answer.data.recipients} merchants`,
+      );
+      done = "already-sent";
+    } else {
+      await clearSendRequest(id.data);
+      done = "not-sent";
+    }
+  } catch (err) {
+    return { error: failure("announcement settle", err) };
+  }
+  revalidatePath(ADMIN_PATH);
+  redirect(`${ADMIN_PATH}?done=${done}`);
 }
 
 export async function discardAnnouncementAction(_state: DiscardState, form: FormData): Promise<DiscardState> {

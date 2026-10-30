@@ -60,12 +60,20 @@ recorded is the one that was sent. A claim whose holder died lapses after 5
 minutes. If one lapsed and the approval still finished, the send is recorded on
 the row anyway, so the seven-day cap counts it, and the page says so.
 
-**If we never hear back from the app, the row stays locked.** `send_requested_at`
-is set just before the campaign goes to the app, and cleared only if the app
-refused it. While it's set the email may have gone out: a draft gets a 409, the
-page offers only a button to settle it, and the seven-day cap counts it. Pressing
-it asks the app again with the same campaign id, so it either finds the campaign
-it already has or sends it once.
+**If we never hear back from the app, the row stays locked until we know.**
+`send_requested_at` is set just before the campaign goes to the app. It is cleared
+straight away only if the app refused that request. Otherwise the email may have
+gone out: a draft gets a 409, editing, discarding and approving are refused, and
+the seven-day cap counts it.
+
+The page then offers **Check what happened**, which asks the app (`campaign-status`)
+whether it has the campaign. It sends nothing, and it works whatever became of the
+post and whatever the state of the app's email setup:
+
+- The app has it: the email went, because the app's sweep finishes any delivery left
+  over. The row is recorded as approved.
+- The app doesn't: nothing went, and the row can be edited, approved or discarded.
+- The app can't be reached or refuses: nothing changes. Try again later.
 
 **A form can't act on what its reader never saw.** `draft_version` goes up with
 every new draft and every saved edit. A form opened before one of those is told

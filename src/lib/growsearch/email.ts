@@ -116,7 +116,7 @@ export type SweepReceipt = {
   failed: { shop: string; message: string }[];
 };
 
-/** `refused`: the app answered and turned it down, so it definitely did nothing. */
+/** `refused`: the app answered and turned this request down, so this request did nothing. */
 export type Answer<T> = { ok: true; data: T } | { ok: false; error: string; refused?: boolean };
 
 /**
@@ -181,6 +181,13 @@ export function sendCampaign(input: CampaignInput): Promise<Answer<CampaignRecei
 /** The email rendered for a sample store. Nothing is sent or stored. */
 export function previewCampaign(input: CampaignInput): Promise<Answer<{ subject: string; html: string }>> {
   return call<{ subject: string; html: string }>("preview-campaign", input);
+}
+
+export type CampaignStatus = { exists: false } | { exists: true; recipients: number; completed: boolean };
+
+/** Whether the app ever accepted this campaign. Works whatever the state of its email setup. */
+export function campaignStatus(id: string): Promise<Answer<CampaignStatus>> {
+  return call<CampaignStatus>("campaign-status", { id });
 }
 
 export function runEmailSweep(): Promise<Answer<SweepReceipt>> {

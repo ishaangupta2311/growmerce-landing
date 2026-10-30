@@ -532,7 +532,7 @@ export async function claimApproval(id: string, version: number): Promise<Approv
     const [row] = await tx<{ id: string; last_sent: Date | null }[]>`
       select a.id, (select max(coalesce(o.email_sent_at, o.send_requested_at)) from blog.announcement o where o.id <> a.id) as last_sent
       from blog.announcement a
-      where a.id = ${id} and a.status = 'pending' and a.draft_version = ${version} and not ${approvalHeld(tx)}
+      where a.id = ${id} and a.status = 'pending' and a.draft_version = ${version} and not ${locked(tx)}
       for update
     `;
     if (!row) return { ok: false, reason: "changed" } as const;
@@ -566,8 +566,9 @@ export async function requestSend(id: string, token: string): Promise<boolean> {
 
 /**
  * Ends an approval that did not finish. `error` stays on the row until one
- * succeeds. `sendRefused` says the app definitely did not take the campaign, so
- * the row can be changed again; anything less leaves it locked.
+ * succeeds. `sendRefused` says the app turned down this approval's own request,
+ * the only one there has been, so the row can be changed again; anything less
+ * leaves it locked for `settleSent` or `clearSendRequest`.
  */
 export async function releaseApproval(
   id: string,
@@ -586,13 +587,61 @@ export async function releaseApproval(
   `;
 }
 
+export type UnsettledSend = { id: string; campaignId: string; postTitle: string | null };
+
+/**
+ * The announcement whose send is waiting to be settled, or null if there is none
+ * or an approval is still running on it (its request may still be on the way, so
+ * the app's "I don't have that campaign" wouldn't mean anything yet).
+ */
+export async function unsettledSend(id: string): Promise<UnsettledSend | null> {
+  const sql = requireSql();
+  const [row] = await sql<{ id: string; campaign_id: string; post_title: string | null }[]>`
+    select a.id, a.campaign_id, p.title as post_title
+    from blog.announcement a
+    left join blog.post p on p.id = a.post_id
+    where a.id = ${id} and a.status = 'pending' and a.send_requested_at is not null and not ${approvalHeld(sql)}
+  `;
+  return row ? { id: row.id, campaignId: row.campaign_id, postTitle: row.post_title } : null;
+}
+
+/** The app has the campaign, so the email went: record it, whatever became of the post. */
+export async function settleSent(id: string, approvedBy: string, recipients: number | null): Promise<boolean> {
+  const sql = requireSql();
+  const rows = await sql`
+    update blog.announcement set
+      status = 'approved',
+      approved_at = now(),
+      approved_by = ${approvedBy},
+      email_sent_at = now(),
+      email_recipients = ${recipients},
+      approval_token = null,
+      approval_started_at = null,
+      last_error = null,
+      updated_at = now()
+    where id = ${id} and status = 'pending' and send_requested_at is not null
+    returning id
+  `;
+  return rows.length > 0;
+}
+
+/** The app confirms it never got the campaign, so nothing went and the row is free again. */
+export async function clearSendRequest(id: string): Promise<boolean> {
+  const sql = requireSql();
+  const rows = await sql`
+    update blog.announcement set send_requested_at = null, last_error = null
+    where id = ${id} and status = 'pending' and send_requested_at is not null
+    returning id
+  `;
+  return rows.length > 0;
+}
+
 export type ApprovalTarget = {
   id: string;
   campaignId: string;
   subject: string;
   content: AnnouncementContent;
   ctaLabel: string;
-  sendRequested: boolean;
   post: { id: string; title: string; slug: string; status: PostStatus } | null;
   /** The newest email any *other* announcement sent: the seven-day cap. */
   lastEmailSentAt: string | null;
@@ -608,7 +657,6 @@ export async function approvalTarget(id: string): Promise<ApprovalTarget | null>
       email_subject: string;
       email_content: AnnouncementContent;
       email_cta_label: string | null;
-      send_requested_at: Date | null;
       post_id: string | null;
       post_title: string | null;
       post_slug: string | null;
@@ -616,7 +664,7 @@ export async function approvalTarget(id: string): Promise<ApprovalTarget | null>
       last_sent: Date | null;
     }[]
   >`
-    select a.id, a.campaign_id, a.email_subject, a.email_content, a.email_cta_label, a.send_requested_at,
+    select a.id, a.campaign_id, a.email_subject, a.email_content, a.email_cta_label,
            p.id as post_id, p.title as post_title, p.slug as post_slug, ${effectivePostStatus(sql)} as post_status,
            (select max(o.email_sent_at) from blog.announcement o where o.id <> a.id) as last_sent
     from blog.announcement a
@@ -630,7 +678,6 @@ export async function approvalTarget(id: string): Promise<ApprovalTarget | null>
     subject: row.email_subject,
     content: row.email_content,
     ctaLabel: row.email_cta_label || DEFAULT_CTA_LABEL,
-    sendRequested: row.send_requested_at !== null,
     post:
       row.post_id && row.post_slug && row.post_status
         ? { id: row.post_id, title: row.post_title ?? "", slug: row.post_slug, status: row.post_status }

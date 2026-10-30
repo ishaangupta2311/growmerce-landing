@@ -41,7 +41,8 @@ type Overview = Promise<Answer<EmailOverview>> | null;
 
 const DONE: Record<string, string> = {
   approved: "Approved. The post is live and the email is on its way to merchants; results appear below as they arrive.",
-  "already-sent": "Approved. The post is live. The email had already been sent, so it was not sent again.",
+  "already-sent": "Recorded as sent. The Growsearch app already had this email, so it was not sent again.",
+  "not-sent": "Checked: the Growsearch app never got that email, so nothing went out. You can edit it and approve it again.",
   discarded: "Discarded. Nothing was published or sent, and those release notes will not be announced.",
 };
 
@@ -307,7 +308,7 @@ export default async function AdminAnnouncementsPage({
                   <EmailPreview pending={pending} />
                 </Suspense>
                 {canEdit && pending.sendRequestedAt ? (
-                  <ConfirmSendForm id={pending.id} version={pending.draftVersion} />
+                  <ConfirmSendForm id={pending.id} />
                 ) : canEdit && pending.emailContent ? (
                   <AnnouncementForm
                     key={pending.updatedAt}
