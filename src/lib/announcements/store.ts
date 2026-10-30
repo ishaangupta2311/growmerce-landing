@@ -605,8 +605,17 @@ export async function unsettledSend(id: string): Promise<UnsettledSend | null> {
   return row ? { id: row.id, campaignId: row.campaign_id, postTitle: row.post_title } : null;
 }
 
-/** The app has the campaign, so the email went: record it, whatever became of the post. */
-export async function settleSent(id: string, approvedBy: string, recipients: number | null): Promise<boolean> {
+/**
+ * The app has the campaign, so the email went: record it, whatever became of the
+ * post. Both settlements name the campaign that was asked about, so a late answer
+ * about an old one can't touch a newer send.
+ */
+export async function settleSent(
+  id: string,
+  campaignId: string,
+  approvedBy: string,
+  recipients: number | null,
+): Promise<boolean> {
   const sql = requireSql();
   const rows = await sql`
     update blog.announcement set
@@ -619,7 +628,7 @@ export async function settleSent(id: string, approvedBy: string, recipients: num
       approval_started_at = null,
       last_error = null,
       updated_at = now()
-    where id = ${id} and status = 'pending' and send_requested_at is not null
+    where id = ${id} and status = 'pending' and send_requested_at is not null and campaign_id = ${campaignId}
     returning id
   `;
   return rows.length > 0;
@@ -629,11 +638,11 @@ export async function settleSent(id: string, approvedBy: string, recipients: num
  * The app confirms it never got the campaign and has withdrawn its id, so nothing
  * went. The row is free again, with a new id for its next attempt.
  */
-export async function clearSendRequest(id: string): Promise<boolean> {
+export async function clearSendRequest(id: string, campaignId: string): Promise<boolean> {
   const sql = requireSql();
   const rows = await sql`
     update blog.announcement set send_requested_at = null, campaign_id = gen_random_uuid(), last_error = null
-    where id = ${id} and status = 'pending' and send_requested_at is not null
+    where id = ${id} and status = 'pending' and send_requested_at is not null and campaign_id = ${campaignId}
     returning id
   `;
   return rows.length > 0;

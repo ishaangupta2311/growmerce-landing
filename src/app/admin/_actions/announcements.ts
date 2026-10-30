@@ -53,6 +53,7 @@ export type DiscardState = { error?: string; notice?: string } | undefined;
 
 const uuid = z.uuid();
 const GONE = "This announcement is no longer waiting for approval. Reload the page to see where it went.";
+const STALE_SETTLEMENT = "Somebody else settled this while we were asking. Reload the page to see where it stands.";
 const CHANGED =
   "This announcement changed since you opened it, or is being approved right now. Reload the page to see the latest; your edits here were not saved.";
 
@@ -307,14 +308,16 @@ export async function settleSendAction(_state: DiscardState, form: FormData): Pr
     if (!answer.ok) return { error: `Could not ask the Growsearch app, so nothing changed: ${answer.error}` };
 
     if (answer.data.exists) {
-      await settleSent(id.data, admin.email, answer.data.recipients);
+      if (!(await settleSent(id.data, unsettled.campaignId, admin.email, answer.data.recipients))) {
+        return { error: STALE_SETTLEMENT };
+      }
       await noteActivity(
         admin,
         `Settled the release announcement ${quoted(unsettled.postTitle ?? "(post deleted)")}: the app had the email, for ${answer.data.recipients} merchants`,
       );
       done = "already-sent";
     } else {
-      await clearSendRequest(id.data);
+      if (!(await clearSendRequest(id.data, unsettled.campaignId))) return { error: STALE_SETTLEMENT };
       done = "not-sent";
     }
   } catch (err) {
