@@ -124,6 +124,10 @@ test("an email's picture must be one the layout has", () => {
   assert.equal(draftSchema.safeParse(email("placements")).success, true);
   assert.equal(draftSchema.safeParse(email("video")).success, false);
 });
+test("an empty section is refused, as the app refuses it", () => {
+  const email = { ...draft.email, announcement: { ...draft.email.announcement, sections: [{}] } };
+  assert.equal(draftSchema.safeParse({ ...draft, email }).success, false);
+});
 test("a skip body parses", () =>
   assert.equal(skipSchema.safeParse({ sinceRef: null, releaseRef: "v1.5.1", notes: [], reason: "internal only" }).success, true));
 test("status takes {} and nothing else", () => {

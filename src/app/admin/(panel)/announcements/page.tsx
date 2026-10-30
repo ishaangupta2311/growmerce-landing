@@ -309,6 +309,7 @@ export default async function AdminAnnouncementsPage({
                   <AnnouncementForm
                     key={pending.updatedAt}
                     id={pending.id}
+                    version={pending.draftVersion}
                     subject={pending.emailSubject ?? ""}
                     content={pending.emailContent}
                     ctaLabel={pending.emailCtaLabel ?? ""}

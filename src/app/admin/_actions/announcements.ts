@@ -10,18 +10,18 @@ import { formatDateTime } from "@/lib/announcements/format";
 import {
   ADMIN_PATH,
   approvalTarget,
+  claimApproval,
   discardAnnouncement,
   markApproved,
-  nextEmailAt,
   postUrl,
-  recordApprovalError,
+  releaseApproval,
   saveEmail,
 } from "@/lib/announcements/store";
 import { NO_ACCESS, noteActivity, quoted } from "@/lib/blog/action-guard";
 import { setPostPublished } from "@/lib/blog/posts";
 import { revalidateBlog } from "@/lib/blog/revalidate";
 import { DatabaseUnavailableError } from "@/lib/blog/sql";
-import { sendCampaign } from "@/lib/growsearch/email";
+import { previewCampaign, sendCampaign, type CampaignInput } from "@/lib/growsearch/email";
 import { allows } from "@/lib/team/permissions";
 
 /**
@@ -35,7 +35,13 @@ import { allows } from "@/lib/team/permissions";
  * themselves a test should not lose their edits.
  */
 
-export type AnnouncementValues = { subject: string; content: AnnouncementContent; ctaLabel: string; testTo: string };
+export type AnnouncementValues = {
+  version: number;
+  subject: string;
+  content: AnnouncementContent;
+  ctaLabel: string;
+  testTo: string;
+};
 
 export type AnnouncementFormState = { error?: string; notice?: string; values?: AnnouncementValues } | undefined;
 
@@ -43,6 +49,8 @@ export type DiscardState = { error?: string; notice?: string } | undefined;
 
 const uuid = z.uuid();
 const GONE = "This announcement is no longer waiting for approval. Reload the page to see where it went.";
+const CHANGED =
+  "This announcement changed since you opened it, or is being approved right now. Reload the page to see the latest; your edits here were not saved.";
 
 function text(form: FormData, field: string, max: number): string {
   const value = form.get(field);
@@ -79,6 +87,11 @@ function contentFrom(form: FormData): unknown {
       note: text(form, `s${s}.note`, 1000),
     });
   }
+  /* A section with everything cleared is gone, not an empty box the app refuses. */
+  const kept = sections.filter(
+    (section) =>
+      section.heading || section.text || section.visual || section.caption || section.lead || section.note || section.items.length,
+  );
   return {
     title: text(form, "title", 300),
     intro: text(form, "intro", 1000),
@@ -89,7 +102,7 @@ function contentFrom(form: FormData): unknown {
           ctaLabel: text(form, "action.ctaLabel", 100),
         }
       : null,
-    sections,
+    sections: kept,
   };
 }
 
@@ -103,22 +116,29 @@ export async function submitAnnouncement(
   const id = uuid.safeParse(text(form, "id", 64));
   if (!id.success) return { error: "Invalid request." };
 
-  const content = announcementSchema.safeParse(contentFrom(form));
-  if (!content.success) return { error: `Check the email: ${describeIssue(content.error)}.` };
+  const version = Number(text(form, "version", 12));
+  if (!Number.isInteger(version)) return { error: "Invalid request." };
 
+  const submitted = contentFrom(form);
+  const parsed = announcementSchema.safeParse(submitted);
   const values: AnnouncementValues = {
+    version,
     subject: text(form, "subject", 150),
-    content: content.data,
+    /* A refused email goes back as typed: the form resets to what it is handed. */
+    content: parsed.success ? parsed.data : (submitted as AnnouncementContent),
     ctaLabel: text(form, "ctaLabel", 40),
     testTo: text(form, "testTo", 254) || admin.email,
   };
+  if (!parsed.success) return { error: `Check the email: ${describeIssue(parsed.error)}.`, values };
   const intent = text(form, "intent", 10);
   if (!values.subject) return { error: "Write a subject.", values };
 
   try {
     /* Whatever the button, the email as it stands on screen is saved first:
        a test shows what would be sent, and an approval sends what was read. */
-    if (!(await saveEmail(id.data, values))) return { error: GONE };
+    const saved = await saveEmail(id.data, version, values);
+    if (saved === null) return { error: CHANGED, values };
+    values.version = saved;
 
     if (intent === "test") return await sendTest(admin, id.data, values);
     if (intent === "approve") return await approve(admin, id.data, values);
@@ -130,21 +150,24 @@ export async function submitAnnouncement(
   }
 }
 
-async function sendTest(admin: Admin, id: string, values: AnnouncementValues): Promise<AnnouncementFormState> {
-  const target = await approvalTarget(id);
-  if (!target) return { error: GONE };
-
-  const answer = await sendCampaign({
+function campaignFor(target: NonNullable<Awaited<ReturnType<typeof approvalTarget>>>, admin: Admin): CampaignInput {
+  return {
     id: target.campaignId,
     subject: target.subject,
     body: "",
     announcement: target.content,
     ctaLabel: target.ctaLabel,
-    ctaUrl: target.post ? postUrl(target.post.slug) : postUrl(""),
+    ctaUrl: postUrl(target.post?.slug ?? ""),
     audience: "installed",
     createdBy: admin.email,
-    testTo: values.testTo,
-  });
+  };
+}
+
+async function sendTest(admin: Admin, id: string, values: AnnouncementValues): Promise<AnnouncementFormState> {
+  const target = await approvalTarget(id);
+  if (!target) return { error: GONE };
+
+  const answer = await sendCampaign({ ...campaignFor(target, admin), testTo: values.testTo });
   if (!answer.ok) return { error: answer.error, values };
 
   const sentTo = answer.data.test ? answer.data.sentTo : values.testTo;
@@ -155,70 +178,83 @@ async function sendTest(admin: Admin, id: string, values: AnnouncementValues): P
 }
 
 /**
- * Publish the post, send the campaign, mark the row approved — in that order,
- * and safe to repeat from any point. A post that is already live is left as
- * it is; the campaign id is the row's, minted with it, so the app sends it
- * once however many times it is asked. If the send fails, the row stays
- * pending with the error on it and Approve tries again.
+ * Claim the row, check the app will take the email, publish the post, send the
+ * campaign, mark the row approved. The claim means nothing can change the row
+ * meanwhile. The campaign id is the row's, minted with it, so the app sends it
+ * once however many times it is asked. If anything fails, the claim is released
+ * with the error on the row, and Approve tries again.
  */
 async function approve(admin: Admin, id: string, values: AnnouncementValues): Promise<AnnouncementFormState> {
-  const target = await approvalTarget(id);
-  if (!target) return { error: GONE };
-
-  const lastSent = target.lastEmailSentAt ? new Date(target.lastEmailSentAt) : null;
-  const next = nextEmailAt(lastSent);
-  if (lastSent && next) {
+  const claim = await claimApproval(id, values.version);
+  if (!claim.ok) {
+    if (claim.reason === "changed") return { error: CHANGED, values };
     return {
-      error: `An announcement email went out on ${formatDateTime(lastSent)}. The next can go out on ${formatDateTime(next)}.`,
+      error: `An announcement email went out on ${formatDateTime(claim.lastSentAt)}. The next can go out on ${formatDateTime(claim.nextAt)}.`,
       values,
     };
   }
+  const token = claim.token;
 
-  const post = target.post;
-  if (!post) {
-    const error =
-      "The blog post for this announcement has been deleted. Run `npm run announce` in the Growsearch app again to draft a new one, or discard this announcement.";
-    await recordApprovalError(id, error);
+  const stop = async (error: string): Promise<AnnouncementFormState> => {
+    await releaseApproval(id, token, error);
     revalidatePath(ADMIN_PATH);
     return { error, values };
+  };
+
+  let sent: { title: string; recipients: number; created: boolean };
+  try {
+    const target = await approvalTarget(id);
+    if (!target) return { error: GONE };
+
+    const post = target.post;
+    if (!post) {
+      return await stop(
+        "The blog post for this announcement has been deleted. Run `npm run announce` in the Growsearch app again to draft a new one, or discard this announcement.",
+      );
+    }
+
+    /* Asked before anything is published: an email the app would refuse must
+       not leave the post live with nothing sent. */
+    const preview = await previewCampaign(campaignFor(target, admin));
+    if (!preview.ok) return await stop(`Nothing was published or sent: ${preview.error}`);
+
+    if (post.status !== "published") {
+      const published = await setPostPublished(admin.id, post.id, true);
+      if (!published) return await stop("The blog post for this announcement no longer exists. Reload the page.");
+      revalidateBlog();
+      await noteActivity(admin, `Published the post /${published.slug} for a release announcement`);
+    }
+
+    const answer = await sendCampaign(campaignFor(target, admin));
+    if (!answer.ok || answer.data.test) {
+      const why = answer.ok ? "The Growsearch app treated it as a test." : answer.error;
+      return await stop(
+        `The post is live, but the email did not send: ${why} Approve again to retry; merchants will not get it twice.`,
+      );
+    }
+    sent = { title: post.title, recipients: answer.data.recipients, created: answer.data.created };
+  } catch (err) {
+    await releaseApproval(id, token, err instanceof Error ? err.message : String(err)).catch(() => {});
+    throw err;
   }
 
-  if (post.status !== "published") {
-    const published = await setPostPublished(admin.id, post.id, true);
-    if (!published) return { error: "The blog post for this announcement no longer exists. Reload the page.", values };
-    revalidateBlog();
-    await noteActivity(admin, `Published the post /${published.slug} for a release announcement`);
+  const recorded = await markApproved(id, token, admin.email, sent.recipients);
+  revalidatePath(ADMIN_PATH);
+  if (!recorded) {
+    console.error(`[admin] announcement ${id} was sent but its approval lapsed before it could be recorded`);
+    return {
+      error: `The email went to ${sent.recipients} merchants, but this approval took too long to be recorded as approved. Do not approve it again without checking the Email page.`,
+      values,
+    };
   }
-
-  const answer = await sendCampaign({
-    id: target.campaignId,
-    subject: target.subject,
-    body: "",
-    announcement: target.content,
-    ctaLabel: target.ctaLabel,
-    ctaUrl: postUrl(post.slug),
-    audience: "installed",
-    createdBy: admin.email,
-  });
-  if (!answer.ok || answer.data.test) {
-    const why = answer.ok ? "The Growsearch app treated it as a test." : answer.error;
-    const error = `The post is published, but the email did not send: ${why} Approve again to retry; merchants will not get it twice.`;
-    await recordApprovalError(id, error);
-    revalidatePath(ADMIN_PATH);
-    return { error, values };
-  }
-
-  const receipt = answer.data;
-  await markApproved(id, admin.email, post.id, receipt.recipients);
   await noteActivity(
     admin,
-    `Approved the release announcement ${quoted(post.title)}: published, and emailed ${receipt.recipients} merchant${receipt.recipients === 1 ? "" : "s"}`,
+    `Approved the release announcement ${quoted(sent.title)}: emailed ${sent.recipients} merchant${sent.recipients === 1 ? "" : "s"}`,
   );
-  revalidatePath(ADMIN_PATH);
 
   /* The pending form is gone once this lands, and its message with it, so the
      outcome travels in the address instead. */
-  redirect(`${ADMIN_PATH}?done=${receipt.created ? "approved" : "already-sent"}`);
+  redirect(`${ADMIN_PATH}?done=${sent.created ? "approved" : "already-sent"}`);
 }
 
 export async function discardAnnouncementAction(_state: DiscardState, form: FormData): Promise<DiscardState> {
@@ -230,7 +266,7 @@ export async function discardAnnouncementAction(_state: DiscardState, form: Form
 
   try {
     const outcome = await discardAnnouncement(id.data, admin.email);
-    if (!outcome.ok) return { error: GONE };
+    if (!outcome.ok) return { error: outcome.busy ? "This announcement is being approved right now." : GONE };
     await noteActivity(
       admin,
       `Discarded the release announcement for ${quoted(outcome.releaseRef)}${outcome.deletedPostSlug ? ` and its draft /${outcome.deletedPostSlug}` : ""}`,

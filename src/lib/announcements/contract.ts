@@ -57,7 +57,13 @@ export const announcementSchema = z.object({
           .max(4, "a section has at most 4 items")
           .default([]),
         note: line(300, "a note"),
-      }),
+      }).refine(
+        (section) =>
+          Boolean(
+            section.heading || section.text || section.visual || section.caption || section.lead || section.note,
+          ) || section.items.length > 0,
+        "a section must not be empty",
+      ),
     )
     .max(4, "an email has at most 4 sections")
     .default([]),

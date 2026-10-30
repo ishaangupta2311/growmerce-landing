@@ -38,6 +38,13 @@ create table if not exists blog.announcement (
   -- failure (or a double click) sends one campaign: the app answers a
   -- repeated id with the campaign it already has.
   campaign_id       uuid        not null default gen_random_uuid(),
+  -- Raised by every new draft and every saved edit, so a form opened before
+  -- one can't overwrite it or approve what its reader never saw.
+  draft_version     integer     not null default 1,
+  -- Held while an approval runs: no draft, edit or discard can change the row
+  -- until it finishes. A holder that died lapses after a few minutes.
+  approval_token    uuid,
+  approval_started_at timestamptz,
   -- Why the app skipped these notes.
   reason            text,
   -- The last failed approval, shown on the admin page until one succeeds.

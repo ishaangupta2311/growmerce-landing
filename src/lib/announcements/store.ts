@@ -57,6 +57,13 @@ export function nextEmailAt(lastSentAt: Date | null, now = Date.now()): Date | n
 
 const iso = (value: Date | string | null | undefined) => (value ? new Date(value).toISOString() : null);
 
+/** How long a running approval holds the row. Its calls to the app take seconds; this only frees one that died. */
+const APPROVAL_LEASE_MINUTES = 5;
+
+/** True while an approval is running on the row `a`, as a SQL expression. */
+const approvalHeld = (sql: Sql) =>
+  sql`(a.approval_token is not null and a.approval_started_at > now() - make_interval(mins => ${APPROVAL_LEASE_MINUTES}))`;
+
 const lock = (tx: Tx) => tx`select pg_advisory_xact_lock(hashtextextended('blog.announcement', 0))`;
 
 /** A scheduled post whose moment has passed is live, as the blog itself reads it. */
@@ -130,6 +137,9 @@ export async function announcementState(): Promise<AnnouncementState> {
 /** A draft the API should refuse with a 400: something only visible after sanitising. */
 export class InvalidDraftError extends Error {}
 
+/** A draft the API should refuse with a 409: the pending one is being approved right now. */
+export class AnnouncementBusyError extends Error {}
+
 /**
  * Writes the app's draft: creates the one pending announcement, or replaces
  * the pending one's content (a newer release supersedes it; the app has
@@ -153,9 +163,11 @@ export async function saveDraft(input: DraftInput): Promise<{ id: string; postId
   return transaction(sql, async (tx) => {
     await lock(tx);
 
-    const [pending] = await tx<{ id: string; post_id: string | null }[]>`
-      select id, post_id from blog.announcement where status = 'pending' for update
+    const [pending] = await tx<{ id: string; post_id: string | null; held: boolean }[]>`
+      select a.id, a.post_id, ${approvalHeld(tx)} as held
+      from blog.announcement a where a.status = 'pending' for update
     `;
+    if (pending?.held) throw new AnnouncementBusyError("The pending announcement is being approved right now.");
 
     let post: { id: string; author_id: string | null; category_id: string | null } | undefined;
     if (pending?.post_id) {
@@ -215,6 +227,9 @@ export async function saveDraft(input: DraftInput): Promise<{ id: string; postId
             email_subject = ${input.email.subject},
             email_content = ${email},
             email_cta_label = ${ctaLabel},
+            draft_version = draft_version + 1,
+            approval_token = null,
+            approval_started_at = null,
             last_error = null,
             updated_at = now()
           where id = ${pending.id}
@@ -338,6 +353,7 @@ export type Announcement = {
   emailContent: AnnouncementContent | null;
   emailCtaLabel: string | null;
   campaignId: string;
+  draftVersion: number;
   reason: string | null;
   lastError: string | null;
   emailRecipients: number | null;
@@ -370,6 +386,7 @@ type Row = {
   email_content: AnnouncementContent | null;
   email_cta_label: string | null;
   campaign_id: string;
+  draft_version: number;
   reason: string | null;
   last_error: string | null;
   email_recipients: number | null;
@@ -413,6 +430,7 @@ function toAnnouncement(row: Row): Announcement {
     emailContent: row.email_content,
     emailCtaLabel: row.email_cta_label,
     campaignId: row.campaign_id,
+    draftVersion: row.draft_version,
     reason: row.reason,
     lastError: row.last_error,
     emailRecipients: row.email_recipients,
@@ -463,25 +481,76 @@ export async function announcementsView(): Promise<AnnouncementsView> {
 export type EmailFields = { subject: string; content: AnnouncementContent; ctaLabel: string };
 
 /**
- * Saves the email as edited on the admin page. False when it is no longer
- * pending.
+ * Saves the email as edited on the admin page, if the row is still the version
+ * the form was opened on and no approval is running. Answers the new version,
+ * or null if it wasn't saved.
  *
  * Leaves `updated_at` alone, as `recordApprovalError` does: while a row is
  * pending, that is when the app last drafted it (the "Last changed" on the
  * page, `updatedAt` in `status`, and what remounts the page's form with the
  * app's new text).
  */
-export async function saveEmail(id: string, fields: EmailFields): Promise<boolean> {
+export async function saveEmail(id: string, version: number, fields: EmailFields): Promise<number | null> {
   const sql = requireSql();
-  const rows = await sql`
-    update blog.announcement set
+  const [row] = await sql<{ draft_version: number }[]>`
+    update blog.announcement a set
       email_subject = ${fields.subject},
       email_content = ${sql.json(fields.content)},
-      email_cta_label = ${fields.ctaLabel || DEFAULT_CTA_LABEL}
-    where id = ${id} and status = 'pending'
-    returning id
+      email_cta_label = ${fields.ctaLabel || DEFAULT_CTA_LABEL},
+      draft_version = a.draft_version + 1
+    where a.id = ${id} and a.status = 'pending' and a.draft_version = ${version} and not ${approvalHeld(sql)}
+    returning a.draft_version
   `;
-  return rows.length > 0;
+  return row?.draft_version ?? null;
+}
+
+export type ApprovalClaim =
+  | { ok: true; token: string }
+  | { ok: false; reason: "changed" }
+  | { ok: false; reason: "capped"; lastSentAt: Date; nextAt: Date };
+
+/**
+ * Starts an approval: the row must still be the version that was read, nothing
+ * else may be approving it, and the seven-day cap must allow an email. From here
+ * until `markApproved` or `releaseApproval`, no draft, edit or discard can change
+ * it, so what is sent is what was read and the release it records is the one
+ * that was sent.
+ */
+export async function claimApproval(id: string, version: number): Promise<ApprovalClaim> {
+  const sql = requireSql();
+  return transaction(sql, async (tx) => {
+    await lock(tx);
+    const [row] = await tx<{ id: string; last_sent: Date | null }[]>`
+      select a.id, (select max(o.email_sent_at) from blog.announcement o where o.id <> a.id) as last_sent
+      from blog.announcement a
+      where a.id = ${id} and a.status = 'pending' and a.draft_version = ${version} and not ${approvalHeld(tx)}
+      for update
+    `;
+    if (!row) return { ok: false, reason: "changed" } as const;
+
+    const lastSentAt = row.last_sent ? new Date(row.last_sent) : null;
+    const nextAt = nextEmailAt(lastSentAt);
+    if (lastSentAt && nextAt) return { ok: false, reason: "capped", lastSentAt, nextAt } as const;
+
+    const [claimed] = await tx<{ approval_token: string }[]>`
+      update blog.announcement set approval_token = gen_random_uuid(), approval_started_at = now()
+      where id = ${row.id}
+      returning approval_token
+    `;
+    return { ok: true, token: claimed.approval_token } as const;
+  });
+}
+
+/** Ends an approval that did not finish. `error` stays on the row until one succeeds. */
+export async function releaseApproval(id: string, token: string, error: string | null): Promise<void> {
+  const sql = requireSql();
+  await sql`
+    update blog.announcement set
+      approval_token = null,
+      approval_started_at = null,
+      last_error = coalesce(${error?.slice(0, 1000) ?? null}, last_error)
+    where id = ${id} and approval_token = ${token}
+  `;
 }
 
 export type ApprovalTarget = {
@@ -534,42 +603,41 @@ export async function approvalTarget(id: string): Promise<ApprovalTarget | null>
   };
 }
 
-/** Keeps a failed approval's reason on the row, so the page still says it after a reload. */
-export async function recordApprovalError(id: string, error: string): Promise<void> {
-  const sql = requireSql();
-  await sql`
-    update blog.announcement set last_error = ${error.slice(0, 1000)}
-    where id = ${id} and status = 'pending'
-  `;
-}
-
 /**
  * The last step of an approval, once the post is live and the app has the
- * campaign. `postId` is the post that was published: if a new draft arrived
- * mid-approval and pointed the row at a fresh post, the row is pointed back
- * at what merchants were actually sent to.
+ * campaign. False if this approval no longer holds the row, which takes a lease
+ * that lapsed and somebody acting on it. The send is recorded on the row even
+ * then, so the seven-day cap still counts it.
  */
 export async function markApproved(
   id: string,
+  token: string,
   approvedBy: string,
-  postId: string,
   recipients: number | null,
 ): Promise<boolean> {
   const sql = requireSql();
   const rows = await sql`
     update blog.announcement set
       status = 'approved',
-      post_id = ${postId},
       approved_at = now(),
       approved_by = ${approvedBy},
       email_sent_at = now(),
       email_recipients = ${recipients},
+      approval_token = null,
+      approval_started_at = null,
       last_error = null,
       updated_at = now()
-    where id = ${id} and status = 'pending'
+    where id = ${id} and status = 'pending' and approval_token = ${token}
     returning id
   `;
-  return rows.length > 0;
+  if (rows.length > 0) return true;
+  await sql`
+    update blog.announcement set
+      email_sent_at = coalesce(email_sent_at, now()),
+      email_recipients = ${recipients}
+    where id = ${id}
+  `;
+  return false;
 }
 
 /**
@@ -580,14 +648,16 @@ export async function markApproved(
 export async function discardAnnouncement(
   id: string,
   discardedBy: string,
-): Promise<{ ok: true; deletedPostSlug: string | null; releaseRef: string } | { ok: false }> {
+): Promise<{ ok: true; deletedPostSlug: string | null; releaseRef: string } | { ok: false; busy: boolean }> {
   const sql = requireSql();
   return transaction(sql, async (tx) => {
     await lock(tx);
-    const [row] = await tx<{ id: string; post_id: string | null; release_ref: string }[]>`
-      select id, post_id, release_ref from blog.announcement where id = ${id} and status = 'pending' for update
+    const [row] = await tx<{ id: string; post_id: string | null; release_ref: string; held: boolean }[]>`
+      select a.id, a.post_id, a.release_ref, ${approvalHeld(tx)} as held
+      from blog.announcement a where a.id = ${id} and a.status = 'pending' for update
     `;
-    if (!row) return { ok: false } as const;
+    if (!row) return { ok: false, busy: false } as const;
+    if (row.held) return { ok: false, busy: true } as const;
 
     let deletedPostSlug: string | null = null;
     if (row.post_id) {

@@ -27,6 +27,7 @@ import { SIGNATURE_HEADER, TIMESTAMP_HEADER, verifyAnnouncement } from "@/lib/an
 import {
   ADMIN_PATH,
   announcementState,
+  AnnouncementBusyError,
   InvalidDraftError,
   recordSkip,
   saveDraft,
@@ -97,6 +98,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ ope
     return await handle(operation as Operation, body, request);
   } catch (err) {
     if (err instanceof InvalidDraftError) return reply({ error: err.message }, 400);
+    if (err instanceof AnnouncementBusyError) return reply({ error: err.message }, 409);
     /* Ours: a database we could not reach, a constraint we did not expect.
        Worth the app retrying. Message only — postgres.js errors carry their
        parameters, and those are whole blog posts. */

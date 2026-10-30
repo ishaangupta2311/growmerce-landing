@@ -27,6 +27,7 @@ const PICTURES: Record<string, string> = {
  */
 export default function AnnouncementForm({
   id,
+  version,
   subject,
   content,
   ctaLabel,
@@ -35,6 +36,7 @@ export default function AnnouncementForm({
   approveNote,
 }: {
   id: string;
+  version: number;
   subject: string;
   content: AnnouncementContent;
   ctaLabel: string;
@@ -51,6 +53,7 @@ export default function AnnouncementForm({
       <FormBanner state={state} />
 
       <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="version" value={values?.version ?? version} />
 
       <Field
         name="subject"

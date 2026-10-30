@@ -40,10 +40,11 @@ while the cap holds. It waits, and later releases replace it.
 
 ## Approve is safe to retry
 
-Approve does three things in order: publish the post, send the campaign, and
-mark the row approved. Any of them can fail, so pressing Approve again is
-always safe:
+Approve claims the row, asks the app to render the email, publishes the post if
+it isn't live, sends the campaign, and marks the row approved. Any of them can
+fail, so pressing Approve again is always safe:
 
+- If the app would refuse the email, nothing is published or sent.
 - A post that is already live isn't published again (its date stays).
 - The campaign id is minted with the announcement and never changes. The app
   answers a repeated id with the campaign it already has, so merchants get one
@@ -51,10 +52,17 @@ always safe:
 - If the send fails, the announcement stays pending with the error shown on
   the page. The post is already live by then.
 
-If the app replaces the draft while somebody is approving it, the email that
-went out is the one that was approved, and the row is pointed back at the post
-that was published. The replacement's fresh draft post is left in the blog as
-an ordinary draft.
+**Nothing can change a row while it is being approved.** The claim
+(`claimApproval`, behind the same lock as drafts and discards) holds it until the
+approval finishes: a draft from the app gets a 409, and an edit or a discard is
+refused. So the email that goes out is the one that was read, and the release
+recorded is the one that was sent. A claim whose holder died lapses after 5
+minutes. If one lapsed and the approval still finished, the send is recorded on
+the row anyway, so the seven-day cap counts it, and the page says so.
+
+**A form can't act on what its reader never saw.** `draft_version` goes up with
+every new draft and every saved edit. A form opened before one of those is told
+to reload, and its edits aren't saved.
 
 Editing the post in the blog editor is fine. Save it as a draft and Approve
 publishes it as it stands. A newer draft from the app overwrites the post's
