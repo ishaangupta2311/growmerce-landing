@@ -15,6 +15,7 @@ import { emailOverview, previewCampaign, type Answer, type EmailOverview } from 
 import { allows } from "@/lib/team/permissions";
 import { PageHeader } from "@/components/admin/ui";
 import AnnouncementForm from "@/components/admin/announcements/AnnouncementForm";
+import ConfirmSendForm from "@/components/admin/announcements/ConfirmSendForm";
 import DiscardButton from "@/components/admin/announcements/DiscardButton";
 import Empty from "@/components/affiliate/Empty";
 import Panel from "@/components/affiliate/Panel";
@@ -199,7 +200,7 @@ export default async function AdminAnnouncementsPage({
           </Panel>
         ) : (
           <>
-            <Panel title="Waiting for approval" action={canEdit ? <DiscardButton id={pending.id} /> : undefined}>
+            <Panel title="Waiting for approval" action={canEdit && !pending.sendRequestedAt ? <DiscardButton id={pending.id} /> : undefined}>
               <div className="space-y-5">
                 {pending.lastError && (
                   <p
@@ -305,7 +306,9 @@ export default async function AdminAnnouncementsPage({
                 <Suspense fallback={<p className="text-[13.5px] text-muted">Asking the Growsearch app to render the email…</p>}>
                   <EmailPreview pending={pending} />
                 </Suspense>
-                {canEdit && pending.emailContent ? (
+                {canEdit && pending.sendRequestedAt ? (
+                  <ConfirmSendForm id={pending.id} version={pending.draftVersion} />
+                ) : canEdit && pending.emailContent ? (
                   <AnnouncementForm
                     key={pending.updatedAt}
                     id={pending.id}

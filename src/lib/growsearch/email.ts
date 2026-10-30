@@ -116,7 +116,8 @@ export type SweepReceipt = {
   failed: { shop: string; message: string }[];
 };
 
-export type Answer<T> = { ok: true; data: T } | { ok: false; error: string };
+/** `refused`: the app answered and turned it down, so it definitely did nothing. */
+export type Answer<T> = { ok: true; data: T } | { ok: false; error: string; refused?: boolean };
 
 /**
  * One signed call. Never throws: an admin page that cannot reach the app
@@ -156,10 +157,15 @@ async function call<T>(operation: string, payload: object): Promise<Answer<T>> {
     return {
       ok: false,
       error: "The Growsearch app refused the request. Check PORTAL_EMAIL_SECRET is the same on both sides.",
+      refused: response.status === 401,
     };
   }
   if (!response.ok || !answer?.ok) {
-    return { ok: false, error: answer?.error || `The Growsearch app answered ${response.status}.` };
+    return {
+      ok: false,
+      error: answer?.error || `The Growsearch app answered ${response.status}.`,
+      refused: response.status >= 400 && response.status < 500 && answer?.ok === false,
+    };
   }
   return { ok: true, data: answer };
 }

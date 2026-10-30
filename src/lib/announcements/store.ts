@@ -64,6 +64,9 @@ const APPROVAL_LEASE_MINUTES = 5;
 const approvalHeld = (sql: Sql) =>
   sql`(a.approval_token is not null and a.approval_started_at > now() - make_interval(mins => ${APPROVAL_LEASE_MINUTES}))`;
 
+/** True if `a` can't be changed: being approved, or its email may have gone out. */
+const locked = (sql: Sql) => sql`(${approvalHeld(sql)} or a.send_requested_at is not null)`;
+
 const lock = (tx: Tx) => tx`select pg_advisory_xact_lock(hashtextextended('blog.announcement', 0))`;
 
 /** A scheduled post whose moment has passed is live, as the blog itself reads it. */
@@ -164,10 +167,12 @@ export async function saveDraft(input: DraftInput): Promise<{ id: string; postId
     await lock(tx);
 
     const [pending] = await tx<{ id: string; post_id: string | null; held: boolean }[]>`
-      select a.id, a.post_id, ${approvalHeld(tx)} as held
+      select a.id, a.post_id, ${locked(tx)} as held
       from blog.announcement a where a.status = 'pending' for update
     `;
-    if (pending?.held) throw new AnnouncementBusyError("The pending announcement is being approved right now.");
+    if (pending?.held) {
+      throw new AnnouncementBusyError("The pending announcement is being approved, or its email has been sent. Settle it in the admin first.");
+    }
 
     let post: { id: string; author_id: string | null; category_id: string | null } | undefined;
     if (pending?.post_id) {
@@ -354,6 +359,8 @@ export type Announcement = {
   emailCtaLabel: string | null;
   campaignId: string;
   draftVersion: number;
+  /** Set: the email may have gone out, and only Approve can settle it. */
+  sendRequestedAt: string | null;
   reason: string | null;
   lastError: string | null;
   emailRecipients: number | null;
@@ -387,6 +394,7 @@ type Row = {
   email_cta_label: string | null;
   campaign_id: string;
   draft_version: number;
+  send_requested_at: Date | null;
   reason: string | null;
   last_error: string | null;
   email_recipients: number | null;
@@ -431,6 +439,7 @@ function toAnnouncement(row: Row): Announcement {
     emailCtaLabel: row.email_cta_label,
     campaignId: row.campaign_id,
     draftVersion: row.draft_version,
+    sendRequestedAt: iso(row.send_requested_at),
     reason: row.reason,
     lastError: row.last_error,
     emailRecipients: row.email_recipients,
@@ -498,7 +507,7 @@ export async function saveEmail(id: string, version: number, fields: EmailFields
       email_content = ${sql.json(fields.content)},
       email_cta_label = ${fields.ctaLabel || DEFAULT_CTA_LABEL},
       draft_version = a.draft_version + 1
-    where a.id = ${id} and a.status = 'pending' and a.draft_version = ${version} and not ${approvalHeld(sql)}
+    where a.id = ${id} and a.status = 'pending' and a.draft_version = ${version} and not ${locked(sql)}
     returning a.draft_version
   `;
   return row?.draft_version ?? null;
@@ -521,7 +530,7 @@ export async function claimApproval(id: string, version: number): Promise<Approv
   return transaction(sql, async (tx) => {
     await lock(tx);
     const [row] = await tx<{ id: string; last_sent: Date | null }[]>`
-      select a.id, (select max(o.email_sent_at) from blog.announcement o where o.id <> a.id) as last_sent
+      select a.id, (select max(coalesce(o.email_sent_at, o.send_requested_at)) from blog.announcement o where o.id <> a.id) as last_sent
       from blog.announcement a
       where a.id = ${id} and a.status = 'pending' and a.draft_version = ${version} and not ${approvalHeld(tx)}
       for update
@@ -541,13 +550,37 @@ export async function claimApproval(id: string, version: number): Promise<Approv
   });
 }
 
-/** Ends an approval that did not finish. `error` stays on the row until one succeeds. */
-export async function releaseApproval(id: string, token: string, error: string | null): Promise<void> {
+/**
+ * Records that the campaign is about to go to the app. From here the email may
+ * go out whatever we hear back. False if this approval no longer holds the row.
+ */
+export async function requestSend(id: string, token: string): Promise<boolean> {
+  const sql = requireSql();
+  const rows = await sql`
+    update blog.announcement set send_requested_at = coalesce(send_requested_at, now())
+    where id = ${id} and status = 'pending' and approval_token = ${token}
+    returning id
+  `;
+  return rows.length > 0;
+}
+
+/**
+ * Ends an approval that did not finish. `error` stays on the row until one
+ * succeeds. `sendRefused` says the app definitely did not take the campaign, so
+ * the row can be changed again; anything less leaves it locked.
+ */
+export async function releaseApproval(
+  id: string,
+  token: string,
+  error: string | null,
+  { sendRefused = false }: { sendRefused?: boolean } = {},
+): Promise<void> {
   const sql = requireSql();
   await sql`
     update blog.announcement set
       approval_token = null,
       approval_started_at = null,
+      send_requested_at = case when ${sendRefused} then null else send_requested_at end,
       last_error = coalesce(${error?.slice(0, 1000) ?? null}, last_error)
     where id = ${id} and approval_token = ${token}
   `;
@@ -559,6 +592,7 @@ export type ApprovalTarget = {
   subject: string;
   content: AnnouncementContent;
   ctaLabel: string;
+  sendRequested: boolean;
   post: { id: string; title: string; slug: string; status: PostStatus } | null;
   /** The newest email any *other* announcement sent: the seven-day cap. */
   lastEmailSentAt: string | null;
@@ -574,6 +608,7 @@ export async function approvalTarget(id: string): Promise<ApprovalTarget | null>
       email_subject: string;
       email_content: AnnouncementContent;
       email_cta_label: string | null;
+      send_requested_at: Date | null;
       post_id: string | null;
       post_title: string | null;
       post_slug: string | null;
@@ -581,7 +616,7 @@ export async function approvalTarget(id: string): Promise<ApprovalTarget | null>
       last_sent: Date | null;
     }[]
   >`
-    select a.id, a.campaign_id, a.email_subject, a.email_content, a.email_cta_label,
+    select a.id, a.campaign_id, a.email_subject, a.email_content, a.email_cta_label, a.send_requested_at,
            p.id as post_id, p.title as post_title, p.slug as post_slug, ${effectivePostStatus(sql)} as post_status,
            (select max(o.email_sent_at) from blog.announcement o where o.id <> a.id) as last_sent
     from blog.announcement a
@@ -595,6 +630,7 @@ export async function approvalTarget(id: string): Promise<ApprovalTarget | null>
     subject: row.email_subject,
     content: row.email_content,
     ctaLabel: row.email_cta_label || DEFAULT_CTA_LABEL,
+    sendRequested: row.send_requested_at !== null,
     post:
       row.post_id && row.post_slug && row.post_status
         ? { id: row.post_id, title: row.post_title ?? "", slug: row.post_slug, status: row.post_status }
@@ -653,7 +689,7 @@ export async function discardAnnouncement(
   return transaction(sql, async (tx) => {
     await lock(tx);
     const [row] = await tx<{ id: string; post_id: string | null; release_ref: string; held: boolean }[]>`
-      select a.id, a.post_id, a.release_ref, ${approvalHeld(tx)} as held
+      select a.id, a.post_id, a.release_ref, ${locked(tx)} as held
       from blog.announcement a where a.id = ${id} and a.status = 'pending' for update
     `;
     if (!row) return { ok: false, busy: false } as const;

@@ -45,6 +45,11 @@ create table if not exists blog.announcement (
   -- until it finishes. A holder that died lapses after a few minutes.
   approval_token    uuid,
   approval_started_at timestamptz,
+  -- Set just before the campaign goes to the app, and cleared only if the app
+  -- refused it. While set the email may have gone out, so the row can't be
+  -- replaced, edited or discarded, and the seven-day cap counts it. Approve
+  -- again settles it: the app answers a repeated campaign id without resending.
+  send_requested_at timestamptz,
   -- Why the app skipped these notes.
   reason            text,
   -- The last failed approval, shown on the admin page until one succeeds.

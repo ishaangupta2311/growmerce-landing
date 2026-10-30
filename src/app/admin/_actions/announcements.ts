@@ -15,6 +15,7 @@ import {
   markApproved,
   postUrl,
   releaseApproval,
+  requestSend,
   saveEmail,
 } from "@/lib/announcements/store";
 import { NO_ACCESS, noteActivity, quoted } from "@/lib/blog/action-guard";
@@ -119,6 +120,16 @@ export async function submitAnnouncement(
   const version = Number(text(form, "version", 12));
   if (!Number.isInteger(version)) return { error: "Invalid request." };
 
+  /* The email may already have gone out, so what is on the row is what stands:
+     no edits, and Approve settles it. */
+  if (text(form, "confirm", 1) === "1") {
+    try {
+      return await approve(admin, id.data, version);
+    } catch (err) {
+      return { error: failure("announcement confirm", err) };
+    }
+  }
+
   const submitted = contentFrom(form);
   const parsed = announcementSchema.safeParse(submitted);
   const values: AnnouncementValues = {
@@ -141,7 +152,7 @@ export async function submitAnnouncement(
     values.version = saved;
 
     if (intent === "test") return await sendTest(admin, id.data, values);
-    if (intent === "approve") return await approve(admin, id.data, values);
+    if (intent === "approve") return await approve(admin, id.data, saved, values);
 
     revalidatePath(ADMIN_PATH);
     return { notice: "Email saved.", values };
@@ -178,14 +189,20 @@ async function sendTest(admin: Admin, id: string, values: AnnouncementValues): P
 }
 
 /**
- * Claim the row, check the app will take the email, publish the post, send the
- * campaign, mark the row approved. The claim means nothing can change the row
- * meanwhile. The campaign id is the row's, minted with it, so the app sends it
- * once however many times it is asked. If anything fails, the claim is released
- * with the error on the row, and Approve tries again.
+ * Claim the row, check the app will take the email, publish the post, record
+ * that the send is starting, send the campaign, mark the row approved. The claim
+ * means nothing can change the row meanwhile, and the record keeps it that way
+ * from then on if we never hear back. The campaign id is the row's, minted with
+ * it, so the app sends it once however many times it is asked. If anything
+ * fails, the error stays on the row and Approve tries again.
  */
-async function approve(admin: Admin, id: string, values: AnnouncementValues): Promise<AnnouncementFormState> {
-  const claim = await claimApproval(id, values.version);
+async function approve(
+  admin: Admin,
+  id: string,
+  version: number,
+  values?: AnnouncementValues,
+): Promise<AnnouncementFormState> {
+  const claim = await claimApproval(id, version);
   if (!claim.ok) {
     if (claim.reason === "changed") return { error: CHANGED, values };
     return {
@@ -195,8 +212,8 @@ async function approve(admin: Admin, id: string, values: AnnouncementValues): Pr
   }
   const token = claim.token;
 
-  const stop = async (error: string): Promise<AnnouncementFormState> => {
-    await releaseApproval(id, token, error);
+  const stop = async (error: string, options?: { sendRefused?: boolean }): Promise<AnnouncementFormState> => {
+    await releaseApproval(id, token, error, options);
     revalidatePath(ADMIN_PATH);
     return { error, values };
   };
@@ -206,33 +223,50 @@ async function approve(admin: Admin, id: string, values: AnnouncementValues): Pr
     const target = await approvalTarget(id);
     if (!target) return { error: GONE };
 
-    const post = target.post;
-    if (!post) {
+    if (!target.post) {
       return await stop(
         "The blog post for this announcement has been deleted. Run `npm run announce` in the Growsearch app again to draft a new one, or discard this announcement.",
       );
     }
 
     /* Asked before anything is published: an email the app would refuse must
-       not leave the post live with nothing sent. */
-    const preview = await previewCampaign(campaignFor(target, admin));
-    if (!preview.ok) return await stop(`Nothing was published or sent: ${preview.error}`);
+       not leave the post live with nothing sent. A retry has already got past this. */
+    if (!target.sendRequested) {
+      const preview = await previewCampaign(campaignFor(target, admin));
+      if (!preview.ok) return await stop(`Nothing was published or sent: ${preview.error}`);
+    }
 
-    if (post.status !== "published") {
-      const published = await setPostPublished(admin.id, post.id, true);
+    if (target.post.status !== "published") {
+      const published = await setPostPublished(admin.id, target.post.id, true);
       if (!published) return await stop("The blog post for this announcement no longer exists. Reload the page.");
       revalidateBlog();
       await noteActivity(admin, `Published the post /${published.slug} for a release announcement`);
     }
 
-    const answer = await sendCampaign(campaignFor(target, admin));
+    /* Read again now: the email links to the post, and its slug may have been
+       edited while the app was answering. */
+    const latest = await approvalTarget(id);
+    if (!latest?.post || latest.post.status !== "published") {
+      return await stop("The blog post changed during the approval, so nothing was sent. Reload the page and approve again.");
+    }
+
+    if (!(await requestSend(id, token))) {
+      return await stop("This approval took too long, so nothing was sent. Reload the page and approve again.");
+    }
+
+    const answer = await sendCampaign(campaignFor(latest, admin));
+    if (!answer.ok && answer.refused) {
+      return await stop(`The post is live, but the app refused the email: ${answer.error} Nothing was sent.`, {
+        sendRefused: true,
+      });
+    }
     if (!answer.ok || answer.data.test) {
       const why = answer.ok ? "The Growsearch app treated it as a test." : answer.error;
       return await stop(
-        `The post is live, but the email did not send: ${why} Approve again to retry; merchants will not get it twice.`,
+        `We could not confirm the email went out, so it may have: ${why} Press the button again to settle it; merchants will not get it twice.`,
       );
     }
-    sent = { title: post.title, recipients: answer.data.recipients, created: answer.data.created };
+    sent = { title: latest.post.title, recipients: answer.data.recipients, created: answer.data.created };
   } catch (err) {
     await releaseApproval(id, token, err instanceof Error ? err.message : String(err)).catch(() => {});
     throw err;
@@ -266,7 +300,9 @@ export async function discardAnnouncementAction(_state: DiscardState, form: Form
 
   try {
     const outcome = await discardAnnouncement(id.data, admin.email);
-    if (!outcome.ok) return { error: outcome.busy ? "This announcement is being approved right now." : GONE };
+    if (!outcome.ok) {
+      return { error: outcome.busy ? "This announcement is being approved, or its email may have gone out." : GONE };
+    }
     await noteActivity(
       admin,
       `Discarded the release announcement for ${quoted(outcome.releaseRef)}${outcome.deletedPostSlug ? ` and its draft /${outcome.deletedPostSlug}` : ""}`,
