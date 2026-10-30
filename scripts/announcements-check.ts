@@ -95,7 +95,11 @@ const draft = {
   releaseRef: "v1.5.0",
   notes: ["2026-10-20-search-analytics.md"],
   blog: { title: "Search analytics", excerpt: "See what shoppers look for.", html: "<p>Hi</p>", seoDescription: "" },
-  email: { subject: "New in Growsearch", body: "Hi {{shop_name}},\n\nThere is more.", ctaLabel: "" },
+  email: {
+    subject: "New in Growsearch",
+    ctaLabel: "",
+    announcement: { title: "New", intro: "Hi {{shop_name}}, there is more." },
+  },
 };
 
 test("a full draft body parses", () => assert.equal(draftSchema.safeParse(draft).success, true));
@@ -105,6 +109,20 @@ test("a draft without a release or title is refused", () => {
   assert.equal(draftSchema.safeParse({ ...draft, releaseRef: "" }).success, false);
   assert.equal(draftSchema.safeParse({ ...draft, blog: { ...draft.blog, title: " " } }).success, false);
   assert.equal(draftSchema.safeParse({ ...draft, email: undefined }).success, false);
+});
+test("a draft can use a post already on the blog instead of writing one", () => {
+  const withoutBlog = { ...draft, blog: undefined };
+  assert.equal(draftSchema.safeParse({ ...withoutBlog, postSlug: "already-live" }).success, true);
+  assert.equal(draftSchema.safeParse(withoutBlog).success, false);
+  assert.equal(draftSchema.safeParse({ ...draft, postSlug: "already-live" }).success, false);
+});
+test("an email's picture must be one the layout has", () => {
+  const email = (visual: string) => ({
+    ...draft,
+    email: { ...draft.email, announcement: { ...draft.email.announcement, sections: [{ visual }] } },
+  });
+  assert.equal(draftSchema.safeParse(email("placements")).success, true);
+  assert.equal(draftSchema.safeParse(email("video")).success, false);
 });
 test("a skip body parses", () =>
   assert.equal(skipSchema.safeParse({ sinceRef: null, releaseRef: "v1.5.1", notes: [], reason: "internal only" }).success, true));

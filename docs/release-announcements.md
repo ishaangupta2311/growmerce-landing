@@ -65,7 +65,7 @@ you chose.
 
 `blog.announcement` (`migrations/0014_announcements.sql`): status (`pending`,
 `approved`, `skipped`, `discarded`), `since_ref`/`release_ref`, the note
-filenames, the post, the email (subject, body, button label), the campaign id,
+filenames, the post, the email (subject, structured content, button label), the campaign id,
 the skip reason, the last approval error, the recipient count, and who did what
 and when. A partial unique index allows only one `pending` row. Every write that
 decides which row is pending also runs behind one advisory lock.
@@ -145,9 +145,23 @@ Body `{}`.
   "releaseRef": "v1.6.0",
   "notes": ["2026-10-18-search-analytics.md", "2026-10-21-faster-typo-fixes.md"],
   "blog": { "title": "...", "excerpt": "...", "html": "<p>...</p>", "seoDescription": "..." },
-  "email": { "subject": "...", "body": "Hi {{shop_name}},\n\n...", "ctaLabel": "See what's new" }
+  "email": {
+    "subject": "...",
+    "ctaLabel": "See what's new",
+    "announcement": {
+      "title": "...",
+      "intro": "Hi {{shop_name}}, ...",
+      "action": { "title": "...", "text": "...", "ctaLabel": "..." },
+      "sections": [
+        { "heading": "", "text": "", "visual": "blog-answer", "caption": "...", "lead": "", "items": [], "note": "" }
+      ]
+    }
+  }
 }
 ```
+
+Instead of `blog`, a draft may send `postSlug`: a post already on the blog, used
+as it is. Approving does not publish or change it. Exactly one of the two.
 
 Creates the pending announcement, or replaces the pending one's content.
 Answers `{ id, postId, adminUrl }`.
@@ -158,13 +172,19 @@ Answers `{ id, postId, adminUrl }`.
   `h1` becomes `h2`, scripts, styles beyond alignment, event handlers and
   `javascript:` links are dropped. If nothing is left, the answer is 400.
 - Limits match the admin's own forms: title 200, excerpt 500, SEO description
-  320, subject 150, email body 10,000, button label 60. An empty button label
-  becomes "Read what's new".
+  320, subject 150, button label 40. An empty button label becomes "Read what's
+  new". The email's parts have the limits in `src/lib/announcements/contract.ts`.
 - The post gets a unique slug from the title (`search-analytics`,
   `search-analytics-2`, …). On a replace the same draft post is rewritten. If it
   was published or deleted meanwhile, a fresh draft is created.
-- The email body is plain text with blank lines between paragraphs.
-  `{{shop_name}}` becomes the store's name, as in any campaign.
+- The email is structured, and plain text in every part. The app puts it in its
+  designed layout and escapes it (`app/announcement-email.js` in `smart-search`).
+  `action` is the Action needed card, whose button opens Growsearch in the
+  merchant's own Shopify admin; `null` leaves the card out. `visual` is one of
+  the pictures the layout draws. `{{shop_name}}` becomes the store's name.
+- The admin page shows the email as the app renders it, through the app's
+  `preview-campaign` operation, with a field for each part. The layout and
+  pictures can't be edited there.
 
 ### `skip`
 

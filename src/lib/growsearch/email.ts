@@ -1,5 +1,7 @@
 import "server-only";
 
+import type { AnnouncementContent } from "@/lib/announcements/contract";
+
 import { createHmac } from "node:crypto";
 
 /**
@@ -91,7 +93,10 @@ export type EmailOverview = {
 export type CampaignInput = {
   id: string;
   subject: string;
+  /** Empty for a release announcement, whose `announcement` is the email. */
   body: string;
+  /** A release announcement's structured content, sent in the app's designed layout. */
+  announcement?: AnnouncementContent;
   ctaLabel: string;
   ctaUrl: string;
   audience: Audience;
@@ -165,6 +170,11 @@ export function emailOverview(): Promise<Answer<EmailOverview>> {
 
 export function sendCampaign(input: CampaignInput): Promise<Answer<CampaignReceipt>> {
   return call<CampaignReceipt>("send-campaign", input);
+}
+
+/** The email rendered for a sample store. Nothing is sent or stored. */
+export function previewCampaign(input: CampaignInput): Promise<Answer<{ subject: string; html: string }>> {
+  return call<{ subject: string; html: string }>("preview-campaign", input);
 }
 
 export function runEmailSweep(): Promise<Answer<SweepReceipt>> {

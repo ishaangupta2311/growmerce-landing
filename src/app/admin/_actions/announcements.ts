@@ -5,6 +5,7 @@ import { redirect, unstable_rethrow } from "next/navigation";
 import { z } from "zod";
 
 import { requireAdmin, type Admin } from "@/lib/admin/session";
+import { announcementSchema, describeIssue, type AnnouncementContent } from "@/lib/announcements/contract";
 import { formatDateTime } from "@/lib/announcements/format";
 import {
   ADMIN_PATH,
@@ -34,7 +35,7 @@ import { allows } from "@/lib/team/permissions";
  * themselves a test should not lose their edits.
  */
 
-export type AnnouncementValues = { subject: string; body: string; ctaLabel: string; testTo: string };
+export type AnnouncementValues = { subject: string; content: AnnouncementContent; ctaLabel: string; testTo: string };
 
 export type AnnouncementFormState = { error?: string; notice?: string; values?: AnnouncementValues } | undefined;
 
@@ -55,6 +56,43 @@ function failure(label: string, err: unknown): string {
   return err instanceof DatabaseUnavailableError ? err.message : "Something went wrong. Please try again.";
 }
 
+/**
+ * The email from the form's fields: `action.*`, and `s<n>.*` and `s<n>.i<m>.*`
+ * for each section and item. A section's picture is not editable; it comes
+ * through as a hidden field. An item whose title was cleared is dropped.
+ */
+function contentFrom(form: FormData): unknown {
+  const sections = [];
+  for (let s = 0; form.has(`s${s}.heading`); s += 1) {
+    const items = [];
+    for (let i = 0; form.has(`s${s}.i${i}.title`); i += 1) {
+      const title = text(form, `s${s}.i${i}.title`, 200);
+      if (title) items.push({ title, text: text(form, `s${s}.i${i}.text`, 500) });
+    }
+    sections.push({
+      heading: text(form, `s${s}.heading`, 200),
+      text: text(form, `s${s}.text`, 1000),
+      visual: text(form, `s${s}.visual`, 40) || null,
+      caption: text(form, `s${s}.caption`, 500),
+      lead: text(form, `s${s}.lead`, 500),
+      items,
+      note: text(form, `s${s}.note`, 1000),
+    });
+  }
+  return {
+    title: text(form, "title", 300),
+    intro: text(form, "intro", 1000),
+    action: form.has("action.title")
+      ? {
+          title: text(form, "action.title", 200),
+          text: text(form, "action.text", 1000),
+          ctaLabel: text(form, "action.ctaLabel", 100),
+        }
+      : null,
+    sections,
+  };
+}
+
 export async function submitAnnouncement(
   _state: AnnouncementFormState,
   form: FormData,
@@ -65,14 +103,17 @@ export async function submitAnnouncement(
   const id = uuid.safeParse(text(form, "id", 64));
   if (!id.success) return { error: "Invalid request." };
 
+  const content = announcementSchema.safeParse(contentFrom(form));
+  if (!content.success) return { error: `Check the email: ${describeIssue(content.error)}.` };
+
   const values: AnnouncementValues = {
     subject: text(form, "subject", 150),
-    body: text(form, "body", 10_000),
-    ctaLabel: text(form, "ctaLabel", 60),
+    content: content.data,
+    ctaLabel: text(form, "ctaLabel", 40),
     testTo: text(form, "testTo", 254) || admin.email,
   };
   const intent = text(form, "intent", 10);
-  if (!values.subject || !values.body) return { error: "Write a subject and a message.", values };
+  if (!values.subject) return { error: "Write a subject.", values };
 
   try {
     /* Whatever the button, the email as it stands on screen is saved first:
@@ -96,7 +137,8 @@ async function sendTest(admin: Admin, id: string, values: AnnouncementValues): P
   const answer = await sendCampaign({
     id: target.campaignId,
     subject: target.subject,
-    body: target.body,
+    body: "",
+    announcement: target.content,
     ctaLabel: target.ctaLabel,
     ctaUrl: target.post ? postUrl(target.post.slug) : postUrl(""),
     audience: "installed",
@@ -107,7 +149,7 @@ async function sendTest(admin: Admin, id: string, values: AnnouncementValues): P
 
   const sentTo = answer.data.test ? answer.data.sentTo : values.testTo;
   return {
-    notice: `Test sent to ${sentTo}. Nothing has gone to merchants. Its button goes to the post's address, which works once the post is published.`,
+    notice: `Test sent to ${sentTo}. Nothing has gone to merchants. It is addressed to a sample store, so its Action needed button opens that store's admin; a real merchant's opens their own.`,
     values,
   };
 }
@@ -151,7 +193,8 @@ async function approve(admin: Admin, id: string, values: AnnouncementValues): Pr
   const answer = await sendCampaign({
     id: target.campaignId,
     subject: target.subject,
-    body: target.body,
+    body: "",
+    announcement: target.content,
     ctaLabel: target.ctaLabel,
     ctaUrl: postUrl(post.slug),
     audience: "installed",

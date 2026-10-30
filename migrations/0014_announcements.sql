@@ -31,7 +31,8 @@ create table if not exists blog.announcement (
   notes             text[]      not null default '{}',
   post_id           bigint      references blog.post (id) on delete set null,
   email_subject     text,
-  email_body        text,
+  -- The email's structured content (src/lib/announcements/contract.ts).
+  email_content     jsonb,
   email_cta_label   text,
   -- Minted with the row and never changed, so an approval retried after a
   -- failure (or a double click) sends one campaign: the app answers a
@@ -54,7 +55,7 @@ create table if not exists blog.announcement (
   discarded_by      text,
   constraint announcement_campaign_id_key unique (campaign_id),
   constraint announcement_pending_has_email
-    check (status <> 'pending' or (email_subject is not null and email_body is not null)),
+    check (status <> 'pending' or (email_subject is not null and email_content is not null)),
   constraint announcement_approved_has_dates
     check (status <> 'approved' or (approved_at is not null and email_sent_at is not null)),
   constraint announcement_discarded_has_date

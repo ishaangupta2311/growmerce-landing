@@ -9,7 +9,7 @@ import type { PostStatus } from "@/lib/blog/types";
 import { RESERVED_POST_SLUGS } from "@/lib/blog/validation";
 import { transaction, type Tx } from "@/lib/db";
 import { SITE_ORIGIN } from "@/lib/site-urls";
-import { DEFAULT_CTA_LABEL, type DraftInput, type SkipInput } from "./contract";
+import { DEFAULT_CTA_LABEL, type AnnouncementContent, type DraftInput, type SkipInput } from "./contract";
 
 /**
  * Release announcements: the rows in `blog.announcement`
@@ -143,12 +143,11 @@ export class InvalidDraftError extends Error {}
 export async function saveDraft(input: DraftInput): Promise<{ id: string; postId: string; replaced: boolean }> {
   const sql = requireSql();
 
-  const content = sanitizeContent(input.blog.html);
-  if (!htmlToText(content) && !/<img\b/i.test(content)) {
+  const blog = input.blog;
+  const content = blog ? sanitizeContent(blog.html) : "";
+  if (blog && !htmlToText(content) && !/<img\b/i.test(content)) {
     throw new InvalidDraftError("blog.html: nothing is left once the HTML is sanitised");
   }
-  const excerpt = input.blog.excerpt || null;
-  const seoDescription = input.blog.seoDescription || null;
   const ctaLabel = input.email.ctaLabel || DEFAULT_CTA_LABEL;
 
   return transaction(sql, async (tx) => {
@@ -167,40 +166,54 @@ export async function saveDraft(input: DraftInput): Promise<{ id: string; postId
       `;
     }
 
-    const categoryId = post?.category_id ?? (await productUpdatesCategory(tx));
-    const authorId = post?.author_id ?? (await defaultAuthor(tx));
-    const slug = await freeSlug(tx, input.blog.title, post?.id ?? null);
+    let savedId: string;
+    if (blog) {
+      const excerpt = blog.excerpt || null;
+      const seoDescription = blog.seoDescription || null;
+      const categoryId = post?.category_id ?? (await productUpdatesCategory(tx));
+      const authorId = post?.author_id ?? (await defaultAuthor(tx));
+      const slug = await freeSlug(tx, blog.title, post?.id ?? null);
 
-    const [saved] = post
-      ? await tx<{ id: string }[]>`
-          update blog.post set
-            title = ${input.blog.title},
-            slug = ${slug},
-            excerpt = ${excerpt},
-            content = ${content},
-            seo_description = ${seoDescription},
-            author_id = ${authorId},
-            category_id = ${categoryId},
-            updated_at = now()
-          where id = ${post.id}
-          returning id
-        `
-      : await tx<{ id: string }[]>`
-          insert into blog.post (title, slug, excerpt, content, seo_description, author_id, category_id, status)
-          values (${input.blog.title}, ${slug}, ${excerpt}, ${content}, ${seoDescription}, ${authorId}, ${categoryId}, 'draft')
-          returning id
-        `;
+      const [saved] = post
+        ? await tx<{ id: string }[]>`
+            update blog.post set
+              title = ${blog.title},
+              slug = ${slug},
+              excerpt = ${excerpt},
+              content = ${content},
+              seo_description = ${seoDescription},
+              author_id = ${authorId},
+              category_id = ${categoryId},
+              updated_at = now()
+            where id = ${post.id}
+            returning id
+          `
+        : await tx<{ id: string }[]>`
+            insert into blog.post (title, slug, excerpt, content, seo_description, author_id, category_id, status)
+            values (${blog.title}, ${slug}, ${excerpt}, ${content}, ${seoDescription}, ${authorId}, ${categoryId}, 'draft')
+            returning id
+          `;
+      savedId = saved.id;
+    } else {
+      /* A post already on the blog, used as it is. A draft the pending row had
+         written for itself is no longer anyone's, so it goes. */
+      const [existing] = await tx<{ id: string }[]>`select id from blog.post where slug = ${input.postSlug ?? ""}`;
+      if (!existing) throw new InvalidDraftError(`postSlug: no post has the slug ${input.postSlug}`);
+      savedId = existing.id;
+      if (post && post.id !== savedId) await tx`delete from blog.post where id = ${post.id}`;
+    }
 
     const notes = tx.array(input.notes);
+    const email = tx.json(input.email.announcement);
     const [row] = pending
       ? await tx<{ id: string }[]>`
           update blog.announcement set
             since_ref = ${input.sinceRef},
             release_ref = ${input.releaseRef},
             notes = ${notes}::text[],
-            post_id = ${saved.id},
+            post_id = ${savedId},
             email_subject = ${input.email.subject},
-            email_body = ${input.email.body},
+            email_content = ${email},
             email_cta_label = ${ctaLabel},
             last_error = null,
             updated_at = now()
@@ -209,15 +222,15 @@ export async function saveDraft(input: DraftInput): Promise<{ id: string; postId
         `
       : await tx<{ id: string }[]>`
           insert into blog.announcement (
-            status, since_ref, release_ref, notes, post_id, email_subject, email_body, email_cta_label
+            status, since_ref, release_ref, notes, post_id, email_subject, email_content, email_cta_label
           ) values (
-            'pending', ${input.sinceRef}, ${input.releaseRef}, ${notes}::text[], ${saved.id},
-            ${input.email.subject}, ${input.email.body}, ${ctaLabel}
+            'pending', ${input.sinceRef}, ${input.releaseRef}, ${notes}::text[], ${savedId},
+            ${input.email.subject}, ${email}, ${ctaLabel}
           )
           returning id
         `;
 
-    return { id: row.id, postId: saved.id, replaced: Boolean(pending) };
+    return { id: row.id, postId: savedId, replaced: Boolean(pending) };
   });
 }
 
@@ -322,7 +335,7 @@ export type Announcement = {
   notes: string[];
   post: AnnouncementPost | null;
   emailSubject: string | null;
-  emailBody: string | null;
+  emailContent: AnnouncementContent | null;
   emailCtaLabel: string | null;
   campaignId: string;
   reason: string | null;
@@ -354,7 +367,7 @@ type Row = {
   notes: string[];
   post_id: string | null;
   email_subject: string | null;
-  email_body: string | null;
+  email_content: AnnouncementContent | null;
   email_cta_label: string | null;
   campaign_id: string;
   reason: string | null;
@@ -397,7 +410,7 @@ function toAnnouncement(row: Row): Announcement {
           }
         : null,
     emailSubject: row.email_subject,
-    emailBody: row.email_body,
+    emailContent: row.email_content,
     emailCtaLabel: row.email_cta_label,
     campaignId: row.campaign_id,
     reason: row.reason,
@@ -447,7 +460,7 @@ export async function announcementsView(): Promise<AnnouncementsView> {
   };
 }
 
-export type EmailFields = { subject: string; body: string; ctaLabel: string };
+export type EmailFields = { subject: string; content: AnnouncementContent; ctaLabel: string };
 
 /**
  * Saves the email as edited on the admin page. False when it is no longer
@@ -463,7 +476,7 @@ export async function saveEmail(id: string, fields: EmailFields): Promise<boolea
   const rows = await sql`
     update blog.announcement set
       email_subject = ${fields.subject},
-      email_body = ${fields.body},
+      email_content = ${sql.json(fields.content)},
       email_cta_label = ${fields.ctaLabel || DEFAULT_CTA_LABEL}
     where id = ${id} and status = 'pending'
     returning id
@@ -475,7 +488,7 @@ export type ApprovalTarget = {
   id: string;
   campaignId: string;
   subject: string;
-  body: string;
+  content: AnnouncementContent;
   ctaLabel: string;
   post: { id: string; title: string; slug: string; status: PostStatus } | null;
   /** The newest email any *other* announcement sent: the seven-day cap. */
@@ -490,7 +503,7 @@ export async function approvalTarget(id: string): Promise<ApprovalTarget | null>
       id: string;
       campaign_id: string;
       email_subject: string;
-      email_body: string;
+      email_content: AnnouncementContent;
       email_cta_label: string | null;
       post_id: string | null;
       post_title: string | null;
@@ -499,7 +512,7 @@ export async function approvalTarget(id: string): Promise<ApprovalTarget | null>
       last_sent: Date | null;
     }[]
   >`
-    select a.id, a.campaign_id, a.email_subject, a.email_body, a.email_cta_label,
+    select a.id, a.campaign_id, a.email_subject, a.email_content, a.email_cta_label,
            p.id as post_id, p.title as post_title, p.slug as post_slug, ${effectivePostStatus(sql)} as post_status,
            (select max(o.email_sent_at) from blog.announcement o where o.id <> a.id) as last_sent
     from blog.announcement a
@@ -511,7 +524,7 @@ export async function approvalTarget(id: string): Promise<ApprovalTarget | null>
     id: row.id,
     campaignId: row.campaign_id,
     subject: row.email_subject,
-    body: row.email_body,
+    content: row.email_content,
     ctaLabel: row.email_cta_label || DEFAULT_CTA_LABEL,
     post:
       row.post_id && row.post_slug && row.post_status

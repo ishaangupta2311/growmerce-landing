@@ -11,7 +11,7 @@ import {
   type Announcement,
   type AnnouncementStatus,
 } from "@/lib/announcements/store";
-import { emailOverview, type Answer, type EmailOverview } from "@/lib/growsearch/email";
+import { emailOverview, previewCampaign, type Answer, type EmailOverview } from "@/lib/growsearch/email";
 import { allows } from "@/lib/team/permissions";
 import { PageHeader } from "@/components/admin/ui";
 import AnnouncementForm from "@/components/admin/announcements/AnnouncementForm";
@@ -84,6 +84,44 @@ async function Reach({ overview }: { overview: Overview }) {
       addresses are never included.
       {!answer.data.configured && " Email is not configured on the Growsearch app, so nothing would send."}
     </p>
+  );
+}
+
+/**
+ * The email as the app will render it, for a sample store. Its links are taken
+ * out so nothing in the preview goes anywhere: the markup is the app's own and
+ * its content is escaped, so every `href` is in this one form.
+ */
+async function EmailPreview({ pending }: { pending: Announcement }) {
+  if (!pending.emailContent) return null;
+  const answer = await previewCampaign({
+    id: pending.campaignId,
+    subject: pending.emailSubject ?? "",
+    body: "",
+    announcement: pending.emailContent,
+    ctaLabel: pending.emailCtaLabel ?? "",
+    ctaUrl: postUrl(pending.post?.slug ?? ""),
+    audience: "installed",
+    createdBy: "",
+  });
+  if (!answer.ok) {
+    return <p className="text-[13.5px] leading-snug text-body-mute">Could not preview the email: {answer.error}</p>;
+  }
+  return (
+    <div className="space-y-2">
+      <p className="text-[14.5px] text-charcoal">
+        <span className="font-bold">Subject:</span> {answer.data.subject}
+      </p>
+      <iframe
+        title="The email as merchants will get it"
+        sandbox=""
+        srcDoc={answer.data.html.replace(/\shref="[^"]*"/g, "")}
+        className="h-[70dvh] w-full rounded-[10px] border border-line bg-white"
+      />
+      <p className="text-[13.5px] leading-snug text-body-mute">
+        Shown for a sample store. Save the email to update this preview.
+      </p>
+    </div>
   );
 }
 
@@ -264,32 +302,28 @@ export default async function AdminAnnouncementsPage({
                     {capNote}
                   </p>
                 )}
-                {canEdit ? (
+                <Suspense fallback={<p className="text-[13.5px] text-muted">Asking the Growsearch app to render the email…</p>}>
+                  <EmailPreview pending={pending} />
+                </Suspense>
+                {canEdit && pending.emailContent ? (
                   <AnnouncementForm
                     key={pending.updatedAt}
                     id={pending.id}
                     subject={pending.emailSubject ?? ""}
-                    body={pending.emailBody ?? ""}
+                    content={pending.emailContent}
                     ctaLabel={pending.emailCtaLabel ?? ""}
                     adminEmail={admin.email}
                     canApprove={!view.nextEmailAt && Boolean(pending.post)}
                     approveNote={
                       view.nextEmailAt
                         ? `Approve opens on ${formatDateTime(view.nextEmailAt)}.`
-                        : "Approving publishes the post now and emails merchants with Growsearch installed, with a button to the post."
+                        : pending.post?.status === "published"
+                          ? "The post is already live. Approving emails merchants with Growsearch installed, with a button to the post."
+                          : "Approving publishes the post now and emails merchants with Growsearch installed, with a button to the post."
                     }
                   />
                 ) : (
-                  <div className="space-y-4 text-[15px] text-charcoal">
-                    <p>
-                      <span className="font-bold">Subject:</span> {pending.emailSubject}
-                    </p>
-                    <p className="whitespace-pre-wrap">{pending.emailBody}</p>
-                    <p>
-                      <span className="font-bold">Button:</span> {pending.emailCtaLabel}
-                    </p>
-                    <p className="text-[13.5px] text-body-mute">View only. Your role can see announcements but not approve them.</p>
-                  </div>
+                  <p className="text-[13.5px] text-body-mute">View only. Your role can see announcements but not approve them.</p>
                 )}
                 <Suspense fallback={<p className="text-[13.5px] text-muted">Asking the Growsearch app how many merchants this reaches…</p>}>
                   <Reach overview={overview} />
