@@ -25,7 +25,7 @@ import { NO_ACCESS, noteActivity, quoted } from "@/lib/blog/action-guard";
 import { setPostPublished } from "@/lib/blog/posts";
 import { revalidateBlog } from "@/lib/blog/revalidate";
 import { DatabaseUnavailableError } from "@/lib/blog/sql";
-import { campaignStatus, previewCampaign, sendCampaign, type CampaignInput } from "@/lib/growsearch/email";
+import { previewCampaign, sendCampaign, settleCampaign, type CampaignInput } from "@/lib/growsearch/email";
 import { allows } from "@/lib/team/permissions";
 
 /**
@@ -286,8 +286,9 @@ async function approve(
  * Settles an approval that started sending and never heard how it ended, by
  * asking the app whether it has the campaign. It sends nothing. If the app has
  * it, the email went (the app's sweep finishes any delivery left over), so the
- * row is recorded as approved. If it doesn't, nothing went and the row is free
- * again. If the app can't say, nothing changes. None of this needs the post.
+ * row is recorded as approved. If it doesn't, the app has also withdrawn the id,
+ * so nothing can go out under it, and the row is free again with a new one. If
+ * the app can't say, nothing changes. None of this needs the post.
  */
 export async function settleSendAction(_state: DiscardState, form: FormData): Promise<DiscardState> {
   const admin = await requireAdmin();
@@ -302,7 +303,7 @@ export async function settleSendAction(_state: DiscardState, form: FormData): Pr
     if (!unsettled) {
       return { error: "There is nothing to check right now: an approval may still be running. Reload the page in a few minutes." };
     }
-    const answer = await campaignStatus(unsettled.campaignId);
+    const answer = await settleCampaign(unsettled.campaignId);
     if (!answer.ok) return { error: `Could not ask the Growsearch app, so nothing changed: ${answer.error}` };
 
     if (answer.data.exists) {

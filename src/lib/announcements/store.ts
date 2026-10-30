@@ -625,11 +625,14 @@ export async function settleSent(id: string, approvedBy: string, recipients: num
   return rows.length > 0;
 }
 
-/** The app confirms it never got the campaign, so nothing went and the row is free again. */
+/**
+ * The app confirms it never got the campaign and has withdrawn its id, so nothing
+ * went. The row is free again, with a new id for its next attempt.
+ */
 export async function clearSendRequest(id: string): Promise<boolean> {
   const sql = requireSql();
   const rows = await sql`
-    update blog.announcement set send_requested_at = null, last_error = null
+    update blog.announcement set send_requested_at = null, campaign_id = gen_random_uuid(), last_error = null
     where id = ${id} and status = 'pending' and send_requested_at is not null
     returning id
   `;

@@ -34,9 +34,10 @@ create table if not exists blog.announcement (
   -- The email's structured content (src/lib/announcements/contract.ts).
   email_content     jsonb,
   email_cta_label   text,
-  -- Minted with the row and never changed, so an approval retried after a
-  -- failure (or a double click) sends one campaign: the app answers a
-  -- repeated id with the campaign it already has.
+  -- Minted with the row, so an approval retried after a failure (or a double
+  -- click) sends one campaign: the app answers a repeated id with the campaign
+  -- it already has. Replaced only when the app has confirmed it never got the
+  -- campaign and has withdrawn the id (clearSendRequest).
   campaign_id       uuid        not null default gen_random_uuid(),
   -- Raised by every new draft and every saved edit, so a form opened before
   -- one can't overwrite it or approve what its reader never saw.

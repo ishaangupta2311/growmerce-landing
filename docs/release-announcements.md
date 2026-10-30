@@ -46,7 +46,7 @@ fail, so pressing Approve again is always safe:
 
 - If the app would refuse the email, nothing is published or sent.
 - A post that is already live isn't published again (its date stays).
-- The campaign id is minted with the announcement and never changes. The app
+- The campaign id is minted with the announcement and stays the same. The app
   answers a repeated id with the campaign it already has, so merchants get one
   email however many times it's asked.
 - If the send fails, the announcement stays pending with the error shown on
@@ -66,13 +66,15 @@ straight away only if the app refused that request. Otherwise the email may have
 gone out: a draft gets a 409, editing, discarding and approving are refused, and
 the seven-day cap counts it.
 
-The page then offers **Check what happened**, which asks the app (`campaign-status`)
+The page then offers **Check what happened**, which asks the app (`settle-campaign`)
 whether it has the campaign. It sends nothing, and it works whatever became of the
 post and whatever the state of the app's email setup:
 
 - The app has it: the email went, because the app's sweep finishes any delivery left
   over. The row is recorded as approved.
-- The app doesn't: nothing went, and the row can be edited, approved or discarded.
+- The app doesn't: nothing went. The app also withdraws the id, so a request still
+  on its way can't create the campaign afterwards. The row gets a new id and can be
+  edited, approved or discarded.
 - The app can't be reached or refuses: nothing changes. Try again later.
 
 **A form can't act on what its reader never saw.** `draft_version` goes up with

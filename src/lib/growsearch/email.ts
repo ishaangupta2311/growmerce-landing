@@ -183,11 +183,15 @@ export function previewCampaign(input: CampaignInput): Promise<Answer<{ subject:
   return call<{ subject: string; html: string }>("preview-campaign", input);
 }
 
-export type CampaignStatus = { exists: false } | { exists: true; recipients: number; completed: boolean };
+export type CampaignSettlement = { exists: false } | { exists: true; recipients: number; completed: boolean };
 
-/** Whether the app ever accepted this campaign. Works whatever the state of its email setup. */
-export function campaignStatus(id: string): Promise<Answer<CampaignStatus>> {
-  return call<CampaignStatus>("campaign-status", { id });
+/**
+ * Whether the app ever accepted this campaign, for a send whose answer was lost.
+ * Sends nothing. "No" is final: the app withdraws the id, so a request still on
+ * its way can't create it afterwards, and the next attempt needs a new id.
+ */
+export function settleCampaign(id: string): Promise<Answer<CampaignSettlement>> {
+  return call<CampaignSettlement>("settle-campaign", { id });
 }
 
 export function runEmailSweep(): Promise<Answer<SweepReceipt>> {
