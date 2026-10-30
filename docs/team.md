@@ -27,7 +27,7 @@ A role is a name and one permission per admin tab: none, view or edit.
 | Your apps | one per app, plus App settings |
 | Blog | Posts, Categories, Tags, Media, Authors |
 | Affiliates | Overview and Ingest log (view only), Partners, Payouts |
-| Merchants | Email |
+| Merchants | Email, Announcements |
 | Team | Team |
 
 None hides the tab: it's not in the sidebar, and its address is a 404. View

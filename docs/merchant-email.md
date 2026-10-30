@@ -31,6 +31,10 @@ window onto it.
   to subscribed merchants. `{{shop_name}}` becomes the store's name. "Send me a
   test" sends one sample to the address given and stores nothing.
 
+Release announcements (`/admin/announcements`, see
+`docs/release-announcements.md`) send through the same campaign path, once
+approved: audience "installed", with a button to the new blog post.
+
 ## Audiences
 
 - **Merchants with Growsearch installed** is the default.

@@ -14,6 +14,7 @@ import {
   LayoutGrid,
   LogOut,
   Mail,
+  Megaphone,
   Menu,
   ScrollText,
   ShieldCheck,
@@ -72,7 +73,10 @@ const NAV: { label?: string; items: NavItem[] }[] = [
   },
   {
     label: "Merchants",
-    items: [{ href: "/admin/email", label: "Email", icon: Mail, shows: tab("email") }],
+    items: [
+      { href: "/admin/email", label: "Email", icon: Mail, shows: tab("email") },
+      { href: "/admin/announcements", label: "Announcements", icon: Megaphone, shows: tab("announcements") },
+    ],
   },
   {
     label: "Settings",

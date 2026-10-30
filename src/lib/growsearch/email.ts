@@ -1,5 +1,7 @@
 import "server-only";
 
+import type { AnnouncementContent } from "@/lib/announcements/contract";
+
 import { createHmac } from "node:crypto";
 
 /**
@@ -91,7 +93,10 @@ export type EmailOverview = {
 export type CampaignInput = {
   id: string;
   subject: string;
+  /** Empty for a release announcement, whose `announcement` is the email. */
   body: string;
+  /** A release announcement's structured content, sent in the app's designed layout. */
+  announcement?: AnnouncementContent;
   ctaLabel: string;
   ctaUrl: string;
   audience: Audience;
@@ -111,7 +116,8 @@ export type SweepReceipt = {
   failed: { shop: string; message: string }[];
 };
 
-export type Answer<T> = { ok: true; data: T } | { ok: false; error: string };
+/** `refused`: the app answered and turned this request down, so this request did nothing. */
+export type Answer<T> = { ok: true; data: T } | { ok: false; error: string; refused?: boolean };
 
 /**
  * One signed call. Never throws: an admin page that cannot reach the app
@@ -151,10 +157,15 @@ async function call<T>(operation: string, payload: object): Promise<Answer<T>> {
     return {
       ok: false,
       error: "The Growsearch app refused the request. Check PORTAL_EMAIL_SECRET is the same on both sides.",
+      refused: response.status === 401,
     };
   }
   if (!response.ok || !answer?.ok) {
-    return { ok: false, error: answer?.error || `The Growsearch app answered ${response.status}.` };
+    return {
+      ok: false,
+      error: answer?.error || `The Growsearch app answered ${response.status}.`,
+      refused: response.status >= 400 && response.status < 500 && answer?.ok === false,
+    };
   }
   return { ok: true, data: answer };
 }
@@ -165,6 +176,22 @@ export function emailOverview(): Promise<Answer<EmailOverview>> {
 
 export function sendCampaign(input: CampaignInput): Promise<Answer<CampaignReceipt>> {
   return call<CampaignReceipt>("send-campaign", input);
+}
+
+/** The email rendered for a sample store. Nothing is sent or stored. */
+export function previewCampaign(input: CampaignInput): Promise<Answer<{ subject: string; html: string }>> {
+  return call<{ subject: string; html: string }>("preview-campaign", input);
+}
+
+export type CampaignSettlement = { exists: false } | { exists: true; recipients: number; completed: boolean };
+
+/**
+ * Whether the app ever accepted this campaign, for a send whose answer was lost.
+ * Sends nothing. "No" is final: the app withdraws the id, so a request still on
+ * its way can't create it afterwards, and the next attempt needs a new id.
+ */
+export function settleCampaign(id: string): Promise<Answer<CampaignSettlement>> {
+  return call<CampaignSettlement>("settle-campaign", { id });
 }
 
 export function runEmailSweep(): Promise<Answer<SweepReceipt>> {

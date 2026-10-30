@@ -22,12 +22,15 @@ export default function ActionButton({
   children,
   tone = "quiet",
   confirmText,
+  disabled = false,
 }: {
   name: string;
   value: string;
   children: React.ReactNode;
   tone?: "primary" | "quiet" | "danger";
   confirmText?: string;
+  /** Off for a reason the page states beside it, not only while submitting. */
+  disabled?: boolean;
 }) {
   const { pending } = useFormStatus();
 
@@ -42,7 +45,7 @@ export default function ActionButton({
       type="submit"
       name={name}
       value={value}
-      disabled={pending}
+      disabled={pending || disabled}
       onClick={(event) => {
         if (confirmText && !window.confirm(confirmText)) event.preventDefault();
       }}
