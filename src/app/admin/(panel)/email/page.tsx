@@ -6,6 +6,7 @@ import { formatDate } from "@/lib/affiliate/format";
 import { emailOverview, type Contact, type ContactStatus, type EmailResults } from "@/lib/growsearch/email";
 import { PageHeader } from "@/components/admin/ui";
 import CampaignForm from "@/components/admin/email/CampaignForm";
+import ReportCcField from "@/components/admin/email/ReportCcField";
 import SentEmails, { type SendItem } from "@/components/admin/email/SentEmails";
 import SweepButton from "@/components/admin/email/SweepButton";
 import Empty from "@/components/affiliate/Empty";
@@ -31,12 +32,16 @@ const LIFECYCLE: Record<string, { name: string; when: string }> = {
   review_request: { name: "Review request", when: "After 100 searches over at least 14 days. Sent once." },
   weekly_report: {
     name: "Weekly report",
-    when: "Every Monday, last week's search numbers, to each store that had searches. All weeks added up.",
+    when: "Every Monday, last week's search numbers, to each store that had searches, and a copy to its agency if it has one. All weeks added up.",
   },
 };
 
-/** Each week's report is its own send, keyed by the Monday the week began. */
+/**
+ * Each week's report is its own send, keyed by the Monday the week began. The
+ * copy sent to a store's second address (its agency) adds `:cc`.
+ */
 const WEEKLY_REPORT_PREFIX = "weekly_report:";
+const REPORT_COPY_SUFFIX = ":cc";
 
 const STATUS: Record<ContactStatus, { label: string; tone: string }> = {
   subscribed: { label: "Subscribed", tone: "text-brand" },
@@ -54,10 +59,13 @@ function share(count: number, sent: number): string {
 function emailName(key: string, campaigns: Map<string, string>): string {
   if (key.startsWith("campaign:")) return campaigns.get(key.slice("campaign:".length)) ?? "Campaign";
   if (key.startsWith(WEEKLY_REPORT_PREFIX)) {
-    const monday = new Date(`${key.slice(WEEKLY_REPORT_PREFIX.length)}T00:00:00Z`);
+    const copy = key.endsWith(REPORT_COPY_SUFFIX);
+    const name = copy ? "Weekly report copy" : "Weekly report";
+    const date = key.slice(WEEKLY_REPORT_PREFIX.length, copy ? -REPORT_COPY_SUFFIX.length : undefined);
+    const monday = new Date(`${date}T00:00:00Z`);
     return Number.isNaN(monday.getTime())
-      ? "Weekly report"
-      : `Weekly report (${monday.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })})`;
+      ? name
+      : `${name} (${monday.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })})`;
   }
   return LIFECYCLE[key]?.name ?? key;
 }
@@ -262,6 +270,7 @@ export default async function AdminEmailPage() {
               <Head>
                 <Th>Store</Th>
                 <Th>Email</Th>
+                <Th>Weekly report copy to</Th>
                 <Th>Status</Th>
                 <Th>Emails received</Th>
                 <Th>Joined</Th>
@@ -278,6 +287,13 @@ export default async function AdminEmailPage() {
                       )}
                     </RowHeader>
                     <Td>{contact.email ?? <span className="text-muted">-</span>}</Td>
+                    <Td>
+                      {canSend ? (
+                        <ReportCcField shop={contact.shop} value={contact.reportCcEmail ?? null} />
+                      ) : (
+                        (contact.reportCcEmail ?? <span className="text-muted">-</span>)
+                      )}
+                    </Td>
                     <Td>
                       <span className={`font-bold ${STATUS[contact.status].tone}`}>
                         {STATUS[contact.status].label}

@@ -52,6 +52,8 @@ export type Contact = {
   shop: string;
   shopName: string | null;
   email: string | null;
+  /** A second address, usually the store's agency, that gets its own copy of each weekly report. */
+  reportCcEmail: string | null;
   status: ContactStatus;
   subscribedAt: string;
   unsubscribedAt: string | null;
@@ -200,4 +202,12 @@ export function runEmailSweep(): Promise<Answer<SweepReceipt>> {
 
 export function sentEmail(shop: string, emailKey: string): Promise<Answer<SentEmail>> {
   return call<SentEmail>("email", { shop, emailKey });
+}
+
+/**
+ * Sets the address that gets its own copy of a store's weekly report, usually
+ * the agency that runs it. An empty `email` removes it. The app validates it.
+ */
+export function setReportCc(shop: string, email: string): Promise<Answer<{ shop: string; reportCcEmail: string | null }>> {
+  return call<{ shop: string; reportCcEmail: string | null }>("set-report-cc", { shop, email });
 }
