@@ -9,6 +9,7 @@ import {
   runEmailSweep,
   sendCampaign,
   sentEmail,
+  setReportCc,
   type Answer,
   type Audience,
   type SentEmail,
@@ -35,6 +36,8 @@ export type CampaignValues = {
 export type CampaignState = { error?: string; notice?: string; values?: CampaignValues } | undefined;
 
 export type SweepState = { error?: string; notice?: string } | undefined;
+
+export type ReportCcState = { error?: string; notice?: string } | undefined;
 
 function text(form: FormData, field: string, max: number): string {
   const value = form.get(field);
@@ -119,4 +122,23 @@ export async function viewSentEmail(shop: string, emailKey: string): Promise<Ans
     return { ok: false, error: "Name the store and the email." };
   }
   return sentEmail(shop.slice(0, 255), emailKey.slice(0, 200));
+}
+
+/** Sets or clears the address that gets a copy of a store's weekly report. */
+export async function saveReportCc(_state: ReportCcState, form: FormData): Promise<ReportCcState> {
+  const admin = await requireAdmin();
+  if (!allows(admin.grant, "email", "edit")) return { error: NO_ACCESS };
+
+  const shop = text(form, "shop", 255);
+  const email = text(form, "reportCcEmail", 254);
+  const answer = await setReportCc(shop, email);
+  if (!answer.ok) return { error: answer.error };
+
+  const saved = answer.data.reportCcEmail;
+  await noteActivity(
+    admin,
+    saved ? `Set the weekly report copy for ${shop} to ${saved}` : `Removed the weekly report copy for ${shop}`,
+  );
+  revalidatePath("/admin/email");
+  return { notice: saved ? "Saved." : "Removed." };
 }

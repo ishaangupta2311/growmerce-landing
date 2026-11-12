@@ -27,6 +27,17 @@ window onto it.
   back from Resend the first time; if Resend no longer has one, the dialog
   says so. The email is shown in a sandboxed frame where links do not open: it
   carries the merchant's real unsubscribe link.
+- **Weekly report copy.** The stores table has a "Weekly report copy to"
+  column: an address, usually the agency that runs the store, that gets its
+  own copy of each weekly report. Type an address and Save to set or change
+  it; clear the field and Save to remove it. Needs edit on Email; a view-only
+  role sees the address. Only admins can set it; merchants do not see it in
+  the app. The copy is a separate email with its own unsubscribe link, so the
+  agency unsubscribing, or its address bouncing, never touches the merchant's
+  email. It stops while the store is unsubscribed or uninstalled. It cannot be
+  the store's own address. The copies' results have their own "Weekly report
+  copy" row under Automatic emails. Copies show in a store's history as "Weekly report copy (Nov 9)".
+  Changes are logged in the team activity log.
 - **Campaigns.** A subject, a plain-text message and an optional button, sent
   to subscribed merchants. `{{shop_name}}` becomes the store's name. "Send me a
   test" sends one sample to the address given and stores nothing.
@@ -65,4 +76,4 @@ with the campaign it already has.
 | `GROWSEARCH_APP_URL`  | Optional. Where the app is; defaults to production. Set only to point at another deployment. |
 
 Access is the same as the rest of `/admin`: `requireAdmin()` on the page and on
-both actions.
+every action.
