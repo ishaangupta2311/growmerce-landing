@@ -34,7 +34,9 @@ window onto it.
   role sees the address. Only admins can set it; merchants do not see it in
   the app. The copy is a separate email with its own unsubscribe link, so the
   agency unsubscribing, or its address bouncing, never touches the merchant's
-  email. It stops while the store is unsubscribed or uninstalled. Copies show in a store's history as "Weekly report copy (Nov 9)".
+  email. It stops while the store is unsubscribed or uninstalled. It cannot be
+  the store's own address. The copies' results have their own "Weekly report
+  copy" row under Automatic emails. Copies show in a store's history as "Weekly report copy (Nov 9)".
   Changes are logged in the team activity log.
 - **Campaigns.** A subject, a plain-text message and an optional button, sent
   to subscribed merchants. `{{shop_name}}` becomes the store's name. "Send me a

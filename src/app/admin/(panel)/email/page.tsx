@@ -32,7 +32,11 @@ const LIFECYCLE: Record<string, { name: string; when: string }> = {
   review_request: { name: "Review request", when: "After 100 searches over at least 14 days. Sent once." },
   weekly_report: {
     name: "Weekly report",
-    when: "Every Monday, last week's search numbers, to each store that had searches, and a copy to its agency if it has one. All weeks added up.",
+    when: "Every Monday, last week's search numbers, to each store that had searches. All weeks added up.",
+  },
+  weekly_report_copy: {
+    name: "Weekly report copy",
+    when: "The same report, to the agency address set for a store below. All weeks added up.",
   },
 };
 
@@ -130,9 +134,13 @@ export default async function AdminEmailPage() {
   const campaignSubjects = new Map(overview.campaigns.map((campaign) => [campaign.id, campaign.subject]));
   const sends = sendItems(overview.contacts, campaignSubjects);
   const sendsOf = (key: string) =>
-    sends.filter((send) =>
-      key === "weekly_report" ? send.emailKey.startsWith(WEEKLY_REPORT_PREFIX) : send.emailKey === key,
-    );
+    sends.filter((send) => {
+      const weekly = send.emailKey.startsWith(WEEKLY_REPORT_PREFIX);
+      const copy = weekly && send.emailKey.endsWith(REPORT_COPY_SUFFIX);
+      if (key === "weekly_report") return weekly && !copy;
+      if (key === "weekly_report_copy") return copy;
+      return send.emailKey === key;
+    });
 
   return (
     <>
