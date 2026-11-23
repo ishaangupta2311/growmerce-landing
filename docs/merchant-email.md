@@ -27,17 +27,27 @@ window onto it.
   back from Resend the first time; if Resend no longer has one, the dialog
   says so. The email is shown in a sandboxed frame where links do not open: it
   carries the merchant's real unsubscribe link.
-- **Weekly report copy.** The stores table has a "Weekly report copy to"
-  column: an address, usually the agency that runs the store, that gets its
-  own copy of each weekly report. Type an address and Save to set or change
-  it; clear the field and Save to remove it. Needs edit on Email; a view-only
-  role sees the address. Only admins can set it; merchants do not see it in
-  the app. The copy is a separate email with its own unsubscribe link, so the
-  agency unsubscribing, or its address bouncing, never touches the merchant's
-  email. It stops while the store is unsubscribed or uninstalled. It cannot be
-  the store's own address. The copies' results have their own "Weekly report
-  copy" row under Automatic emails. Copies show in a store's history as "Weekly report copy (Nov 9)".
-  Changes are logged in the team activity log.
+- **Weekly report copies.** The stores table has a "Weekly report copies to"
+  column: up to 10 addresses per store, usually the agency that runs it, that
+  each get their own copy of every weekly report. Type an address and press
+  Add or Enter to add it (several can be pasted at once, separated by commas
+  or spaces); press × on one to remove it. Each change saves at once. Needs
+  edit on Email; a view-only role sees the addresses. Only admins can set
+  them; merchants do not see them in the app. Each copy is a separate email
+  with its own unsubscribe link, so an agency unsubscribing, or its address
+  bouncing, removes only that address and never touches the merchant's email.
+  Copies stop while the store is unsubscribed or uninstalled. None can be the
+  store's own address. The copies' results have their own "Weekly report
+  copy" row under Automatic emails, and show in a store's history as "Weekly
+  report copy (Nov 9)", one per address.
+- **Team alerts.** Who gets the emails Growsearch sends the team when a store
+  installs it, approves a plan, or uninstalls: one list for all three, edited
+  the same way. Each alert is one email to everyone on the list. The list
+  cannot be emptied. Until it is first saved, the alerts go to
+  `OWNER_ALERT_EMAIL` on the Growsearch app, which also switches them on: a
+  deployment without it sends none, and the panel says so. See the app's
+  `docs/owner-alerts.md`.
+- Changes to either list are logged in the team activity log.
 - **Campaigns.** A subject, a plain-text message and an optional button, sent
   to subscribed merchants. `{{shop_name}}` becomes the store's name. "Send me a
   test" sends one sample to the address given and stores nothing.

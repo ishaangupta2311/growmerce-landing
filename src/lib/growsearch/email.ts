@@ -52,8 +52,8 @@ export type Contact = {
   shop: string;
   shopName: string | null;
   email: string | null;
-  /** A second address, usually the store's agency, that gets its own copy of each weekly report. */
-  reportCcEmail: string | null;
+  /** Other addresses, usually the store's agency, that each get their own copy of every weekly report. */
+  reportCopyEmails: string[];
   status: ContactStatus;
   subscribedAt: string;
   unsubscribedAt: string | null;
@@ -75,9 +75,18 @@ export type Send = {
 /** What one send said: the subject and HTML that went out. */
 export type SentEmail = Send & { shop: string; subject: string | null; html: string };
 
+/**
+ * Who gets the team alerts (new install, plan approved, uninstalled). `enabled`
+ * is false on a deployment without OWNER_ALERT_EMAIL, which sends none.
+ * `saved` is false until a list is first saved here; until then the alerts go
+ * to OWNER_ALERT_EMAIL, the one address in `recipients`.
+ */
+export type OwnerAlerts = { enabled: boolean; saved: boolean; recipients: string[] };
+
 export type EmailOverview = {
   /** Whether the app has its Resend credentials. False means nothing sends. */
   configured: boolean;
+  ownerAlerts: OwnerAlerts;
   totals: { contacts: number; subscribed: number; unsubscribed: number; uninstalled: number };
   /** How many addresses a campaign to each audience would reach right now. */
   audiences: Record<Audience, number>;
@@ -205,9 +214,25 @@ export function sentEmail(shop: string, emailKey: string): Promise<Answer<SentEm
 }
 
 /**
- * Sets the address that gets its own copy of a store's weekly report, usually
- * the agency that runs it. An empty `email` removes it. The app validates it.
+ * Addresses to add to a list and to take off it. A change rather than the
+ * whole list: a list read when the page loaded would bring back an address
+ * that unsubscribed or bounced since.
  */
-export function setReportCc(shop: string, email: string): Promise<Answer<{ shop: string; reportCcEmail: string | null }>> {
-  return call<{ shop: string; reportCcEmail: string | null }>("set-report-cc", { shop, email });
+export type EmailChange = { add: string[]; remove: string[] };
+
+/**
+ * Adds and removes addresses that get their own copy of a store's weekly
+ * report, usually the agency that runs it. The app validates them and answers
+ * with the list as saved.
+ */
+export function changeReportCopies(
+  shop: string,
+  change: EmailChange,
+): Promise<Answer<{ shop: string; reportCopyEmails: string[] }>> {
+  return call<{ shop: string; reportCopyEmails: string[] }>("change-report-copies", { shop, ...change });
+}
+
+/** Adds and removes who gets the team alerts. The app refuses to empty the list. */
+export function changeOwnerAlertRecipients(change: EmailChange): Promise<Answer<{ ownerAlerts: OwnerAlerts }>> {
+  return call<{ ownerAlerts: OwnerAlerts }>("change-owner-alert-recipients", change);
 }

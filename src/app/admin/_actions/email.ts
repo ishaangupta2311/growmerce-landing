@@ -9,9 +9,11 @@ import {
   runEmailSweep,
   sendCampaign,
   sentEmail,
-  setReportCc,
+  changeOwnerAlertRecipients,
+  changeReportCopies,
   type Answer,
   type Audience,
+  type EmailChange,
   type SentEmail,
 } from "@/lib/growsearch/email";
 
@@ -37,7 +39,8 @@ export type CampaignState = { error?: string; notice?: string; values?: Campaign
 
 export type SweepState = { error?: string; notice?: string } | undefined;
 
-export type ReportCcState = { error?: string; notice?: string } | undefined;
+/** Whether a change to a list of addresses was saved. The page shows the list. */
+export type EmailListState = { error?: string; notice?: string } | undefined;
 
 function text(form: FormData, field: string, max: number): string {
   const value = form.get(field);
@@ -124,21 +127,49 @@ export async function viewSentEmail(shop: string, emailKey: string): Promise<Ans
   return sentEmail(shop.slice(0, 255), emailKey.slice(0, 200));
 }
 
-/** Sets or clears the address that gets a copy of a store's weekly report. */
-export async function saveReportCc(_state: ReportCcState, form: FormData): Promise<ReportCcState> {
+/**
+ * The change an address form asks for: the addresses typed (several can be
+ * pasted at once, split on commas, semicolons, or spaces), or the one whose
+ * remove button was pressed. The app checks each address.
+ */
+function requestedChange(form: FormData): EmailChange | null {
+  const removed = text(form, "remove", 254);
+  if (removed) return { add: [], remove: [removed] };
+  const add = text(form, "add", 5_000).split(/[\s,;]+/).filter(Boolean).slice(0, 50);
+  return add.length ? { add, remove: [] } : null;
+}
+
+function describe({ add, remove }: EmailChange): string {
+  return add.length ? `Added ${add.join(", ")} to` : `Removed ${remove.join(", ")} from`;
+}
+
+/** Adds or removes an address that gets a copy of a store's weekly report. */
+export async function saveReportCopies(_state: EmailListState, form: FormData): Promise<EmailListState> {
   const admin = await requireAdmin();
   if (!allows(admin.grant, "email", "edit")) return { error: NO_ACCESS };
 
   const shop = text(form, "shop", 255);
-  const email = text(form, "reportCcEmail", 254);
-  const answer = await setReportCc(shop, email);
+  const change = requestedChange(form);
+  if (!change) return { error: "Type an address to add." };
+  const answer = await changeReportCopies(shop, change);
   if (!answer.ok) return { error: answer.error };
 
-  const saved = answer.data.reportCcEmail;
-  await noteActivity(
-    admin,
-    saved ? `Set the weekly report copy for ${shop} to ${saved}` : `Removed the weekly report copy for ${shop}`,
-  );
+  await noteActivity(admin, `${describe(change)} the weekly report copies for ${shop}`);
   revalidatePath("/admin/email");
-  return { notice: saved ? "Saved." : "Removed." };
+  return { notice: "Saved." };
+}
+
+/** Adds or removes who gets the team alerts for installs, plans, and uninstalls. */
+export async function saveOwnerAlertRecipients(_state: EmailListState, form: FormData): Promise<EmailListState> {
+  const admin = await requireAdmin();
+  if (!allows(admin.grant, "email", "edit")) return { error: NO_ACCESS };
+
+  const change = requestedChange(form);
+  if (!change) return { error: "Type an address to add." };
+  const answer = await changeOwnerAlertRecipients(change);
+  if (!answer.ok) return { error: answer.error };
+
+  await noteActivity(admin, `${describe(change)} the team alert recipients`);
+  revalidatePath("/admin/email");
+  return { notice: "Saved." };
 }
