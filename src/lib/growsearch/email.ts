@@ -70,6 +70,8 @@ export type Send = {
   clickedAt: string | null;
   bouncedAt: string | null;
   complainedAt: string | null;
+  /** For a weekly report copy, the address it went to; null once erased. */
+  recipient?: string | null;
 };
 
 /** What one send said: the subject and HTML that went out. */

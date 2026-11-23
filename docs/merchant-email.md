@@ -38,8 +38,7 @@ window onto it.
   bouncing, removes only that address and never touches the merchant's email.
   Copies stop while the store is unsubscribed or uninstalled. None can be the
   store's own address. The copies' results have their own "Weekly report
-  copy" row under Automatic emails, and show in a store's history as "Weekly
-  report copy (Nov 9)", one per address.
+  copy" row under Automatic emails.
 - **Team alerts.** Who gets the emails Growsearch sends the team when a store
   installs it, approves a plan, or uninstalls: one list for all three, edited
   the same way. Each alert is one email to everyone on the list. The list
@@ -47,7 +46,12 @@ window onto it.
   `OWNER_ALERT_EMAIL` on the Growsearch app, which also switches them on: a
   deployment without it sends none, and the panel says so. See the app's
   `docs/owner-alerts.md`.
-- Changes to either list are logged in the team activity log.
+- Changes to either list are logged in the team activity log. For report
+  copies the log names only the address's domain ("an address at
+  agency.com"): the address is a third party's, and the log outlives the app
+  removing it.
+- A store's history names each copy by the address it went to ("Weekly
+  report copy to agency@… (Nov 9)"), until the store's data is erased.
 - **Campaigns.** A subject, a plain-text message and an optional button, sent
   to subscribed merchants. `{{shop_name}}` becomes the store's name. "Send me a
   test" sends one sample to the address given and stores nothing.

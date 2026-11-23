@@ -139,8 +139,18 @@ function requestedChange(form: FormData): EmailChange | null {
   return add.length ? { add, remove: [] } : null;
 }
 
-function describe({ add, remove }: EmailChange): string {
-  return add.length ? `Added ${add.join(", ")} to` : `Removed ${remove.join(", ")} from`;
+function describe({ add, remove }: EmailChange, show: (email: string) => string = (email) => email): string {
+  return add.length ? `Added ${add.map(show).join(", ")} to` : `Removed ${remove.map(show).join(", ")} from`;
+}
+
+/**
+ * A copy address as the activity log keeps it: its domain only. The address
+ * is a third party's, and the log outlives the app removing it (an
+ * unsubscribe, a bounce, or the store's data being erased).
+ */
+function domainOnly(email: string): string {
+  const at = email.lastIndexOf("@");
+  return at >= 0 ? `an address at ${email.slice(at + 1)}` : "an address";
 }
 
 /** Adds or removes an address that gets a copy of a store's weekly report. */
@@ -154,7 +164,7 @@ export async function saveReportCopies(_state: EmailListState, form: FormData): 
   const answer = await changeReportCopies(shop, change);
   if (!answer.ok) return { error: answer.error };
 
-  await noteActivity(admin, `${describe(change)} the weekly report copies for ${shop}`);
+  await noteActivity(admin, `${describe(change, domainOnly)} the weekly report copies for ${shop}`);
   revalidatePath("/admin/email");
   return { notice: "Saved." };
 }

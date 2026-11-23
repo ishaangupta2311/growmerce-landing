@@ -49,12 +49,12 @@ const LIFECYCLE: Record<string, { name: string; when: string }> = {
 
 /**
  * Each week's report is its own send, keyed by the Monday the week began
- * (`weekly_report:2026-11-16`). A copy to one of a store's copy addresses adds
- * `:cc:` and a short hash of the address; copies from before a store could
- * have several end at `:cc`.
+ * (`weekly_report:2026-11-16`). A copy to one of a store's copy addresses
+ * adds a short hash of the address and `:cc`; copies from before a store
+ * could have several just add `:cc`. Either way a copy ends in `:cc`.
  */
 const WEEKLY_REPORT_PREFIX = "weekly_report:";
-const REPORT_COPY = /:cc(:[0-9a-f]+)?$/;
+const REPORT_COPY = /:cc$/;
 
 const STATUS: Record<ContactStatus, { label: string; tone: string }> = {
   subscribed: { label: "Subscribed", tone: "text-brand" },
@@ -69,10 +69,18 @@ function share(count: number, sent: number): string {
   return `${count} (${Math.round((count / sent) * 100)}%)`;
 }
 
-function emailName(key: string, campaigns: Map<string, string>): string {
+function emailName(
+  { emailKey: key, recipient }: Pick<Contact["sends"][number], "emailKey" | "recipient">,
+  campaigns: Map<string, string>,
+): string {
   if (key.startsWith("campaign:")) return campaigns.get(key.slice("campaign:".length)) ?? "Campaign";
   if (key.startsWith(WEEKLY_REPORT_PREFIX)) {
-    const name = REPORT_COPY.test(key) ? "Weekly report copy" : "Weekly report";
+    // A store can have several copy addresses; each copy names its own.
+    const name = REPORT_COPY.test(key)
+      ? recipient
+        ? `Weekly report copy to ${recipient}`
+        : "Weekly report copy"
+      : "Weekly report";
     const date = key.slice(WEEKLY_REPORT_PREFIX.length, WEEKLY_REPORT_PREFIX.length + "2026-11-16".length);
     const monday = new Date(`${date}T00:00:00Z`);
     return Number.isNaN(monday.getTime())
@@ -90,7 +98,7 @@ function sendItems(contacts: Contact[], campaigns: Map<string, string>): SendIte
         ...send,
         shop: contact.shop,
         store: contact.shopName ?? contact.shop,
-        email: emailName(send.emailKey, campaigns),
+        email: emailName(send, campaigns),
       })),
     )
     .sort((a, b) => b.sentAt.localeCompare(a.sentAt));
