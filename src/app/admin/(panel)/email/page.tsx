@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
 import { randomUUID } from "node:crypto";
 
+import { saveOwnerAlertRecipients, saveReportCopies } from "@/app/admin/_actions/email";
 import { requireAccess } from "@/lib/admin/session";
 import { formatDate } from "@/lib/affiliate/format";
-import { emailOverview, type Contact, type ContactStatus, type EmailResults } from "@/lib/growsearch/email";
+import {
+  emailOverview,
+  type Contact,
+  type ContactStatus,
+  type EmailResults,
+  type OwnerAlerts,
+} from "@/lib/growsearch/email";
 import { PageHeader } from "@/components/admin/ui";
 import CampaignForm from "@/components/admin/email/CampaignForm";
-import ReportCcField from "@/components/admin/email/ReportCcField";
+import EmailListField from "@/components/admin/email/EmailListField";
 import SentEmails, { type SendItem } from "@/components/admin/email/SentEmails";
 import SweepButton from "@/components/admin/email/SweepButton";
 import Empty from "@/components/affiliate/Empty";
@@ -36,16 +43,18 @@ const LIFECYCLE: Record<string, { name: string; when: string }> = {
   },
   weekly_report_copy: {
     name: "Weekly report copy",
-    when: "The same report, to the agency address set for a store below. All weeks added up.",
+    when: "The same report, to each copy address set for a store below. All weeks added up.",
   },
 };
 
 /**
- * Each week's report is its own send, keyed by the Monday the week began. The
- * copy sent to a store's second address (its agency) adds `:cc`.
+ * Each week's report is its own send, keyed by the Monday the week began
+ * (`weekly_report:2026-11-16`). A copy to one of a store's copy addresses
+ * adds a short hash of the address and `:cc`; copies from before a store
+ * could have several just add `:cc`. Either way a copy ends in `:cc`.
  */
 const WEEKLY_REPORT_PREFIX = "weekly_report:";
-const REPORT_COPY_SUFFIX = ":cc";
+const REPORT_COPY = /:cc$/;
 
 const STATUS: Record<ContactStatus, { label: string; tone: string }> = {
   subscribed: { label: "Subscribed", tone: "text-brand" },
@@ -60,12 +69,19 @@ function share(count: number, sent: number): string {
   return `${count} (${Math.round((count / sent) * 100)}%)`;
 }
 
-function emailName(key: string, campaigns: Map<string, string>): string {
+function emailName(
+  { emailKey: key, recipient }: Pick<Contact["sends"][number], "emailKey" | "recipient">,
+  campaigns: Map<string, string>,
+): string {
   if (key.startsWith("campaign:")) return campaigns.get(key.slice("campaign:".length)) ?? "Campaign";
   if (key.startsWith(WEEKLY_REPORT_PREFIX)) {
-    const copy = key.endsWith(REPORT_COPY_SUFFIX);
-    const name = copy ? "Weekly report copy" : "Weekly report";
-    const date = key.slice(WEEKLY_REPORT_PREFIX.length, copy ? -REPORT_COPY_SUFFIX.length : undefined);
+    // A store can have several copy addresses; each copy names its own.
+    const name = REPORT_COPY.test(key)
+      ? recipient
+        ? `Weekly report copy to ${recipient}`
+        : "Weekly report copy"
+      : "Weekly report";
+    const date = key.slice(WEEKLY_REPORT_PREFIX.length, WEEKLY_REPORT_PREFIX.length + "2026-11-16".length);
     const monday = new Date(`${date}T00:00:00Z`);
     return Number.isNaN(monday.getTime())
       ? name
@@ -82,7 +98,7 @@ function sendItems(contacts: Contact[], campaigns: Map<string, string>): SendIte
         ...send,
         shop: contact.shop,
         store: contact.shopName ?? contact.shop,
-        email: emailName(send.emailKey, campaigns),
+        email: emailName(send, campaigns),
       })),
     )
     .sort((a, b) => b.sentAt.localeCompare(a.sentAt));
@@ -114,6 +130,43 @@ function ResultHeadings() {
   );
 }
 
+/**
+ * Who gets the emails Growsearch sends the team on a new install, an approved
+ * plan, and an uninstall. One list for all three.
+ */
+function TeamAlerts({ alerts, canEdit }: { alerts: OwnerAlerts | undefined; canEdit: boolean }) {
+  if (!alerts?.enabled) {
+    return (
+      <p className="text-[15px] leading-relaxed text-body-mute">
+        Off. Set OWNER_ALERT_EMAIL on the Growsearch app to switch on the emails for new installs, approved plans,
+        and uninstalls.
+      </p>
+    );
+  }
+  return (
+    <div className="space-y-3">
+      <p className="max-w-[70ch] text-[15px] leading-relaxed text-body-mute">
+        Who gets an email when a store installs Growsearch, approves a plan, or uninstalls. One email per alert,
+        addressed to everyone here.
+        {!alerts.saved && " Until you change this list, they go to OWNER_ALERT_EMAIL on the Growsearch app."}
+      </p>
+      {canEdit ? (
+        <div className="max-w-[36rem]">
+          <EmailListField
+            action={saveOwnerAlertRecipients}
+            value={alerts.recipients}
+            label="Team alert recipients"
+            placeholder="teammate@growmerce.ai"
+            keepOne
+          />
+        </div>
+      ) : (
+        <p className="text-[15px] text-charcoal">{alerts.recipients.join(", ")}</p>
+      )}
+    </div>
+  );
+}
+
 export default async function AdminEmailPage() {
   const admin = await requireAccess("email");
   const canSend = allows(admin.grant, "email", "edit");
@@ -136,7 +189,7 @@ export default async function AdminEmailPage() {
   const sendsOf = (key: string) =>
     sends.filter((send) => {
       const weekly = send.emailKey.startsWith(WEEKLY_REPORT_PREFIX);
-      const copy = weekly && send.emailKey.endsWith(REPORT_COPY_SUFFIX);
+      const copy = weekly && REPORT_COPY.test(send.emailKey);
       if (key === "weekly_report") return weekly && !copy;
       if (key === "weekly_report_copy") return copy;
       return send.emailKey === key;
@@ -219,6 +272,10 @@ export default async function AdminEmailPage() {
           </Table>
         </Panel>
 
+        <Panel title="Team alerts">
+          <TeamAlerts alerts={overview.ownerAlerts} canEdit={canSend} />
+        </Panel>
+
         <Panel title="Campaigns" scroll={overview.campaigns.length > 0}>
           {overview.campaigns.length === 0 ? (
             <Empty title="No campaign has been sent">
@@ -278,7 +335,7 @@ export default async function AdminEmailPage() {
               <Head>
                 <Th>Store</Th>
                 <Th>Email</Th>
-                <Th>Weekly report copy to</Th>
+                <Th>Weekly report copies to</Th>
                 <Th>Status</Th>
                 <Th>Emails received</Th>
                 <Th>Joined</Th>
@@ -297,9 +354,19 @@ export default async function AdminEmailPage() {
                     <Td>{contact.email ?? <span className="text-muted">-</span>}</Td>
                     <Td>
                       {canSend ? (
-                        <ReportCcField shop={contact.shop} value={contact.reportCcEmail ?? null} />
+                        <EmailListField
+                          action={saveReportCopies}
+                          shop={contact.shop}
+                          value={contact.reportCopyEmails ?? []}
+                          label={`Weekly report copies for ${contact.shopName ?? contact.shop}`}
+                          placeholder="agency@example.com"
+                        />
+                      ) : contact.reportCopyEmails?.length ? (
+                        <span className="block max-w-[30ch] break-words text-[14px] leading-snug">
+                          {contact.reportCopyEmails.join(", ")}
+                        </span>
                       ) : (
-                        (contact.reportCcEmail ?? <span className="text-muted">-</span>)
+                        <span className="text-muted">-</span>
                       )}
                     </Td>
                     <Td>
@@ -311,18 +378,19 @@ export default async function AdminEmailPage() {
                       {contact.sends.length === 0 ? (
                         <span className="text-muted">None yet</span>
                       ) : (
-                        <span className="block max-w-[38ch] text-[14px] leading-snug">
+                        // One per line: each name is a button, and a button
+                        // that wraps pushes a separating comma onto the next line.
+                        <ul className="min-w-[14rem] max-w-[38ch] space-y-0.5 text-[14px] leading-snug">
                           {sends
                             .filter((send) => send.shop === contact.shop)
-                            .map((send, index) => (
-                              <span key={send.emailKey}>
-                                {index > 0 && ", "}
+                            .map((send) => (
+                              <li key={send.emailKey}>
                                 <SentEmails title={send.email} sends={[send]}>
                                   {send.email}
                                 </SentEmails>
-                              </span>
+                              </li>
                             ))}
-                        </span>
+                        </ul>
                       )}
                     </Td>
                     <Td>{formatDate(new Date(contact.subscribedAt))}</Td>
